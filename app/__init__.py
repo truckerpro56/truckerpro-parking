@@ -37,4 +37,11 @@ def create_app(config_class=None):
     with app.app_context():
         db.create_all()
 
+    @app.cli.command('seed')
+    def seed_command():
+        """Seed the database with initial data."""
+        from .seed.locations import seed_locations
+        seed_locations()
+        print('Seeded.')
+
     return app
