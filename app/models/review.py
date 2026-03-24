@@ -13,3 +13,7 @@ class ParkingReview(db.Model):
     review_text = db.Column(db.Text)
     is_verified = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.CheckConstraint('rating >= 1 AND rating <= 5', name='ck_review_rating_range'),
+    )
