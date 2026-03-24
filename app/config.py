@@ -27,3 +27,4 @@ class TestConfig(Config):
     WTF_CSRF_ENABLED = False
     SERVER_NAME = 'localhost'
     RATELIMIT_STORAGE_URI = 'memory://'
+    RATELIMIT_ENABLED = False
