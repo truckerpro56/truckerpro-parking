@@ -21,5 +21,12 @@ def client(app):
 @pytest.fixture(scope='function')
 def db(app):
     with app.app_context():
+        connection = _db.engine.connect()
+        transaction = connection.begin()
+        options = dict(bind=connection)
+        session = _db.create_scoped_session(options=options)
+        _db.session = session
         yield _db
-        _db.session.rollback()
+        transaction.rollback()
+        connection.close()
+        session.remove()
