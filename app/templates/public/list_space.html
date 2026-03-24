@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Your Space - Parking Club | TruckerPro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --tp-navy: #1E3A5F;
+            --tp-orange: #FF6B35;
+            --tp-white: #FFFFFF;
+        }
+        body {
+            background-color: #0f1e30;
+            color: var(--tp-white);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: var(--tp-navy) !important;
+            border-bottom: 2px solid var(--tp-orange);
+        }
+        .navbar-brand {
+            color: var(--tp-orange) !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+        .nav-link { color: var(--tp-white) !important; }
+        .nav-link:hover { color: var(--tp-orange) !important; }
+        .btn-orange {
+            background-color: var(--tp-orange);
+            border-color: var(--tp-orange);
+            color: var(--tp-white);
+            font-weight: 600;
+        }
+        .btn-orange:hover {
+            background-color: #e55a25;
+            border-color: #e55a25;
+            color: var(--tp-white);
+        }
+        .btn-orange-lg {
+            background-color: var(--tp-orange);
+            border-color: var(--tp-orange);
+            color: var(--tp-white);
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 0.85rem 2.5rem;
+            border-radius: 0.5rem;
+        }
+        .btn-orange-lg:hover {
+            background-color: #e55a25;
+            border-color: #e55a25;
+            color: var(--tp-white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Hero */
+        .hero-section {
+            background: linear-gradient(135deg, var(--tp-navy) 0%, #0f1e30 100%);
+            padding: 5rem 0 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255, 107, 53, 0.05) 0%, transparent 50%);
+        }
+        .hero-section h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        .hero-section h1 span { color: var(--tp-orange); }
+        .hero-section .subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        /* Benefits */
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        .section-subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 3rem;
+        }
+        .benefit-card {
+            background-color: var(--tp-navy);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            height: 100%;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .benefit-card:hover {
+            border-color: var(--tp-orange);
+            transform: translateY(-4px);
+        }
+        .benefit-card .icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 107, 53, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
+            font-size: 1.5rem;
+            color: var(--tp-orange);
+        }
+        .benefit-card h5 {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .benefit-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+
+        /* Property Types */
+        .property-types-section {
+            background-color: var(--tp-navy);
+            padding: 4rem 0;
+        }
+        .property-type-item {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            border-radius: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        .property-type-item:hover {
+            border-color: var(--tp-orange);
+            background-color: rgba(255, 107, 53, 0.05);
+        }
+        .property-type-item .icon {
+            font-size: 2rem;
+            color: var(--tp-orange);
+            margin-bottom: 0.75rem;
+        }
+        .property-type-item h6 {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 5rem 0;
+        }
+        .step-card {
+            text-align: center;
+            position: relative;
+        }
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background-color: var(--tp-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0 auto 1.25rem;
+        }
+        .step-card h5 {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .step-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+        }
+        .step-connector {
+            position: absolute;
+            top: 25px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--tp-orange), rgba(255, 107, 53, 0.1));
+        }
+
+        /* Stats */
+        .stats-section {
+            background: linear-gradient(135deg, var(--tp-orange), #e55a25);
+            padding: 3rem 0;
+            text-align: center;
+        }
+        .stats-section .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        .stats-section .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* CTA */
+        .cta-section {
+            padding: 5rem 0;
+            text-align: center;
+            background-color: #0f1e30;
+        }
+        .cta-section h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .cta-section p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* FAQ */
+        .faq-section {
+            padding: 4rem 0;
+            background-color: var(--tp-navy);
+        }
+        .accordion-item {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.75rem;
+            border-radius: 0.5rem !important;
+        }
+        .accordion-button {
+            background-color: transparent;
+            color: var(--tp-white);
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(255, 107, 53, 0.1);
+            color: var(--tp-orange);
+            box-shadow: none;
+        }
+        .accordion-button:focus { box-shadow: none; border-color: var(--tp-orange); }
+        .accordion-button::after { filter: invert(1); }
+        .accordion-body {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #0a1525;
+            padding: 2.5rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .footer a { color: rgba(255, 255, 255, 0.5); text-decoration: none; }
+        .footer a:hover { color: var(--tp-orange); }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-truck me-2"></i>TruckerPro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-parking me-1"></i> Parking Club</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search"><i class="fas fa-search me-1"></i> Find Parking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i> Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container position-relative">
+            <h1>Earn Money from Your<br><span>Unused Yard Space</span></h1>
+            <p class="subtitle">Free to list. No monthly fees. You set the price.</p>
+            <a href="/login?next=/owner/dashboard" class="btn btn-orange-lg">
+                <i class="fas fa-rocket me-2"></i>Get Started — It's Free
+            </a>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="section-title">Why List With Us?</h2>
+            <p class="section-subtitle">Everything you need to start earning from your property</p>
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="benefit-card">
+                        <div class="icon"><i class="fas fa-tag"></i></div>
+                        <h5>Free to List</h5>
+                        <p>No signup fees, no monthly charges. We only take a small commission when you get a booking.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="benefit-card">
+                        <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                        <h5>Set Your Own Prices</h5>
+                        <p>You're in control. Set daily and monthly rates that work for your property and market.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="benefit-card">
+                        <div class="icon"><i class="fas fa-credit-card"></i></div>
+                        <h5>Get Paid Automatically</h5>
+                        <p>Payments are processed securely and deposited directly to your bank account.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="benefit-card">
+                        <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <h5>Manage from Dashboard</h5>
+                        <p>Track bookings, update availability, view earnings, and manage your listings all in one place.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Property Types -->
+    <section class="property-types-section">
+        <div class="container">
+            <h2 class="section-title">Property Types We Accept</h2>
+            <p class="section-subtitle">If you have space, trucks need it</p>
+            <div class="row g-3 justify-content-center">
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-truck"></i></div>
+                        <h6>Trucking Companies</h6>
+                    </div>
+                </div>
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-warehouse"></i></div>
+                        <h6>Warehouses</h6>
+                    </div>
+                </div>
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-wrench"></i></div>
+                        <h6>Repair Shops</h6>
+                    </div>
+                </div>
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-trailer"></i></div>
+                        <h6>Towing Companies</h6>
+                    </div>
+                </div>
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+                        <h6>CDL Schools</h6>
+                    </div>
+                </div>
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-boxes-stacked"></i></div>
+                        <h6>Storage Facilities</h6>
+                    </div>
+                </div>
+                <div class="col-lg col-md-4 col-6">
+                    <div class="property-type-item">
+                        <div class="icon"><i class="fas fa-tractor"></i></div>
+                        <h6>Farm Properties</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Three simple steps to start earning</p>
+            <div class="row g-4 mt-2">
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="d-none d-md-block step-connector"></div>
+                        <div class="step-number">1</div>
+                        <h5>Sign Up</h5>
+                        <p>Create your free TruckerPro account. No credit card required, no obligations.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="d-none d-md-block step-connector"></div>
+                        <div class="step-number">2</div>
+                        <h5>Create Your Listing</h5>
+                        <p>Add your property details, photos, amenities, pricing, and available spots.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h5>Start Earning</h5>
+                        <p>Drivers find and book your space. You get paid automatically for every booking.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="stat-value">{{ owner_count }}+</div>
+                    <div class="stat-label">Property Owners Trust Us</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-value">{{ total_locations }}+</div>
+                    <div class="stat-label">Locations Listed Across Canada</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Turn Your Yard Into Income?</h2>
+            <p>Join hundreds of property owners already earning with TruckerPro Parking Club.</p>
+            <a href="/login?next=/owner/dashboard" class="btn btn-orange-lg">
+                <i class="fas fa-rocket me-2"></i>Get Started — It's Free
+            </a>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title mb-4">Frequently Asked Questions</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How much does it cost to list my property?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Listing your property is completely free. There are no signup fees, no monthly charges, and no hidden costs. We only take a small service fee from each booking, so you only pay when you earn.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    What kind of properties can I list?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We accept a wide range of commercial and industrial properties including trucking company yards, warehouse lots, repair shop parking areas, towing company yards, CDL school properties, storage facilities, and farm properties. If you have space that can accommodate commercial trucks, we'd love to have you.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    How do I get paid?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Payments are processed automatically through our secure payment system. Once a booking is confirmed and the driver has checked in, your earnings are deposited directly into your bank account. Payouts are typically processed within 3-5 business days.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    Can I set my own prices and availability?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Absolutely. You have full control over your daily and monthly rates, the number of available spots, and when your property is available. You can update your pricing and availability at any time from your owner dashboard.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                    What about insurance and liability?
+                                </button>
+                            </h2>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    All drivers using the Parking Club platform are required to carry valid commercial vehicle insurance. We recommend property owners also maintain their standard property insurance. Our terms of service outline the responsibilities of both parties to help protect everyone involved.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h6 style="color: var(--tp-orange); font-weight: 700;">
+                        <i class="fas fa-truck me-2"></i>TruckerPro
+                    </h6>
+                    <p class="small" style="color: rgba(255,255,255,0.4);">
+                        Canada's trusted platform for truck parking and fleet management.
+                    </p>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h6 class="mb-2" style="font-weight: 600;">Parking Club</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="/search">Find Parking</a></li>
+                        <li><a href="/list-your-space">List Your Space</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-2" style="font-weight: 600;">Company</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="/terms">Terms of Service</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1);">
+            <p class="text-center small mb-0" style="color: rgba(255,255,255,0.3);">
+                &copy; 2026 TruckerPro. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script nonce="{{ csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

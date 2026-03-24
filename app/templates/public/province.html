@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Parking in {{ province_name }} | TruckerPro</title>
+    <meta name="description" content="Find {{ total_locations }} secure truck parking locations across {{ province_name }}, Canada. Compare rates, amenities, and book overnight or monthly truck parking spots.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://parking.truckerpro.ca/{{ province_slug }}">
+    <meta property="og:title" content="Truck Parking in {{ province_name }} | TruckerPro">
+    <meta property="og:description" content="Find {{ total_locations }} secure truck parking locations across {{ province_name }}, Canada.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://parking.truckerpro.ca/{{ province_slug }}">
+    <meta property="og:site_name" content="Truck Parking Club">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Truck Parking in {{ province_name }} | TruckerPro">
+    <meta name="twitter:description" content="Compare truck parking rates, amenities, and availability in {{ province_name }}.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Truck Parking in {{ province_name }}",
+        "description": "Find {{ total_locations }} secure truck parking locations across {{ province_name }}, Canada.",
+        "url": "https://parking.truckerpro.ca/{{ province_slug }}",
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.truckerpro.ca/"},
+                {"@type": "ListItem", "position": 2, "name": "Parking Club", "item": "https://parking.truckerpro.ca"},
+                {"@type": "ListItem", "position": 3, "name": "{{ province_name }}", "item": "https://parking.truckerpro.ca/{{ province_slug }}"}
+            ]
+        }
+    }
+    </script>
+    <style>
+        :root {
+            --navy: #1E3A5F;
+            --orange: #FF6B35;
+            --white: #FFFFFF;
+            --navy-light: #2A4D7A;
+            --navy-dark: #152C4A;
+            --gray-dark: #1a1a2e;
+            --gray-card: #16213e;
+            --gray-text: #b0b8c8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--navy-dark);
+            color: var(--white);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+        }
+
+        /* Navbar */
+        .tp-navbar {
+            background-color: var(--navy);
+            padding: 0.75rem 0;
+            border-bottom: 2px solid var(--orange);
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+        }
+        .tp-navbar .navbar-brand {
+            color: var(--orange);
+            font-weight: 800;
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        .tp-navbar .navbar-brand span { color: var(--white); }
+        .tp-navbar .nav-link {
+            color: var(--white);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: color 0.2s;
+        }
+        .tp-navbar .nav-link:hover { color: var(--orange); }
+        .tp-navbar .btn-orange {
+            background-color: var(--orange);
+            color: var(--white);
+            border: none;
+            font-weight: 600;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .tp-navbar .btn-orange:hover { background-color: #e55a2b; }
+
+        /* Breadcrumb */
+        .tp-breadcrumb {
+            background-color: var(--navy);
+            padding: 0.75rem 0;
+        }
+        .tp-breadcrumb .breadcrumb { margin-bottom: 0; }
+        .tp-breadcrumb .breadcrumb-item a {
+            color: var(--orange);
+            text-decoration: none;
+        }
+        .tp-breadcrumb .breadcrumb-item a:hover { text-decoration: underline; }
+        .tp-breadcrumb .breadcrumb-item.active { color: var(--gray-text); }
+        .tp-breadcrumb .breadcrumb-item + .breadcrumb-item::before { color: var(--gray-text); }
+
+        /* Hero */
+        .tp-hero {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+            padding: 3rem 0;
+            text-align: center;
+        }
+        .tp-hero h1 { font-weight: 800; font-size: 2.5rem; margin-bottom: 1rem; }
+        .tp-hero .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+        .tp-hero .stat-item {
+            text-align: center;
+        }
+        .tp-hero .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--orange);
+            display: block;
+        }
+        .tp-hero .stat-label {
+            color: var(--gray-text);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Map */
+        .tp-map-section { padding: 2rem 0; }
+        #province-map {
+            width: 100%;
+            height: 450px;
+            border-radius: 12px;
+            border: 2px solid var(--navy-light);
+        }
+
+        /* City Directory */
+        .tp-city-directory { padding: 2rem 0; }
+        .tp-section-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .tp-section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--orange);
+            border-radius: 2px;
+        }
+        .city-link-card {
+            background-color: var(--gray-card);
+            border: 1px solid var(--navy-light);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            color: var(--white);
+            transition: all 0.2s;
+        }
+        .city-link-card:hover {
+            border-color: var(--orange);
+            transform: translateY(-2px);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.15);
+        }
+        .city-link-card .city-name { font-weight: 600; }
+        .city-link-card .city-count {
+            background-color: var(--orange);
+            color: var(--white);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+        }
+
+        /* Location Cards */
+        .tp-locations-section { padding: 2rem 0; }
+        .location-card {
+            background-color: var(--gray-card);
+            border: 1px solid var(--navy-light);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .location-card:hover {
+            border-color: var(--orange);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        .location-card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .location-card-placeholder {
+            width: 100%;
+            height: 180px;
+            background-color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-text);
+            font-size: 3rem;
+        }
+        .location-card-body {
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .location-card-body h5 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .location-type-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            background-color: var(--navy);
+            color: var(--orange);
+            border: 1px solid var(--orange);
+        }
+        .location-meta {
+            color: var(--gray-text);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+        .location-meta i { color: var(--orange); margin-right: 4px; }
+        .location-stats {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .location-stats .stat {
+            font-size: 0.85rem;
+        }
+        .location-stats .stat i {
+            color: var(--orange);
+            margin-right: 4px;
+        }
+        .location-amenities {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .amenity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--orange);
+            border: 1px solid var(--navy-light);
+        }
+        .amenity-icon[title] { cursor: help; }
+        .location-card-footer {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--navy-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .location-price {
+            font-weight: 700;
+            color: var(--orange);
+            font-size: 1rem;
+        }
+        .location-price small {
+            color: var(--gray-text);
+            font-weight: 400;
+            font-size: 0.75rem;
+        }
+        .btn-view-details {
+            background-color: var(--orange);
+            color: var(--white);
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .btn-view-details:hover {
+            background-color: #e55a2b;
+            color: var(--white);
+        }
+        .badge-verified {
+            background-color: #28a745;
+            color: var(--white);
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .badge-lcv {
+            background-color: #6f42c1;
+            color: var(--white);
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* SEO Content */
+        .tp-seo-section {
+            padding: 3rem 0;
+            border-top: 1px solid var(--navy-light);
+        }
+        .tp-seo-section p {
+            color: var(--gray-text);
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        .tp-footer {
+            background-color: var(--navy);
+            padding: 3rem 0 1.5rem;
+            border-top: 2px solid var(--orange);
+        }
+        .tp-footer h6 {
+            color: var(--orange);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+        .tp-footer a {
+            color: var(--gray-text);
+            text-decoration: none;
+            display: block;
+            padding: 0.25rem 0;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .tp-footer a:hover { color: var(--orange); }
+        .tp-footer-bottom {
+            border-top: 1px solid var(--navy-light);
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            text-align: center;
+            color: var(--gray-text);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="tp-navbar">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="/"><span>Trucker</span>Pro</a>
+            <div class="d-flex align-items-center gap-2">
+                <a class="nav-link d-none d-md-inline-block" href="/">Find Parking</a>
+                <a class="nav-link d-none d-md-inline-block" href="/list-your-space">List Your Space</a>
+                <a class="btn btn-orange" href="/login"><i class="fas fa-user me-1"></i> Login</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="tp-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/">Parking Club</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ province_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Hero -->
+<section class="tp-hero">
+    <div class="container">
+        <h1>Truck Parking in {{ province_name }}</h1>
+        <div class="stats-row">
+            <div class="stat-item">
+                <span class="stat-number">{{ total_locations }}</span>
+                <span class="stat-label">Locations</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ cities|length }}</span>
+                <span class="stat-label">Cities</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map -->
+<section class="tp-map-section">
+    <div class="container">
+        <div id="province-map"></div>
+    </div>
+</section>
+
+<!-- City Directory -->
+<section class="tp-city-directory">
+    <div class="container">
+        <h2 class="tp-section-title">Cities in {{ province_name }}</h2>
+        <div class="row g-3">
+            {% for city_name, count in cities %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <a class="city-link-card" id="city-link-{{ loop.index }}" href="#" data-city="{{ city_name }}">
+                    <span class="city-name">{{ city_name }}</span>
+                    <span class="city-count">{{ count }}</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Location Cards -->
+<section class="tp-locations-section">
+    <div class="container">
+        <h2 class="tp-section-title">All Parking Locations in {{ province_name }}</h2>
+        <div class="row g-4">
+            {% for loc in locations %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="location-card">
+                    {% if loc.photos and loc.photos|length > 0 %}
+                    <img src="{{ loc.photos[0] }}" alt="{{ loc.name }}" class="location-card-img">
+                    {% else %}
+                    <div class="location-card-placeholder">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    {% endif %}
+                    <div class="location-card-body">
+                        <div class="d-flex gap-2 flex-wrap mb-1">
+                            <span class="location-type-badge">{{ loc.type_label }}</span>
+                            {% if loc.is_verified %}
+                            <span class="badge-verified"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                            {% endif %}
+                            {% if loc.lcv_capable %}
+                            <span class="badge-lcv"><i class="fas fa-truck-moving me-1"></i>LCV</span>
+                            {% endif %}
+                        </div>
+                        <h5>{{ loc.name }}</h5>
+                        <div class="location-meta">
+                            <i class="fas fa-map-marker-alt"></i> {{ loc.city }}, {{ loc.province }}
+                        </div>
+                        <div class="location-stats">
+                            {% if loc.total_spots %}
+                            <span class="stat"><i class="fas fa-parking"></i> {{ loc.total_spots }} spots</span>
+                            {% endif %}
+                        </div>
+                        <div class="location-amenities">
+                            {% for amenity in loc.amenities[:6] %}
+                                {% if amenity in amenity_labels %}
+                                <span class="amenity-icon" title="{{ amenity_labels[amenity].label }}">
+                                    <i class="{{ amenity_labels[amenity].icon }}"></i>
+                                </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="location-card-footer">
+                            <div class="location-price">
+                                {% if loc.daily_rate_display %}
+                                    {{ loc.daily_rate_display }} <small>/day</small>
+                                {% endif %}
+                                {% if loc.monthly_rate_display %}
+                                    <br><small>{{ loc.monthly_rate_display }}/mo</small>
+                                {% endif %}
+                            </div>
+                            <a href="/location/{{ loc.slug }}" class="btn-view-details">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x mb-3" style="color: var(--gray-text);"></i>
+                    <p class="text-muted">No parking locations found in {{ province_name }} yet.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- SEO Content -->
+<section class="tp-seo-section">
+    <div class="container">
+        <h2 class="tp-section-title">About Truck Parking in {{ province_name }}</h2>
+        <p>
+            Finding safe and reliable truck parking in {{ province_name }} is essential for commercial drivers
+            navigating Canada's highway network. TruckerPro's Parking Club offers a comprehensive directory
+            of {{ total_locations }} truck parking locations across {{ cities|length }} cities in {{ province_name }},
+            helping professional drivers locate overnight parking, secure yards, and rest stops with the
+            amenities they need. Whether you're looking for short-term daily parking or a long-term monthly
+            arrangement, our verified locations throughout {{ province_name }} provide options for every need and budget.
+        </p>
+        <p>
+            From truck stops with full-service amenities to private lots with enhanced security,
+            {{ province_name }}'s truck parking options on TruckerPro include detailed information about available
+            spots, pricing, amenities, and real-time availability. List your own truck parking space in
+            {{ province_name }} or browse locations in specific cities to find the perfect parking solution for
+            your route.
+        </p>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="tp-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-6 col-md-3">
+                <h6>TruckerPro</h6>
+                <a href="/">Home</a>
+                <a href="/about">About Us</a>
+                <a href="/contact">Contact</a>
+                <a href="/blog">Blog</a>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6>Parking Club</h6>
+                <a href="/">Find Parking</a>
+                <a href="/list-your-space">List Your Space</a>
+                <a href="/">How It Works</a>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6>For Drivers</h6>
+                <a href="/signup">Sign Up</a>
+                <a href="/login">Login</a>
+                <a href="/faq">FAQ</a>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6>Legal</h6>
+                <a href="/terms">Terms of Service</a>
+                <a href="/privacy">Privacy Policy</a>
+            </div>
+        </div>
+        <div class="tp-footer-bottom">
+            &copy; 2026 TruckerPro. All rights reserved. | <a href="https://www.linkedin.com/in/truckerpro" target="_blank" rel="noopener noreferrer" style="color: inherit;"><i class="fab fa-linkedin"></i></a> <a href="https://www.instagram.com/trucker_pro/" target="_blank" rel="noopener noreferrer" style="color: inherit;"><i class="fab fa-instagram"></i></a>
+        </div>
+    </div>
+</footer>
+
+<script nonce="{{ csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="{{ csp_nonce }}">
+    // Generate city slugs and set hrefs
+    document.querySelectorAll('.city-link-card[data-city]').forEach(function(el) {
+        var city = el.getAttribute('data-city');
+        var citySlug = city.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        el.setAttribute('href', '/{{ province_slug }}/' + citySlug);
+    });
+
+    // HTML escape helper to prevent XSS in InfoWindow content
+    function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // Google Maps
+    function initMap() {
+        var locations = [
+            {% for loc in locations %}
+            {
+                id: {{ loc.id }},
+                name: {{ loc.name|tojson }},
+                slug: {{ loc.slug|tojson }},
+                city: {{ loc.city|tojson }},
+                lat: {{ loc.latitude }},
+                lng: {{ loc.longitude }},
+                type_label: {{ loc.type_label|tojson }},
+                total_spots: {{ loc.total_spots|default(0) }},
+                daily_rate_display: {{ loc.daily_rate_display|default('')|tojson }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        if (locations.length === 0) return;
+
+        var bounds = new google.maps.LatLngBounds();
+        var map = new google.maps.Map(document.getElementById('province-map'), {
+            zoom: 6,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#1E3A5F' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#152C4A' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#8ec3f0' }] },
+                { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2A4D7A' }] },
+                { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e1a2e' }] }
+            ]
+        });
+
+        var infoWindow = new google.maps.InfoWindow();
+
+        locations.forEach(function(loc) {
+            var pos = { lat: loc.lat, lng: loc.lng };
+            bounds.extend(pos);
+
+            var marker = new google.maps.Marker({
+                position: pos,
+                map: map,
+                title: loc.name,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: '#FF6B35',
+                    fillOpacity: 1,
+                    strokeColor: '#FFFFFF',
+                    strokeWeight: 2,
+                    scale: 8
+                }
+            });
+
+            marker.addListener('click', function() {
+                var content = '<div style="color:#1E3A5F;max-width:220px;">' +
+                    '<strong>' + escHtml(loc.name) + '</strong><br>' +
+                    '<small>' + escHtml(loc.city) + ' &bull; ' + escHtml(loc.type_label) + '</small><br>' +
+                    (loc.total_spots ? '<small>' + loc.total_spots + ' spots</small><br>' : '') +
+                    (loc.daily_rate_display ? '<small>' + escHtml(loc.daily_rate_display) + '/day</small><br>' : '') +
+                    '<a href="/location/' + encodeURIComponent(loc.slug) + '" style="color:#FF6B35;font-weight:600;">View Details &rarr;</a>' +
+                    '</div>';
+                infoWindow.setContent(content);
+                infoWindow.open(map, marker);
+            });
+        });
+
+        map.fitBounds(bounds);
+    }
+</script>
+<script nonce="{{ csp_nonce }}" async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap"></script>
+</body>
+</html>

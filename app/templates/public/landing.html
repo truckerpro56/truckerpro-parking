@@ -3,11 +3,1557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truck Parking Club | Find & Book Truck Parking Across Canada</title>
-    <meta name="description" content="Find and book secure truck parking across Canada. Browse locations in all provinces and territories. Daily, weekly, and monthly rates available.">
+    <title>Truck Parking Across Canada | Find &amp; Book Truck Parking | TruckerPro</title>
+    <meta name="description" content="Find and book secure truck parking across Canada. Browse {{ total_locations }}+ locations in {{ total_provinces }} provinces and territories. Daily, weekly, and monthly rates available.">
+    <link rel="canonical" href="https://parking.truckerpro.ca">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Truck Parking Across Canada | TruckerPro">
+    <meta property="og:description" content="Find and book secure truck parking across Canada. Browse {{ total_locations }}+ locations in {{ total_provinces }} provinces and territories.">
+    <meta property="og:url" content="https://parking.truckerpro.ca">
+    <meta property="og:site_name" content="Truck Parking Club">
+    <meta property="og:image" content="{{ url_for('static', filename='images/parkingclub-og.jpg') }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Truck Parking Across Canada | TruckerPro">
+    <meta name="twitter:description" content="Find and book secure truck parking across Canada.">
+
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6.4 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Truck Parking Club by TruckerPro",
+        "url": "https://parking.truckerpro.ca",
+        "description": "Find and book secure truck parking across Canada. Browse locations in all provinces and territories.",
+        "applicationCategory": "TransportApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "CAD",
+            "description": "Free to search and browse parking locations"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "Truck Parking Club",
+            "url": "https://parking.truckerpro.ca"
+        },
+        "areaServed": {
+            "@type": "Country",
+            "name": "Canada"
+        }
+    }
+    </script>
+
+    <style>
+        :root {
+            --navy: #1E3A5F;
+            --navy-dark: #152a45;
+            --navy-light: #2a4f7a;
+            --orange: #c75000;
+            --orange-dark: #a84400;
+            --orange-light: #e06020;
+            --white: #FFFFFF;
+            --gray-100: #f0f2f5;
+            --gray-200: #d8dce3;
+            --gray-300: #b0b8c5;
+            --gray-600: #6b7a8d;
+            --gray-800: #2d3748;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--navy-dark);
+            color: var(--white);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Navbar ── */
+        .pc-navbar {
+            background: rgba(21, 42, 69, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 0.75rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1100;
+        }
+        .pc-navbar .navbar-brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .pc-navbar .navbar-brand .brand-icon {
+            color: var(--orange);
+            font-size: 1.5rem;
+        }
+        .pc-navbar .navbar-brand span {
+            color: var(--orange);
+        }
+        .pc-navbar .nav-link {
+            color: var(--gray-200) !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem !important;
+            transition: color 0.2s;
+        }
+        .pc-navbar .nav-link:hover {
+            color: var(--orange) !important;
+        }
+        .pc-navbar .btn-nav-cta {
+            background: var(--orange);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .pc-navbar .btn-nav-cta:hover {
+            background: var(--orange-dark);
+            color: var(--white);
+        }
+
+        /* ── Hero ── */
+        .pc-hero {
+            padding: 8rem 0 4rem;
+            background: linear-gradient(160deg, var(--navy-dark) 0%, var(--navy) 40%, var(--navy-light) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .pc-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,107,53,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .pc-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,107,53,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .pc-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+        }
+        .pc-hero h1 .text-accent {
+            color: var(--orange);
+        }
+        .pc-hero .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-200);
+            max-width: 600px;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        /* Search bar */
+        .pc-search-bar {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 1.25rem;
+            backdrop-filter: blur(8px);
+            max-width: 750px;
+        }
+        .pc-search-bar .form-select,
+        .pc-search-bar .form-control {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: var(--white);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+        .pc-search-bar .form-select:focus,
+        .pc-search-bar .form-control:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.2);
+            background: rgba(255,255,255,0.12);
+            color: var(--white);
+        }
+        .pc-search-bar .form-select option {
+            background: var(--navy-dark);
+            color: var(--white);
+        }
+        .pc-search-bar .form-control::placeholder {
+            color: var(--gray-300);
+        }
+        .btn-orange {
+            background: var(--orange);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.75rem;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .btn-orange:hover {
+            background: var(--orange-dark);
+            color: var(--white);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255,107,53,0.35);
+        }
+
+        /* Stats bar */
+        .pc-stats-bar {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+        .pc-stat-item {
+            text-align: center;
+        }
+        .pc-stat-item .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--orange);
+            line-height: 1;
+        }
+        .pc-stat-item .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray-300);
+            margin-top: 0.25rem;
+        }
+
+        /* ── Map Section ── */
+        .pc-map-section {
+            background: var(--navy-dark);
+            padding: 4rem 0;
+        }
+        .pc-map-section .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .pc-map-section .section-subtitle {
+            color: var(--gray-300);
+            margin-bottom: 2rem;
+        }
+        .pc-map-container {
+            display: flex;
+            gap: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            height: 600px;
+        }
+        .pc-map-sidebar {
+            width: 300px;
+            min-width: 300px;
+            background: var(--navy);
+            padding: 1.25rem;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .pc-map-sidebar h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .pc-map-sidebar h5 i { color: var(--orange); }
+        .filter-group {
+            margin-bottom: 1.25rem;
+        }
+        .filter-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-300);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .filter-group .form-check {
+            margin-bottom: 0.35rem;
+        }
+        .filter-group .form-check-label {
+            font-size: 0.88rem;
+            color: var(--gray-200);
+            cursor: pointer;
+        }
+        .filter-group .form-check-input {
+            background-color: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+            cursor: pointer;
+        }
+        .filter-group .form-check-input:checked {
+            background-color: var(--orange);
+            border-color: var(--orange);
+        }
+        .filter-group .form-check-input:focus {
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.2);
+        }
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+        .filter-toggle .form-switch .form-check-input {
+            width: 2.5em;
+            height: 1.25em;
+        }
+        .filter-toggle span {
+            font-size: 0.88rem;
+            color: var(--gray-200);
+        }
+        .btn-apply-filters {
+            background: var(--orange);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-apply-filters:hover {
+            background: var(--orange-dark);
+        }
+        .btn-clear-filters {
+            background: transparent;
+            color: var(--gray-300);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-clear-filters:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+        #pc-google-map {
+            flex: 1;
+            min-height: 400px;
+        }
+
+        /* Mobile sidebar toggle */
+        .btn-toggle-sidebar {
+            display: none;
+            background: var(--orange);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        /* ── Province Directory ── */
+        .pc-provinces {
+            background: linear-gradient(180deg, var(--navy-dark) 0%, var(--navy) 100%);
+            padding: 5rem 0;
+        }
+        .pc-provinces .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .pc-provinces .section-subtitle {
+            color: var(--gray-300);
+            margin-bottom: 2.5rem;
+        }
+        .province-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--white);
+            display: block;
+            transition: all 0.25s;
+            height: 100%;
+        }
+        .province-card:hover {
+            background: rgba(255,107,53,0.08);
+            border-color: rgba(255,107,53,0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            color: var(--white);
+        }
+        .province-card .province-code {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.25rem;
+        }
+        .province-card .province-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .province-card .province-count {
+            font-size: 0.88rem;
+            color: var(--gray-300);
+        }
+        .province-card .province-count strong {
+            color: var(--orange);
+        }
+        .province-card .province-arrow {
+            color: var(--orange);
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .province-card:hover .province-arrow {
+            opacity: 1;
+        }
+
+        /* ── CTA Section ── */
+        .pc-cta {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 60%, #c44a1e 100%);
+            padding: 5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .pc-cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .pc-cta h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        .pc-cta p {
+            font-size: 1.1rem;
+            opacity: 0.92;
+            max-width: 600px;
+            line-height: 1.7;
+        }
+        .btn-cta-white {
+            background: var(--white);
+            color: var(--orange);
+            border: none;
+            border-radius: 10px;
+            padding: 0.85rem 2rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-cta-white:hover {
+            background: var(--gray-100);
+            color: var(--orange-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* ── How It Works ── */
+        .pc-how-it-works {
+            background: var(--navy-dark);
+            padding: 5rem 0;
+        }
+        .pc-how-it-works .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .pc-how-it-works .section-subtitle {
+            color: var(--gray-300);
+            margin-bottom: 3rem;
+        }
+        .hiw-row-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--orange);
+        }
+        .hiw-card {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            height: 100%;
+            transition: all 0.25s;
+        }
+        .hiw-card:hover {
+            background: rgba(255,255,255,0.07);
+            transform: translateY(-3px);
+        }
+        .hiw-card .hiw-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,107,53,0.12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.4rem;
+            color: var(--orange);
+        }
+        .hiw-card .hiw-step {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        .hiw-card h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .hiw-card p {
+            font-size: 0.9rem;
+            color: var(--gray-300);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* ── Featured Locations ── */
+        .pc-featured {
+            background: linear-gradient(180deg, var(--navy-dark) 0%, var(--navy) 100%);
+            padding: 5rem 0;
+        }
+        .pc-featured .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .pc-featured .section-subtitle {
+            color: var(--gray-300);
+            margin-bottom: 2.5rem;
+        }
+        .location-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.25s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .location-card:hover {
+            border-color: rgba(255,107,53,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+        .location-card .card-img-top {
+            height: 180px;
+            object-fit: cover;
+            background: rgba(255,255,255,0.03);
+        }
+        .location-card .card-img-placeholder {
+            height: 180px;
+            background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-600);
+            font-size: 2.5rem;
+        }
+        .location-card .card-body {
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .location-card .card-badges {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+        .location-card .badge-type {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            background: rgba(199,80,0,0.12);
+            color: #8b4000;
+        }
+        .location-card .badge-verified {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            background: rgba(40,167,69,0.15);
+            color: #2d8a4e;
+        }
+        .location-card .badge-lcv {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            background: rgba(52,152,219,0.15);
+            color: #1a73a7;
+        }
+        .location-card .card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            color: var(--white);
+        }
+        .location-card .card-location {
+            font-size: 0.85rem;
+            color: var(--gray-300);
+            margin-bottom: 0.75rem;
+        }
+        .location-card .card-amenities {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+        .location-card .amenity-tag {
+            font-size: 0.75rem;
+            color: var(--gray-300);
+            background: rgba(255,255,255,0.06);
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+        }
+        .location-card .card-pricing {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .location-card .price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--orange);
+        }
+        .location-card .price small {
+            font-size: 0.75rem;
+            color: var(--gray-300);
+            font-weight: 400;
+        }
+        .location-card .spots-info {
+            font-size: 0.8rem;
+            color: var(--gray-300);
+        }
+        .btn-view-location {
+            background: rgba(199,80,0,0.1);
+            color: #8b4000;
+            border: 1px solid rgba(199,80,0,0.25);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        .btn-view-location:hover {
+            background: var(--orange);
+            color: var(--white);
+        }
+
+        /* ── SEO Content ── */
+        .pc-seo-content {
+            background: var(--navy);
+            padding: 5rem 0;
+        }
+        .pc-seo-content .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+        .pc-seo-content p {
+            color: var(--gray-200);
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 1.25rem;
+        }
+        .pc-seo-content h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: var(--orange-light);
+        }
+
+        /* ── Footer ── */
+        .pc-footer {
+            background: var(--navy-dark);
+            padding: 4rem 0 2rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .pc-footer h6 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--orange);
+            margin-bottom: 1rem;
+        }
+        .pc-footer ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .pc-footer ul li {
+            margin-bottom: 0.4rem;
+        }
+        .pc-footer ul li a {
+            color: var(--gray-300);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color 0.2s;
+        }
+        .pc-footer ul li a:hover {
+            color: var(--orange);
+        }
+        .pc-footer .footer-brand {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        .pc-footer .footer-brand span {
+            color: var(--orange);
+        }
+        .pc-footer .footer-tagline {
+            color: var(--gray-300);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+        .pc-footer .footer-bottom {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .pc-footer .footer-bottom p {
+            margin: 0;
+            color: #93a3b8;
+            font-size: 0.82rem;
+        }
+        .pc-footer .footer-bottom a {
+            color: #93a3b8;
+            text-decoration: none;
+            font-size: 0.82rem;
+        }
+        .pc-footer .footer-bottom a:hover {
+            color: var(--orange);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 991px) {
+            .pc-hero h1 { font-size: 2.2rem; }
+            .pc-map-container { flex-direction: column; height: auto; }
+            .pc-map-sidebar {
+                width: 100%;
+                min-width: unset;
+                display: none;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            .pc-map-sidebar.show { display: block; }
+            #pc-google-map { height: 450px; }
+            .btn-toggle-sidebar { display: inline-block; }
+        }
+        @media (max-width: 575px) {
+            .pc-hero h1 { font-size: 1.8rem; }
+            .pc-hero { padding: 6.5rem 0 3rem; }
+            .pc-stats-bar { gap: 1.5rem; }
+            .pc-stat-item .stat-number { font-size: 1.5rem; }
+            #pc-google-map { height: 350px; }
+        }
+
+        /* Google Maps info window override */
+        .gm-style .gm-style-iw-c {
+            background: var(--navy) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            border-radius: 12px !important;
+            padding: 0 !important;
+        }
+        .gm-style .gm-style-iw-d { overflow: auto !important; }
+        .gm-style .gm-style-iw-tc::after { background: var(--navy) !important; }
+        .gm-style .gm-ui-hover-effect>span { background-color: var(--white) !important; }
+
+        .iw-content {
+            padding: 1rem;
+            color: var(--white);
+            min-width: 240px;
+        }
+        .iw-content h6 {
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--white);
+        }
+        .iw-content .iw-location {
+            font-size: 0.82rem;
+            color: var(--gray-300);
+            margin-bottom: 0.5rem;
+        }
+        .iw-content .iw-price {
+            font-weight: 700;
+            color: var(--orange);
+            font-size: 0.95rem;
+        }
+        .iw-content .iw-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--orange);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .iw-content .iw-link:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <h1>Truck Parking Club</h1>
-    <p>Coming soon — Find and book secure truck parking across Canada.</p>
+
+<!-- ━━ Navbar ━━ -->
+<nav class="pc-navbar">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-truck brand-icon"></i>
+                Trucker<span>Pro</span>
+            </a>
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <a href="/" class="nav-link">Find Parking</a>
+                <a href="/list-your-space" class="nav-link">List Your Space</a>
+                <a href="/login" class="btn btn-nav-cta">Login</a>
+            </div>
+            <button class="btn d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav"
+                    style="color: var(--white); font-size: 1.3rem; border: none;">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div class="collapse d-md-none mt-2" id="mobileNav">
+            <a href="/" class="nav-link d-block py-2">Find Parking</a>
+            <a href="/list-your-space" class="nav-link d-block py-2">List Your Space</a>
+            <a href="/login" class="nav-link d-block py-2">Login</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ━━ Hero Section ━━ -->
+<section class="pc-hero">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1>Truck Parking <span class="text-accent">Across Canada</span></h1>
+                <p class="hero-subtitle">
+                    Search, compare, and book secure truck parking across every province and territory.
+                    From overnight stops to long-term monthly spots, find the parking you need.
+                </p>
+
+                <form class="pc-search-bar" id="heroSearchForm" data-action="handleHeroSearch_1">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4">
+                            <select class="form-select" id="heroProvince" aria-label="Select Province">
+                                <option value="">All Provinces</option>
+                                {% for prov in province_data %}
+                                <option value="{{ prov.slug }}">{{ prov.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="heroCity" placeholder="City or town name..." aria-label="City">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-orange w-100">
+                                <i class="fas fa-search me-2"></i>Find Parking
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="pc-stats-bar">
+                    <div class="pc-stat-item">
+                        <div class="stat-number">{{ total_locations }}</div>
+                        <div class="stat-label">Parking Locations</div>
+                    </div>
+                    <div class="pc-stat-item">
+                        <div class="stat-number">{{ total_provinces }}</div>
+                        <div class="stat-label">Provinces &amp; Territories</div>
+                    </div>
+                    <div class="pc-stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Search Availability</div>
+                    </div>
+                    <div class="pc-stat-item">
+                        <div class="stat-number">Free</div>
+                        <div class="stat-label">To Search &amp; Browse</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ━━ Interactive Map ━━ -->
+<section class="pc-map-section" id="map-section">
+    <div class="container">
+        <h2 class="section-title text-center">Explore the <span style="color: var(--orange);">Map</span></h2>
+        <p class="section-subtitle text-center">Browse truck parking locations across Canada. Click any marker for details.</p>
+
+        <button class="btn-toggle-sidebar" data-action="toggleMapSidebar_2">
+            <i class="fas fa-filter me-1"></i> Filters
+        </button>
+
+        <div class="pc-map-container">
+            <!-- Filter Sidebar -->
+            <div class="pc-map-sidebar" id="mapSidebar">
+                <h5><i class="fas fa-sliders-h"></i> Filter Locations</h5>
+
+                <div class="filter-group">
+                    <label>Province</label>
+                    {% for prov in province_data %}
+                    <div class="form-check">
+                        <input class="form-check-input filter-province" type="checkbox" value="{{ prov.code }}" id="prov-{{ prov.code }}">
+                        <label class="form-check-label" for="prov-{{ prov.code }}">{{ prov.name }} ({{ prov.count }})</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="filter-group">
+                    <label>Location Type</label>
+                    <div class="form-check">
+                        <input class="form-check-input filter-type" type="checkbox" value="truck_stop" id="type-truck_stop">
+                        <label class="form-check-label" for="type-truck_stop">Truck Stop</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-type" type="checkbox" value="rest_area" id="type-rest_area">
+                        <label class="form-check-label" for="type-rest_area">Rest Area</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-type" type="checkbox" value="private_lot" id="type-private_lot">
+                        <label class="form-check-label" for="type-private_lot">Private Lot</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-type" type="checkbox" value="industrial" id="type-industrial">
+                        <label class="form-check-label" for="type-industrial">Industrial Yard</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-type" type="checkbox" value="travel_center" id="type-travel_center">
+                        <label class="form-check-label" for="type-travel_center">Travel Center</label>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>Amenities</label>
+                    {% for key, info in amenity_labels.items() %}
+                    <div class="form-check">
+                        <input class="form-check-input filter-amenity" type="checkbox" value="{{ key }}" id="amenity-{{ key }}">
+                        <label class="form-check-label" for="amenity-{{ key }}"><i class="{{ info.icon }} me-1" style="color:var(--orange);width:16px;"></i> {{ info.label }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="filter-group">
+                    <div class="filter-toggle">
+                        <span><i class="fas fa-calendar-check me-1" style="color:var(--orange);"></i> Bookable Only</span>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="filter-bookable" aria-label="Filter bookable only">
+                        </div>
+                    </div>
+                    <div class="filter-toggle">
+                        <span><i class="fas fa-truck-moving me-1" style="color:var(--orange);"></i> LCV Capable</span>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="filter-lcv" aria-label="Filter LCV capable">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-apply-filters" data-action="applyFilters_3">
+                    <i class="fas fa-search me-1"></i> Apply Filters
+                </button>
+                <button class="btn-clear-filters" data-action="clearFilters_4">
+                    <i class="fas fa-times me-1"></i> Clear All
+                </button>
+            </div>
+
+            <!-- Google Map -->
+            <div id="pc-google-map"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ━━ Province Directory ━━ -->
+<section class="pc-provinces" id="provinces">
+    <div class="container">
+        <h2 class="section-title text-center">Browse by <span style="color: var(--orange);">Province</span></h2>
+        <p class="section-subtitle text-center">Explore truck parking options in every Canadian province and territory.</p>
+
+        <div class="row g-3">
+            {% for prov in province_data %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="/{{ prov.slug }}" class="province-card">
+                    <div class="province-code">{{ prov.code }}</div>
+                    <div class="province-name">{{ prov.name }}</div>
+                    <div class="province-count"><strong>{{ prov.count }}</strong> location{{ 's' if prov.count != 1 }}</div>
+                    <div class="province-arrow">Explore <i class="fas fa-arrow-right ms-1"></i></div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ━━ List Your Space CTA ━━ -->
+<section class="pc-cta">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <h2>Own a Parking Space?<br>Start Earning Today.</h2>
+                <p>
+                    Turn your unused lot, yard, or industrial space into a revenue stream.
+                    Truck drivers across Canada are searching for safe, secure parking every day.
+                    List your space on Truck Parking Club and connect with drivers who need it.
+                </p>
+            </div>
+            <div class="col-lg-5 text-lg-end">
+                <a href="/list-your-space" class="btn-cta-white">
+                    <i class="fas fa-plus-circle me-2"></i>List Your Space
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ━━ How It Works ━━ -->
+<section class="pc-how-it-works" id="how-it-works">
+    <div class="container">
+        <h2 class="section-title text-center">How It <span style="color: var(--orange);">Works</span></h2>
+        <p class="section-subtitle text-center">Simple steps for drivers and property owners alike.</p>
+
+        <!-- For Drivers -->
+        <div class="hiw-row-title text-center"><i class="fas fa-user me-2"></i>For Drivers</div>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="hiw-card">
+                    <div class="hiw-icon"><i class="fas fa-search"></i></div>
+                    <div class="hiw-step">Step 1</div>
+                    <h4>Search</h4>
+                    <p>Browse by province, city, or use our interactive map to find parking near your route or destination.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="hiw-card">
+                    <div class="hiw-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="hiw-step">Step 2</div>
+                    <h4>Book</h4>
+                    <p>Compare rates, check amenities, and reserve your spot online. Daily, weekly, or monthly options available.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="hiw-card">
+                    <div class="hiw-icon"><i class="fas fa-parking"></i></div>
+                    <div class="hiw-step">Step 3</div>
+                    <h4>Park</h4>
+                    <p>Show up and park with confidence. Secure locations with the amenities you need for a safe rest.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- For Property Owners -->
+        <div class="hiw-row-title text-center"><i class="fas fa-building me-2"></i>For Property Owners</div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="hiw-card">
+                    <div class="hiw-icon"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="hiw-step">Step 1</div>
+                    <h4>List</h4>
+                    <p>Create your listing in minutes. Add photos, set your rates, and describe your amenities and spot types.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="hiw-card">
+                    <div class="hiw-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="hiw-step">Step 2</div>
+                    <h4>Earn</h4>
+                    <p>Receive bookings from drivers across Canada. Get paid securely through our platform every month.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="hiw-card">
+                    <div class="hiw-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="hiw-step">Step 3</div>
+                    <h4>Manage</h4>
+                    <p>Track bookings, manage availability, and grow your parking business with our dashboard tools.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ━━ Featured Locations ━━ -->
+<section class="pc-featured" id="featured">
+    <div class="container">
+        <h2 class="section-title text-center">Featured <span style="color: var(--orange);">Locations</span></h2>
+        <p class="section-subtitle text-center">Top-rated truck parking spots across Canada.</p>
+
+        <div class="row g-4">
+            {% for loc in featured_locations[:8] %}
+            <div class="col-md-6 col-lg-3">
+                <div class="location-card">
+                    {% if loc.photos and loc.photos|length > 0 %}
+                    <img src="{{ loc.photos[0] }}" class="card-img-top" alt="{{ loc.name }}" loading="lazy">
+                    {% else %}
+                    <div class="card-img-placeholder">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="card-badges">
+                            <span class="badge-type">{{ loc.type_label }}</span>
+                            {% if loc.is_verified %}
+                            <span class="badge-verified"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                            {% endif %}
+                            {% if loc.lcv_capable %}
+                            <span class="badge-lcv"><i class="fas fa-truck-moving me-1"></i>LCV</span>
+                            {% endif %}
+                        </div>
+                        <h5 class="card-title">{{ loc.name }}</h5>
+                        <div class="card-location">
+                            <i class="fas fa-map-marker-alt me-1" style="color: var(--orange);"></i>
+                            {{ loc.city }}, {{ loc.province }}
+                        </div>
+                        <div class="card-amenities">
+                            {% for amenity in loc.amenities[:4] %}
+                                {% if amenity in amenity_labels %}
+                                <span class="amenity-tag" title="{{ amenity_labels[amenity].label }}">
+                                    <i class="{{ amenity_labels[amenity].icon }}"></i>
+                                </span>
+                                {% endif %}
+                            {% endfor %}
+                            {% if loc.amenities|length > 4 %}
+                            <span class="amenity-tag">+{{ loc.amenities|length - 4 }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-pricing">
+                            <div>
+                                {% if loc.daily_rate_display %}
+                                <span class="price">{{ loc.daily_rate_display }}<small>/day</small></span>
+                                {% elif loc.monthly_rate_display %}
+                                <span class="price">{{ loc.monthly_rate_display }}<small>/mo</small></span>
+                                {% else %}
+                                <span class="price">Contact</span>
+                                {% endif %}
+                            </div>
+                            {% if loc.total_spots %}
+                            <span class="spots-info">{{ loc.total_spots }} spots</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <a href="/location/{{ loc.slug }}" class="btn-view-location">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ━━ SEO Content ━━ -->
+<section class="pc-seo-content" id="about">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="section-title">The Canadian Truck Parking <span style="color: var(--orange);">Crisis</span></h2>
+                <p>
+                    Canada's trucking industry moves over $900 billion in goods annually, yet finding safe and
+                    legal parking remains one of the biggest daily challenges for commercial drivers. With over
+                    300,000 truck drivers on Canadian roads, the shortage of designated truck parking spots has
+                    reached critical levels, particularly along major corridors like the Trans-Canada Highway, the
+                    401 in Ontario, and Highway 1 through British Columbia.
+                </p>
+                <p>
+                    Drivers are often forced to park on highway shoulders, entrance ramps, or in unauthorized
+                    locations, putting themselves and other road users at risk. Hours-of-service regulations require
+                    mandatory rest breaks, but without adequate parking infrastructure, compliance becomes a
+                    daily struggle. This disconnect between regulation and reality impacts driver safety, freight
+                    efficiency, and Canada's supply chain reliability.
+                </p>
+
+                <h3>Why Truck Parking Club Exists</h3>
+                <p>
+                    Truck Parking Club by TruckerPro was created to bridge the gap between drivers who need
+                    parking and property owners who have available space. Our platform brings together truck
+                    stops, rest areas, private lots, industrial yards, and travel centres in a single, searchable
+                    directory that covers every province and territory in Canada.
+                </p>
+                <p>
+                    Whether you are a long-haul driver planning an overnight stop along the Trans-Canada, a
+                    regional carrier looking for monthly parking near a distribution hub, or a property owner with
+                    vacant land near a highway interchange, Truck Parking Club connects you with the right
+                    solution.
+                </p>
+
+                <h3>Safe, Secure, and Verified</h3>
+                <p>
+                    Every listing on Truck Parking Club includes detailed information about available amenities,
+                    security features, LCV (Long Combination Vehicle) capability, and pricing. Our verified badge
+                    program ensures that drivers can trust the quality and accuracy of listings. From washroom
+                    and shower facilities to Wi-Fi, electrical hookups, and on-site security, our filters help you
+                    find exactly what you need.
+                </p>
+                <p>
+                    We are committed to improving the truck parking landscape in Canada, one listing at a time.
+                    By making parking easier to find and book, we help drivers stay safe, stay compliant, and
+                    keep Canada's supply chain moving.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ━━ Footer ━━ -->
+<footer class="pc-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="footer-brand">Trucker<span>Pro</span></div>
+                <p class="footer-tagline">
+                    Truck Parking Club is part of the TruckerPro platform, helping Canadian truckers
+                    find the tools and resources they need to succeed on the road.
+                </p>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h6>Provinces</h6>
+                <ul>
+                    {% for prov in province_data %}
+                    <li><a href="/{{ prov.slug }}">{{ prov.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h6>For Drivers</h6>
+                <ul>
+                    <li><a href="/">Find Parking</a></li>
+                    <li><a href="/#map-section">Interactive Map</a></li>
+                    <li><a href="/#provinces">Browse by Province</a></li>
+                    <li><a href="/#featured">Featured Locations</a></li>
+                    <li><a href="/tools">Free Trucking Tools</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h6>For Owners</h6>
+                <ul>
+                    <li><a href="/list-your-space">List Your Space</a></li>
+                    <li><a href="/#how-it-works">How It Works</a></li>
+                    <li><a href="/login">Owner Dashboard</a></li>
+                </ul>
+                <h6 class="mt-3">TruckerPro</h6>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; {{ now.year if now is defined else '2026' }} TruckerPro. All rights reserved.</p>
+            <div class="d-flex align-items-center gap-3">
+                <a href="https://www.linkedin.com/in/truckerpro" target="_blank" rel="noopener noreferrer" title="LinkedIn" style="color: rgba(255,255,255,0.6); font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.instagram.com/trucker_pro/" target="_blank" rel="noopener noreferrer" title="Instagram" style="color: rgba(255,255,255,0.6); font-size: 1.2rem;"><i class="fab fa-instagram"></i></a>
+                <a href="/privacy" class="me-3">Privacy</a>
+                <a href="/terms">Terms</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ━━ Scripts ━━ -->
+<!-- Bootstrap 5.3 JS -->
+<script nonce="{{ csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Google Maps -->
+<script nonce="{{ csp_nonce }}" src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap" async defer></script>
+<!-- MarkerClusterer -->
+<script nonce="{{ csp_nonce }}" src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+<script nonce="{{ csp_nonce }}">
+    let map;
+    let markers = [];
+    let markerClusterer;
+    let infoWindow;
+    let allLocations = [];
+
+    // ── Init Map ──
+    function initMap() {
+        // Center on Canada
+        const canada = { lat: 56.1304, lng: -96.3468 };
+        map = new google.maps.Map(document.getElementById('pc-google-map'), {
+            center: canada,
+            zoom: 4,
+            styles: [
+                { elementType: 'geometry', stylers: [{ color: '#1a2e4a' }] },
+                { elementType: 'labels.text.stroke', stylers: [{ color: '#1a2e4a' }] },
+                { elementType: 'labels.text.fill', stylers: [{ color: '#8899aa' }] },
+                { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#2a4f7a' }] },
+                { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#6b7a8d' }] },
+                { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e3a5f' }] },
+                { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#6b7a8d' }] },
+                { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a4f7a' }] },
+                { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a2e4a' }] },
+                { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#8899aa' }] },
+                { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a6090' }] },
+                { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1e3a5f' }] },
+                { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e1f35' }] },
+                { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4a6a8a' }] }
+            ],
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true
+        });
+
+        infoWindow = new google.maps.InfoWindow();
+        loadLocations();
+    }
+
+    // ── Custom marker icon ──
+    function getMarkerIcon() {
+        return {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: '#FF6B35',
+            fillOpacity: 1,
+            strokeColor: '#FFFFFF',
+            strokeWeight: 2,
+            scale: 8
+        };
+    }
+
+    // ── Load Locations ──
+    function loadLocations(params) {
+        let url = '/api/v1/locations?per_page=500';
+        if (params) {
+            url += '&' + params;
+        }
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                allLocations = data.locations || data.items || data;
+                if (Array.isArray(allLocations)) {
+                    renderMarkers(allLocations);
+                }
+            })
+            .catch(err => console.error('Error loading locations:', err));
+    }
+
+    // ── Render Markers ──
+    function renderMarkers(locations) {
+        // Clear existing
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+        if (markerClusterer) {
+            markerClusterer.clearMarkers();
+        }
+
+        locations.forEach(loc => {
+            if (!loc.latitude || !loc.longitude) return;
+
+            const marker = new google.maps.Marker({
+                position: { lat: parseFloat(loc.latitude), lng: parseFloat(loc.longitude) },
+                map: map,
+                icon: getMarkerIcon(),
+                title: loc.name
+            });
+
+            marker.addListener('click', () => {
+                const priceHtml = loc.daily_rate_display
+                    ? `<div class="iw-price">${loc.daily_rate_display}/day</div>`
+                    : loc.monthly_rate_display
+                        ? `<div class="iw-price">${loc.monthly_rate_display}/mo</div>`
+                        : '';
+
+                const spotsHtml = loc.total_spots
+                    ? `<div style="font-size:0.8rem;color:#b0b8c5;margin-top:0.25rem;">${loc.total_spots} spots available</div>`
+                    : '';
+
+                const typeHtml = loc.type_label
+                    ? `<span style="font-size:0.72rem;background:rgba(255,107,53,0.15);color:#FF6B35;padding:2px 8px;border-radius:5px;font-weight:600;">${loc.type_label}</span>`
+                    : '';
+
+                infoWindow.setContent(`
+                    <div class="iw-content">
+                        <h6>${loc.name}</h6>
+                        <div class="iw-location"><i class="fas fa-map-marker-alt" style="color:#FF6B35;"></i> ${loc.city}, ${loc.province}</div>
+                        ${typeHtml}
+                        ${priceHtml}
+                        ${spotsHtml}
+                        <a href="/location/${loc.slug}" class="iw-link">View Details <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                `);
+                infoWindow.open(map, marker);
+            });
+
+            markers.push(marker);
+        });
+
+        // Cluster markers
+        if (typeof markerClusterer !== 'undefined' && markerClusterer) {
+            markerClusterer.clearMarkers();
+        }
+
+        if (typeof markerClusterer !== 'undefined') {
+            markerClusterer = new markerClusterer.MarkerClusterer({
+                map: map,
+                markers: markers,
+                renderer: {
+                    render: function({ count, position }) {
+                        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+                            <circle cx="24" cy="24" r="22" fill="#FF6B35" stroke="#fff" stroke-width="2"/>
+                            <text x="24" y="28" text-anchor="middle" fill="#fff" font-size="14" font-weight="bold" font-family="Inter,sans-serif">${count}</text>
+                        </svg>`;
+                        return new google.maps.Marker({
+                            position: position,
+                            icon: {
+                                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+                                scaledSize: new google.maps.Size(48, 48)
+                            },
+                            zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    // ── Filter Logic ──
+    function applyFilters() {
+        const params = new URLSearchParams();
+
+        // Provinces
+        const provinces = [];
+        document.querySelectorAll('.filter-province:checked').forEach(cb => provinces.push(cb.value));
+        if (provinces.length) params.set('province', provinces.join(','));
+
+        // Location types
+        const types = [];
+        document.querySelectorAll('.filter-type:checked').forEach(cb => types.push(cb.value));
+        if (types.length) params.set('location_type', types.join(','));
+
+        // Amenities
+        const amenities = [];
+        document.querySelectorAll('.filter-amenity:checked').forEach(cb => amenities.push(cb.value));
+        if (amenities.length) params.set('amenities', amenities.join(','));
+
+        // Bookable
+        if (document.getElementById('filter-bookable').checked) {
+            params.set('bookable', '1');
+        }
+
+        // LCV
+        if (document.getElementById('filter-lcv').checked) {
+            params.set('lcv', '1');
+        }
+
+        loadLocations(params.toString());
+    }
+
+    function clearFilters() {
+        document.querySelectorAll('.filter-province, .filter-type, .filter-amenity').forEach(cb => cb.checked = false);
+        document.getElementById('filter-bookable').checked = false;
+        document.getElementById('filter-lcv').checked = false;
+        loadLocations();
+    }
+
+    function toggleMapSidebar() {
+        const sidebar = document.getElementById('mapSidebar');
+        sidebar.classList.toggle('show');
+    }
+
+    // ── Hero Search ──
+    function handleHeroSearch(e) {
+        e.preventDefault();
+        const province = document.getElementById('heroProvince').value;
+        const city = document.getElementById('heroCity').value.trim();
+
+        if (province) {
+            let url = '/' + province;
+            if (city) url += '?city=' + encodeURIComponent(city);
+            window.location.href = url;
+        } else if (city) {
+            window.location.href = '/?city=' + encodeURIComponent(city);
+        } else {
+            document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
+        }
+        return false;
+    }
+
+  /* ── Delegated event listeners (converted from inline handlers) ── */
+  document.addEventListener('submit', function(e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var action = el.getAttribute('data-action');
+    if (action === 'handleHeroSearch_1') { return handleHeroSearch(event); }
+  }, true);
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var action = el.getAttribute('data-action');
+    if (action === 'toggleMapSidebar_2') { toggleMapSidebar(); }
+    if (action === 'applyFilters_3') { applyFilters(); }
+    if (action === 'clearFilters_4') { clearFilters(); }
+  });
+</script>
+
 </body>
 </html>

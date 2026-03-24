@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Club - Find Truck Parking | TruckerPro</title>
+    <meta name="description" content="Search secure truck parking locations across Canada by city, province, amenities, and price. Compare options and book spots with TruckerPro Parking Club.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://parking.truckerpro.ca/search">
+    <meta property="og:title" content="Parking Club Search - Find Truck Parking | TruckerPro">
+    <meta property="og:description" content="Search secure truck parking by city, amenities, and rates across Canada.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://parking.truckerpro.ca/search">
+    <meta property="og:site_name" content="Truck Parking Club">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Parking Club Search | TruckerPro">
+    <meta name="twitter:description" content="Find and compare secure truck parking spots across Canada.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --tp-navy: #1E3A5F;
+            --tp-orange: #FF6B35;
+            --tp-white: #FFFFFF;
+        }
+        body {
+            background-color: #0f1e30;
+            color: var(--tp-white);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: var(--tp-navy) !important;
+            border-bottom: 2px solid var(--tp-orange);
+        }
+        .navbar-brand {
+            color: var(--tp-orange) !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+        }
+        .nav-link { color: var(--tp-white) !important; }
+        .nav-link:hover { color: var(--tp-orange) !important; }
+        .btn-orange {
+            background-color: var(--tp-orange);
+            border-color: var(--tp-orange);
+            color: var(--tp-white);
+            font-weight: 600;
+        }
+        .btn-orange:hover {
+            background-color: #e55a25;
+            border-color: #e55a25;
+            color: var(--tp-white);
+        }
+        .search-bar {
+            background-color: var(--tp-navy);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .search-bar .form-control,
+        .search-bar .form-select {
+            background-color: #152d4a;
+            border-color: rgba(255, 255, 255, 0.15);
+            color: var(--tp-white);
+        }
+        .search-bar .form-control::placeholder { color: rgba(255, 255, 255, 0.5); }
+        .search-bar .form-control:focus,
+        .search-bar .form-select:focus {
+            border-color: var(--tp-orange);
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+        }
+        .results-container {
+            height: calc(100dvh - 160px);
+            height: calc(100vh - 160px); /* fallback for older browsers */
+            overflow: hidden;
+        }
+        @supports (height: 100dvh) {
+            .results-container { height: calc(100dvh - 160px); }
+        }
+        .results-list {
+            height: 100%;
+            overflow-y: auto;
+            padding: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--tp-orange) transparent;
+        }
+        .results-list::-webkit-scrollbar { width: 6px; }
+        .results-list::-webkit-scrollbar-thumb {
+            background-color: var(--tp-orange);
+            border-radius: 3px;
+        }
+        .map-container {
+            height: 100%;
+            min-height: 400px;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+        }
+        .location-card {
+            background-color: var(--tp-navy);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s, transform 0.2s;
+            overflow: hidden;
+        }
+        .location-card:hover {
+            border-color: var(--tp-orange);
+            transform: translateY(-2px);
+        }
+        .location-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .location-card .card-body { padding: 1rem; }
+        .location-card .card-title {
+            color: var(--tp-white);
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 0.25rem;
+        }
+        .location-card .card-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+        .location-card .price {
+            color: var(--tp-orange);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .location-card .badge-type {
+            background-color: rgba(255, 107, 53, 0.15);
+            color: var(--tp-orange);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-verified {
+            background-color: rgba(25, 135, 84, 0.2);
+            color: #27c46a;
+        }
+        .badge-lcv {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #6ea8fe;
+        }
+        .amenity-tag {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 1rem;
+            margin: 0.1rem;
+        }
+        .result-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+        .location-card .card-img-top {
+            height: 140px;
+            object-fit: cover;
+        }
+        .no-photo-placeholder {
+            height: 140px;
+            background: linear-gradient(135deg, var(--tp-navy), #152d4a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 2.5rem;
+        }
+        .filter-badges .btn {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+        }
+        .filter-badges .btn-outline-light { border-color: rgba(255, 255, 255, 0.2); }
+        .filter-badges .btn-outline-light.active,
+        .filter-badges .btn-outline-light:hover {
+            background-color: var(--tp-orange);
+            border-color: var(--tp-orange);
+        }
+        @media (max-width: 991.98px) {
+            .results-container {
+                height: auto;
+                overflow: visible;
+            }
+            .results-list {
+                height: auto;
+                overflow: visible;
+                max-height: none;
+            }
+            .map-container {
+                height: 350px;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-truck me-2"></i>TruckerPro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-parking me-1"></i> Parking Club</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/list-your-space"><i class="fas fa-plus-circle me-1"></i> List Your Space</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i> Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <div class="container-fluid px-3">
+            <form method="get" action="/search" id="searchForm">
+                <div class="row g-2 align-items-end">
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <label class="form-label small mb-1">Province</label>
+                        <select class="form-select form-select-sm" name="province" id="provinceSelect">
+                            <option value="">All Provinces</option>
+                            {% for slug, info in province_map.items() %}
+                            <option value="{{ info.code }}" {% if province == info.code %}selected{% endif %}>{{ info.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-6">
+                        <label class="form-label small mb-1">City</label>
+                        <input type="text" class="form-control form-control-sm" name="city" value="{{ city or '' }}" placeholder="City name...">
+                    </div>
+                    <div class="col-lg-3 col-md-4 col-12">
+                        <label class="form-label small mb-1">Search</label>
+                        <input type="text" class="form-control form-control-sm" name="q" value="{{ query or '' }}" placeholder="Location name, keyword...">
+                    </div>
+                    <div class="col-lg-3 col-md-8 col-12">
+                        <label class="form-label small mb-1">Filters</label>
+                        <div class="filter-badges d-flex flex-wrap gap-1">
+                            {% for key, label in location_type_labels.items() %}
+                            <button type="button" class="btn btn-sm btn-outline-light filter-type" data-type="{{ key }}">{{ label }}</button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="type" id="typeFilter" value="">
+                    </div>
+                    <div class="col-lg-2 col-md-4 col-12">
+                        <button type="submit" class="btn btn-orange btn-sm w-100">
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="container-fluid px-0">
+        <div class="row g-0 results-container">
+            <!-- Left: Location List -->
+            <div class="col-lg-5 col-xl-4">
+                <div class="results-list">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="result-count">
+                            <strong>{{ total_results }}</strong> location{{ 's' if total_results != 1 else '' }} found
+                        </span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-light dropdown-toggle" data-bs-toggle="dropdown" style="font-size: 0.8rem;">
+                                Sort by
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="#">Price: Low to High</a></li>
+                                <li><a class="dropdown-item" href="#">Price: High to Low</a></li>
+                                <li><a class="dropdown-item" href="#">Most Spots</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {% if locations %}
+                        {% for loc in locations %}
+                        <div class="location-card" data-lat="{{ loc.latitude }}" data-lng="{{ loc.longitude }}" data-id="{{ loc.id }}">
+                            <a href="/location/{{ loc.slug }}">
+                                {% if loc.photos %}
+                                <img src="{{ loc.photos[0] }}" class="card-img-top" alt="{{ loc.name }}">
+                                {% else %}
+                                <div class="no-photo-placeholder">
+                                    <i class="fas fa-parking"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <div>
+                                            <h6 class="card-title mb-0">{{ loc.name }}</h6>
+                                            <p class="card-subtitle mb-0">
+                                                <i class="fas fa-map-marker-alt me-1"></i>{{ loc.city }}, {{ loc.province }}
+                                            </p>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="price">{{ loc.daily_rate_display }}</div>
+                                            <small class="text-muted">per day</small>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
+                                        <span class="badge badge-type">{{ loc.type_label }}</span>
+                                        {% if loc.is_verified %}
+                                        <span class="badge badge-verified"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                                        {% endif %}
+                                        {% if loc.lcv_capable %}
+                                        <span class="badge badge-lcv"><i class="fas fa-truck-moving me-1"></i>LCV</span>
+                                        {% endif %}
+                                        <span class="text-muted ms-auto" style="font-size: 0.8rem;">
+                                            <i class="fas fa-parking me-1"></i>{{ loc.total_spots }} spots
+                                        </span>
+                                    </div>
+                                    {% if loc.amenities %}
+                                    <div class="mt-2">
+                                        {% for amenity in loc.amenities[:5] %}
+                                        <span class="amenity-tag">{{ amenity_labels[amenity].label if amenity in amenity_labels else amenity }}</span>
+                                        {% endfor %}
+                                        {% if loc.amenities|length > 5 %}
+                                        <span class="amenity-tag">+{{ loc.amenities|length - 5 }} more</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% if loc.monthly_rate_display %}
+                                    <div class="mt-1">
+                                        <small class="text-muted">Monthly: {{ loc.monthly_rate_display }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-search fa-3x mb-3" style="color: rgba(255,255,255,0.2);"></i>
+                            <h5>No locations found</h5>
+                            <p class="text-muted">Try adjusting your search filters or expanding your area.</p>
+                            <a href="/search" class="btn btn-orange btn-sm">Clear Filters</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right: Map -->
+            <div class="col-lg-7 col-xl-8 d-none d-lg-block">
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Map Toggle -->
+        <div class="d-lg-none p-3">
+            <button class="btn btn-outline-light w-100 mb-3" id="toggleMapBtn">
+                <i class="fas fa-map me-2"></i> Show Map
+            </button>
+            <div class="map-container d-none" id="mobileMap">
+                <div id="mapMobile"></div>
+            </div>
+        </div>
+    </div>
+
+    <script nonce="{{ csp_nonce }}" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="{{ csp_nonce }}">
+        // Filter type toggle
+        document.querySelectorAll('.filter-type').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const active = document.querySelectorAll('.filter-type.active');
+                const types = Array.from(active).map(b => b.dataset.type);
+                document.getElementById('typeFilter').value = types.join(',');
+            });
+        });
+
+        // Mobile map toggle
+        const toggleBtn = document.getElementById('toggleMapBtn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                const mobileMap = document.getElementById('mobileMap');
+                mobileMap.classList.toggle('d-none');
+                this.innerHTML = mobileMap.classList.contains('d-none')
+                    ? '<i class="fas fa-map me-2"></i> Show Map'
+                    : '<i class="fas fa-list me-2"></i> Hide Map';
+                if (!mobileMap.classList.contains('d-none') && typeof initMobileMap === 'function') {
+                    initMobileMap();
+                }
+            });
+        }
+
+        // Card hover highlights marker
+        document.querySelectorAll('.location-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                const id = this.dataset.id;
+                if (window.markers && window.markers[id]) {
+                    window.markers[id].setAnimation(google.maps.Animation.BOUNCE);
+                }
+            });
+            card.addEventListener('mouseleave', function() {
+                const id = this.dataset.id;
+                if (window.markers && window.markers[id]) {
+                    window.markers[id].setAnimation(null);
+                }
+            });
+        });
+    </script>
+    {% if google_api_key %}
+    <script nonce="{{ csp_nonce }}">
+        window.markers = {};
+
+        // HTML escape helper to prevent XSS in InfoWindow content
+        function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+        function initMap() {
+            const locations = [
+                {% for loc in locations %}
+                {
+                    id: {{ loc.id|tojson }},
+                    name: {{ loc.name|tojson }},
+                    slug: {{ loc.slug|tojson }},
+                    city: {{ loc.city|tojson }},
+                    province: {{ loc.province|tojson }},
+                    lat: {{ loc.latitude|default(0)|tojson }},
+                    lng: {{ loc.longitude|default(0)|tojson }},
+                    price: {{ loc.daily_rate_display|tojson }},
+                    spots: {{ loc.total_spots|default(0)|tojson }},
+                    type: {{ loc.type_label|tojson }}
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const defaultCenter = { lat: 49.2827, lng: -97.1304 };
+            const center = locations.length > 0
+                ? { lat: locations[0].lat, lng: locations[0].lng }
+                : defaultCenter;
+
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: center,
+                zoom: locations.length === 1 ? 12 : 5,
+                styles: [
+                    { elementType: "geometry", stylers: [{ color: "#1d2c4d" }] },
+                    { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
+                    { elementType: "labels.text.stroke", stylers: [{ color: "#1a3646" }] },
+                    { featureType: "road", elementType: "geometry", stylers: [{ color: "#304a7d" }] },
+                    { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+                ]
+            });
+
+            const bounds = new google.maps.LatLngBounds();
+            const infoWindow = new google.maps.InfoWindow();
+
+            locations.forEach(loc => {
+                const marker = new google.maps.Marker({
+                    position: { lat: loc.lat, lng: loc.lng },
+                    map: map,
+                    title: loc.name,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#FF6B35',
+                        fillOpacity: 1,
+                        strokeColor: '#FFFFFF',
+                        strokeWeight: 2,
+                        scale: 8
+                    }
+                });
+
+                window.markers[loc.id] = marker;
+                bounds.extend(marker.getPosition());
+
+                marker.addListener('click', () => {
+                    infoWindow.setContent(
+                        '<div style="color: #1E3A5F; max-width: 220px;">' +
+                        '<strong>' + escHtml(loc.name) + '</strong><br>' +
+                        '<small>' + escHtml(loc.city) + ', ' + escHtml(loc.province) + '</small><br>' +
+                        '<span style="color: #FF6B35; font-weight: 700;">' + escHtml(loc.price) + '</span>/day &middot; ' + loc.spots + ' spots<br>' +
+                        '<small>' + escHtml(loc.type) + '</small><br>' +
+                        '<a href="/location/' + encodeURIComponent(loc.slug) + '" style="color: #FF6B35;">View Details &rarr;</a>' +
+                        '</div>'
+                    );
+                    infoWindow.open(map, marker);
+                });
+            });
+
+            if (locations.length > 1) {
+                map.fitBounds(bounds, 50);
+            }
+        }
+
+        function initMobileMap() {
+            const mobileMapEl = document.getElementById('mapMobile');
+            if (!mobileMapEl || mobileMapEl.dataset.init) return;
+            mobileMapEl.dataset.init = '1';
+            // Clone the same map setup for mobile
+            initMap();
+        }
+    </script>
+    <script nonce="{{ csp_nonce }}" src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap" async defer></script>
+    {% endif %}
+</body>
+</html>
