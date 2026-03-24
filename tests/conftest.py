@@ -20,13 +20,11 @@ def client(app):
 
 @pytest.fixture(scope='function')
 def db(app):
+    """Provide a clean DB for each test by rolling back after each test."""
     with app.app_context():
-        connection = _db.engine.connect()
-        transaction = connection.begin()
-        options = dict(bind=connection)
-        session = _db.create_scoped_session(options=options)
-        _db.session = session
         yield _db
-        transaction.rollback()
-        connection.close()
-        session.remove()
+        _db.session.rollback()
+        # Clean up all rows inserted during the test
+        for table in reversed(_db.metadata.sorted_tables):
+            _db.session.execute(table.delete())
+        _db.session.commit()
