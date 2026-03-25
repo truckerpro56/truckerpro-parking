@@ -259,6 +259,9 @@ def _ensure_unique_slug(slug, exclude_id=None):
 @login_required
 def create_or_update_listing():
     """Create or update a parking location listing."""
+    if current_user.role not in ('owner', 'admin'):
+        return jsonify({'success': False, 'error': 'Only property owners can create listings'}), 403
+
     data = request.get_json() or {}
     location_id = data.get('id')
 

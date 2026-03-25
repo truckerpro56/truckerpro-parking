@@ -17,8 +17,10 @@ def login():
         user = User.query.filter_by(email=email, is_active=True).first()
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
             login_user(user)
-            next_page = request.args.get('next')
-            return redirect(next_page or url_for('pages.landing'))
+            next_page = request.args.get('next', '')
+            if next_page and next_page.startswith('/') and not next_page.startswith('//'):
+                return redirect(next_page)
+            return redirect(url_for('pages.landing'))
         flash('Invalid email or password.', 'error')
     return render_template('auth/login.html')
 

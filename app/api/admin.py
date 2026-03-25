@@ -8,7 +8,8 @@ from ..models.location import ParkingLocation
 def admin_seed():
     """One-time seed endpoint. Requires secret key in header."""
     auth = request.headers.get('X-Admin-Key', '')
-    if auth != current_app.config.get('SECRET_KEY', ''):
+    admin_key = current_app.config.get('ADMIN_SECRET_KEY') or current_app.config.get('SECRET_KEY', '')
+    if not auth or auth != admin_key:
         return jsonify({'error': 'Unauthorized'}), 403
     from ..seed.locations import seed_locations
     seed_locations()

@@ -2,7 +2,8 @@ import os
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-change-me'
+    ADMIN_SECRET_KEY = os.environ.get('ADMIN_SECRET_KEY', '')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///parking_dev.db').replace('postgres://', 'postgresql://', 1)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_size': 5, 'max_overflow': 10}

@@ -52,13 +52,13 @@ def create_booking():
     if not loc.is_bookable:
         return jsonify({'success': False, 'error': 'Location does not accept bookings'}), 400
 
-    # Check availability — count overlapping confirmed bookings
+    # Check availability — count overlapping confirmed bookings (with row lock to prevent race condition)
     overlap_count = ParkingBooking.query.filter(
         ParkingBooking.location_id == location_id,
         ParkingBooking.status.in_(['confirmed', 'checked_in']),
         ParkingBooking.start_datetime < end_dt,
         ParkingBooking.end_datetime > start_dt,
-    ).count()
+    ).with_for_update().count()
 
     total_spots = loc.total_spots or 0
     if total_spots > 0 and overlap_count >= total_spots:
