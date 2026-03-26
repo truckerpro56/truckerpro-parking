@@ -1,7 +1,8 @@
 """Public page routes — landing, search, province, city, location detail, bookings."""
 import json
 import logging
-from flask import render_template, jsonify, request, abort, current_app
+from datetime import date
+from flask import render_template, jsonify, request, abort, current_app, make_response, Response
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -92,6 +93,78 @@ def ready():
     return jsonify({'status': 'ready'}), 200
 
 
+# ── SEO ─────────────────────────────────────────────────────
+
+BASE_URL = 'https://parking.truckerpro.ca'
+
+
+@pages_bp.route('/sitemap.xml')
+def sitemap():
+    today = date.today().isoformat()
+    urls = []
+
+    # Static pages
+    for path, priority, changefreq in [
+        ('/',               '1.0', 'daily'),
+        ('/search',         '0.8', 'daily'),
+        ('/list-your-space','0.8', 'monthly'),
+    ]:
+        urls.append({'loc': BASE_URL + path, 'lastmod': today,
+                     'changefreq': changefreq, 'priority': priority})
+
+    # Province pages
+    for slug_key in PROVINCE_MAP:
+        urls.append({'loc': f'{BASE_URL}/{slug_key}', 'lastmod': today,
+                     'changefreq': 'weekly', 'priority': '0.8'})
+
+    # Dynamic: all active locations + city pages
+    try:
+        locations = ParkingLocation.query.filter_by(
+            is_active=True
+        ).with_entities(
+            ParkingLocation.slug,
+            ParkingLocation.province,
+            ParkingLocation.city,
+            ParkingLocation.updated_at,
+        ).all()
+
+        seen_cities = set()
+        for loc in locations:
+            # Location detail page
+            lastmod = loc.updated_at.date().isoformat() if loc.updated_at else today
+            urls.append({'loc': f'{BASE_URL}/location/{loc.slug}', 'lastmod': lastmod,
+                         'changefreq': 'weekly', 'priority': '0.9'})
+
+            # City page (deduplicate)
+            province_slug = PROVINCE_CODE_TO_SLUG.get(loc.province, '')
+            city_slug = slugify(loc.city) if loc.city else ''
+            city_key = f'{province_slug}/{city_slug}'
+            if province_slug and city_slug and city_key not in seen_cities:
+                seen_cities.add(city_key)
+                urls.append({'loc': f'{BASE_URL}/{city_key}', 'lastmod': today,
+                             'changefreq': 'weekly', 'priority': '0.7'})
+    except Exception as e:
+        logger.warning("Sitemap: failed to load locations: %s", str(e)[:200])
+
+    xml = render_template('seo/sitemap.xml', urls=urls)
+    resp = make_response(xml)
+    resp.headers['Content-Type'] = 'application/xml'
+    return resp
+
+
+@pages_bp.route('/robots.txt')
+def robots():
+    txt = (
+        'User-agent: *\n'
+        'Allow: /\n'
+        '\n'
+        'Disallow: /my-bookings\n'
+        'Disallow: /owner/\n'
+        'Disallow: /api/\n'
+        '\n'
+        f'Sitemap: {BASE_URL}/sitemap.xml\n'
+    )
+    return Response(txt, mimetype='text/plain')
 
 
 # ── Landing ──────────────────────────────────────────────────
