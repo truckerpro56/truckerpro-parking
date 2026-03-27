@@ -24,6 +24,16 @@
     <meta name="twitter:title" content="Truck Parking Across Canada | TruckerPro">
     <meta name="twitter:description" content="Find and book secure truck parking across Canada.">
 
+    <!-- SEO: hreflang, geo, and additional meta -->
+    <link rel="alternate" hreflang="en-ca" href="https://parking.truckerpro.ca">
+    <link rel="alternate" hreflang="en" href="https://parking.truckerpro.ca">
+    <link rel="alternate" hreflang="x-default" href="https://parking.truckerpro.ca">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="geo.region" content="CA">
+    <meta name="geo.placename" content="Canada">
+    <meta name="keywords" content="truck parking Canada, truck stop, truck parking near me, overnight truck parking, secure truck parking, commercial vehicle parking, LCV parking, truck rest area, Canadian truck parking, parking for trucks, trucking parking lots, long haul parking, truck parking Ontario, truck parking Alberta, truck parking British Columbia, truck parking Quebec">
+    <meta name="author" content="TruckerPro">
+    <meta name="publisher" content="Truck Parking Club by TruckerPro">
 
     <!-- Bootstrap 5.3 CSS -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -58,6 +68,76 @@
         "areaServed": {
             "@type": "Country",
             "name": "Canada"
+        }
+    }
+    </script>
+
+    <!-- FAQ Structured Data for Google Rich Results -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How do I find truck parking in Canada?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Use Truck Parking Club to search over {{ total_locations }} locations across {{ total_provinces }} Canadian provinces and territories. Filter by city, province, amenities, and price to find the best truck parking for your route."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is Truck Parking Club free to use?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, searching and browsing truck parking locations on Truck Parking Club is completely free. You only pay when you book a spot at a location that offers online reservations."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What types of truck parking are available?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Truck Parking Club lists truck stops, rest areas, private lots, industrial yards, travel centres, and more. Many locations offer amenities like showers, Wi-Fi, electrical hookups, security cameras, and fuelling stations."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I book truck parking online?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, many locations on Truck Parking Club offer online booking with daily, weekly, and monthly rates. Create a free account, select your dates, and pay securely through our platform."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do I list my parking space for trucks?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Property owners can list their parking space on Truck Parking Club for free. Visit our List Your Space page, create a listing with your location details, photos, amenities, and rates, and start earning from truck drivers who need parking."
+                }
+            }
+        ]
+    }
+    </script>
+
+    <!-- Organization Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "TruckerPro",
+        "url": "https://www.truckerpro.ca",
+        "logo": "https://parking.truckerpro.ca{{ url_for('static', filename='android-chrome-512x512.png') }}",
+        "sameAs": [
+            "https://www.linkedin.com/in/truckerpro",
+            "https://www.instagram.com/trucker_pro/"
+        ],
+        "subOrganization": {
+            "@type": "Organization",
+            "name": "Truck Parking Club",
+            "url": "https://parking.truckerpro.ca"
         }
     }
     </script>
@@ -950,6 +1030,26 @@
     </div>
 </section>
 
+<!-- ━━ Promo Banner Bar (above map) ━━ -->
+<section style="background: linear-gradient(90deg, var(--navy) 0%, #1a2540 50%, var(--navy) 100%); padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap" style="font-size: 0.88rem;">
+            <a href="https://www.truckerpro.ca" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 0.35rem 0.85rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; font-weight: 500;"
+               onmouseover="this.style.borderColor='rgba(99,179,237,0.4)';this.style.color='#63b3ed'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.7)'">
+                <i class="fas fa-route" style="color: #63b3ed;"></i> <strong>TruckerPro TMS</strong> — Dispatch &amp; Fleet Management
+            </a>
+            <a href="https://border.truckerpro.app" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 0.35rem 0.85rem; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s; font-weight: 500;"
+               onmouseover="this.style.borderColor='rgba(72,187,120,0.4)';this.style.color='#48bb78'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.7)'">
+                <i class="fas fa-passport" style="color: #48bb78;"></i> <strong>Border Clearing</strong> — US-Canada Customs
+            </a>
+            <a href="/list-your-space" style="display: inline-flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.7); text-decoration: none; padding: 0.35rem 0.85rem; border-radius: 8px; background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.15); transition: all 0.2s; font-weight: 500;"
+               onmouseover="this.style.borderColor='rgba(255,107,53,0.4)';this.style.color='var(--orange)'" onmouseout="this.style.borderColor='rgba(255,107,53,0.15)';this.style.color='rgba(255,255,255,0.7)'">
+                <i class="fas fa-plus-circle" style="color: var(--orange);"></i> <strong>List Your Space</strong> — Earn from Parking
+            </a>
+        </div>
+    </div>
+</section>
+
 <!-- ━━ Interactive Map ━━ -->
 <section class="pc-map-section" id="map-section">
     <div class="container">
@@ -1263,6 +1363,69 @@
                     By making parking easier to find and book, we help drivers stay safe, stay compliant, and
                     keep Canada's supply chain moving.
                 </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ━━ Border Clearing Cross-Promo ━━ -->
+<section style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 4rem 0; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(72,187,120,0.08) 0%, transparent 70%); border-radius: 50%;"></div>
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(72,187,120,0.12); border: 1px solid rgba(72,187,120,0.2); border-radius: 999px; padding: 0.4rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #48bb78; font-weight: 600;">
+                    <i class="fas fa-passport"></i>
+                    CROSS-BORDER TRUCKING
+                </div>
+                <h2 style="font-size: 2.4rem; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 1rem;">
+                    Border Clearing<br>Made <span style="color: #48bb78;">Simple</span>
+                </h2>
+                <p style="font-size: 1.05rem; color: rgba(255,255,255,0.6); line-height: 1.7; max-width: 520px; margin-bottom: 1.5rem;">
+                    Crossing the US-Canada border with your fleet? Our Border Clearing system handles customs paperwork, ACI/ABI filings, PARS/PAPS tracking, and bond management &mdash; so you can focus on driving.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                    <a href="https://border.truckerpro.app" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #48bb78; color: #fff; padding: 0.75rem 1.75rem; border-radius: 10px; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all 0.2s;"
+                       onmouseover="this.style.background='#38a169'" onmouseout="this.style.background='#48bb78'">
+                        <i class="fas fa-globe-americas"></i> Start Clearing
+                    </a>
+                    <a href="https://border.truckerpro.app" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.06); color: #fff; padding: 0.75rem 1.75rem; border-radius: 10px; font-weight: 600; font-size: 1rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.12); transition: all 0.2s;"
+                       onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+                        Learn More <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; text-align: center;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(72,187,120,0.15); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
+                            <i class="fas fa-file-invoice" style="color: #48bb78; font-size: 1.1rem;"></i>
+                        </div>
+                        <h6 style="color: #fff; font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem;">ACI/ABI Filing</h6>
+                        <small style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">Automated submissions</small>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; text-align: center;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(99,179,237,0.15); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
+                            <i class="fas fa-barcode" style="color: #63b3ed; font-size: 1.1rem;"></i>
+                        </div>
+                        <h6 style="color: #fff; font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem;">PARS/PAPS</h6>
+                        <small style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">Real-time tracking</small>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; text-align: center;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(237,187,72,0.15); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
+                            <i class="fas fa-shield-halved" style="color: #edbb48; font-size: 1.1rem;"></i>
+                        </div>
+                        <h6 style="color: #fff; font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem;">Bond Mgmt</h6>
+                        <small style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">Customs bonds &amp; surety</small>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem; text-align: center;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(237,100,166,0.15); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;">
+                            <i class="fas fa-clock" style="color: #ed64a6; font-size: 1.1rem;"></i>
+                        </div>
+                        <h6 style="color: #fff; font-weight: 700; font-size: 0.9rem; margin-bottom: 0.2rem;">Fast Release</h6>
+                        <small style="color: rgba(255,255,255,0.4); font-size: 0.75rem;">Expedited clearance</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

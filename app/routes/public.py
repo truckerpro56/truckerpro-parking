@@ -106,7 +106,7 @@ def sitemap():
     # Static pages
     for path, priority, changefreq in [
         ('/',               '1.0', 'daily'),
-        ('/search',         '0.8', 'daily'),
+        ('/search',         '0.9', 'daily'),
         ('/list-your-space','0.8', 'monthly'),
     ]:
         urls.append({'loc': BASE_URL + path, 'lastmod': today,
@@ -161,6 +161,11 @@ def robots():
         'Disallow: /my-bookings\n'
         'Disallow: /owner/\n'
         'Disallow: /api/\n'
+        'Disallow: /login\n'
+        'Disallow: /signup\n'
+        '\n'
+        '# Crawl-delay for polite bots\n'
+        'Crawl-delay: 2\n'
         '\n'
         f'Sitemap: {BASE_URL}/sitemap.xml\n'
     )
