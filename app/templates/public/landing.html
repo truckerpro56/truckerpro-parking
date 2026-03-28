@@ -7,6 +7,14 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RREBK9SZZJ');
+    </script>
     <title>Truck Parking Across Canada | Find &amp; Book Truck Parking | TruckerPro</title>
     <meta name="description" content="Find and book secure truck parking across Canada. Browse {{ total_locations }}+ locations in {{ total_provinces }} provinces and territories. Daily, weekly, and monthly rates available.">
     <link rel="canonical" href="https://parking.truckerpro.ca">
@@ -1799,6 +1807,29 @@
 
 <!-- Google Maps (loaded AFTER initMap is defined) -->
 <script nonce="{{ csp_nonce }}" src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap" async defer></script>
+
+<script>
+if (new URLSearchParams(window.location.search).get('signup')) {
+    gtag('event', 'sign_up', { method: 'form', product: 'parking' });
+    history.replaceState(null, '', window.location.pathname);
+}
+</script>
+
+<!-- GA4 Events: Scroll Depth + Outbound Clicks -->
+<script nonce="{{ csp_nonce }}">
+    var _scrollFired = false;
+    window.addEventListener('scroll', function() {
+        if (_scrollFired) return;
+        var pct = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
+        if (pct > 50) { _scrollFired = true; gtag('event', 'scroll_depth', { page: 'parking_landing', depth: '50' }); }
+    });
+    document.addEventListener('click', function(e) {
+        var a = e.target.closest('a[href*="truckerpro.ca"]');
+        if (a && a.hostname !== window.location.hostname) {
+            gtag('event', 'outbound_click', { url: a.href, product: 'parking' });
+        }
+    });
+</script>
 
 </body>
 </html>

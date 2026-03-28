@@ -52,7 +52,7 @@ def signup():
         db.session.add(user)
         db.session.commit()
         login_user(user)
-        return redirect(url_for('pages.landing'))
+        return redirect(url_for('pages.landing', signup=1))
     return render_template('auth/signup.html')
 
 

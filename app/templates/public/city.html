@@ -7,6 +7,14 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RREBK9SZZJ');
+    </script>
     <title>Truck Parking in {{ city_name }}, {{ province_name }} | TruckerPro</title>
     <meta name="description" content="Find {{ total_locations }} truck parking locations in {{ city_name }}, {{ province_name }}. Compare rates, amenities, and book secure overnight or monthly truck parking.">
     <meta name="robots" content="index, follow">
@@ -693,5 +701,10 @@
     }
 </script>
 <script nonce="{{ csp_nonce }}" async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap"></script>
+
+<!-- GA4 Event: City View -->
+<script nonce="{{ csp_nonce }}">
+    gtag('event', 'view_item_list', { item_list_name: '{{ city_name }}, {{ province_name }}', product: 'parking' });
+</script>
 </body>
 </html>

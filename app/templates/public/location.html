@@ -7,6 +7,14 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RREBK9SZZJ');
+    </script>
     <title>{{ location.name }} - Truck Parking in {{ location.city }}, {{ location.province_name }} | TruckerPro</title>
     <meta name="description" content="{{ location.name }} offers secure truck parking in {{ location.city }}, {{ location.province_name }}. {{ location.total_spots }} spots available. {% if location.daily_rate %}Starting at ${{ location.daily_rate_display }}/day.{% endif %} Book online with TruckerPro Parking Club.">
     <meta name="robots" content="index, follow">
@@ -1142,6 +1150,17 @@
     var action = el.getAttribute('data-action');
     if (action === 'handleBookNow_1') { handleBookNow(); }
   });
+</script>
+
+<!-- GA4 Events: View Item + Begin Checkout -->
+<script nonce="{{ csp_nonce }}">
+    gtag('event', 'view_item', { item_name: '{{ location.name }}', item_category: '{{ location.province_name }}', product: 'parking' });
+    var bookBtn = document.getElementById('btnBookNow');
+    if (bookBtn) {
+        bookBtn.addEventListener('click', function() {
+            gtag('event', 'begin_checkout', { product: 'parking', location: '{{ location.name }}' });
+        });
+    }
 </script>
 
 </body>
