@@ -1,3 +1,4 @@
+import click
 from flask import Flask
 from .config import Config, TestConfig
 from .extensions import db, socketio, limiter, csrf, login_manager
@@ -46,5 +47,43 @@ def create_app(config_class=None):
         from .seed.locations import seed_locations
         seed_locations()
         print('Seeded.')
+
+    @app.cli.command('import-stops')
+    @click.argument('brand')
+    @click.option('--file', 'file_path', required=True, help='Path to CSV file')
+    def import_stops_command(brand, file_path):
+        """Import truck stops from a CSV file."""
+        import csv
+        from .import_stops.base import upsert_truck_stop, generate_stop_slug
+
+        brand_parsers = {
+            'loves': 'app.import_stops.loves:parse_loves_row',
+        }
+        parser_path = brand_parsers.get(brand)
+        if not parser_path:
+            print(f"Unknown brand: {brand}. Available: {', '.join(brand_parsers.keys())}")
+            return
+
+        module_path, func_name = parser_path.rsplit(':', 1)
+        import importlib
+        mod = importlib.import_module(module_path)
+        parse_row = getattr(mod, func_name)
+
+        count = 0
+        with open(file_path, newline='', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                data = parse_row(row)
+                if not data.get('latitude') or not data.get('longitude'):
+                    print(f"Skipping {data.get('store_number', '?')} — no coordinates")
+                    continue
+                data['slug'] = generate_stop_slug(
+                    data['brand'], data.get('store_number', ''),
+                    data['city'], data['state_province'],
+                )
+                upsert_truck_stop(data)
+                count += 1
+            db.session.commit()
+        print(f"Imported {count} {brand} stops.")
 
     return app
