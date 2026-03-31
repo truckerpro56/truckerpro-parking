@@ -36,6 +36,10 @@ def create_app(config_class=None):
     from .routes import pages_bp
     app.register_blueprint(pages_bp)
 
+    from .stops_api import stops_api_bp
+    app.register_blueprint(stops_api_bp, url_prefix='/api/v1')
+    csrf.exempt(stops_api_bp)
+
     csrf.exempt(api_bp)
 
     with app.app_context():
