@@ -1,6 +1,7 @@
 from flask import Flask
 from .config import Config, TestConfig
 from .extensions import db, socketio, limiter, csrf, login_manager
+from .middleware import init_host_routing
 
 
 def create_app(config_class=None):
@@ -20,6 +21,8 @@ def create_app(config_class=None):
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'pages.login'
+
+    init_host_routing(app)
 
     @login_manager.user_loader
     def load_user(user_id):

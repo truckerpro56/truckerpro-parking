@@ -19,6 +19,8 @@ class Config:
     SESSION_COOKIE_SECURE = os.environ.get('FLASK_ENV') == 'production'
     WTF_CSRF_ENABLED = True
     RATELIMIT_STORAGE_URI = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    STOPS_DOMAIN = os.environ.get('STOPS_DOMAIN', 'stops.truckerpro.net')
+    PARKING_DOMAIN = os.environ.get('PARKING_DOMAIN', 'parking.truckerpro.ca')
 
 
 class TestConfig(Config):
@@ -29,3 +31,5 @@ class TestConfig(Config):
     SERVER_NAME = 'localhost'
     RATELIMIT_STORAGE_URI = 'memory://'
     RATELIMIT_ENABLED = False
+    STOPS_DOMAIN = 'stops.localhost'
+    PARKING_DOMAIN = 'localhost'
