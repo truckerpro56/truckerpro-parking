@@ -1,0 +1,10 @@
+{% extends "stops/base.html" %}
+{% block title %}Truck Stops Directory — US & Canada{% endblock %}
+{% block content %}
+<h1>Truck Stops Directory</h1>
+<p>{{ total_stops }} truck stops across {{ total_states }} states and provinces.</p>
+<section>
+<h2>Featured Stops</h2>
+{% for stop in featured %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+</section>
+{% endblock %}

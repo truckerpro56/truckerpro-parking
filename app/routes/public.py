@@ -100,6 +100,10 @@ BASE_URL = 'https://parking.truckerpro.ca'
 
 @pages_bp.route('/sitemap.xml')
 def sitemap():
+    from flask import g
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.routes import sitemap_index
+        return sitemap_index()
     today = date.today().isoformat()
     urls = []
 

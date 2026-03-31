@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Truck Stops Directory{% endblock %} — stops.truckerpro.net</title>
+    <meta name="description" content="{% block meta_description %}Find truck stops across the US and Canada{% endblock %}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stops/css/stops.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Truck Stops</a>
+            <a href="/us">US</a>
+            <a href="/canada">Canada</a>
+            <a href="/brands">Brands</a>
+            <a href="/highways">Highways</a>
+        </nav>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+    <footer><p>Truck Stops Directory</p></footer>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

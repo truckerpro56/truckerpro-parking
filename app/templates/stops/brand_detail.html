@@ -1,0 +1,7 @@
+{% extends "stops/base.html" %}
+{% block title %}{{ brand_name }} Locations{% endblock %}
+{% block content %}
+<h1>{{ brand_name }}</h1>
+<p>{{ total }} locations</p>
+{% for stop in stops %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+{% endblock %}

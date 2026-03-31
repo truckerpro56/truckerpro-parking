@@ -1,0 +1,8 @@
+{% extends "stops/base.html" %}
+{% block title %}Truck Stops by Highway{% endblock %}
+{% block content %}
+<h1>Truck Stops by Highway</h1>
+{% for hwy, count in highways %}
+<a href="/highways/{{ hwy | lower | replace(' ', '-') }}">{{ hwy }} ({{ count }})</a>
+{% endfor %}
+{% endblock %}

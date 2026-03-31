@@ -1,0 +1,11 @@
+<div class="amenities-grid">
+{% if stop.has_diesel %}<span class="amenity">Diesel</span>{% endif %}
+{% if stop.has_showers %}<span class="amenity">Showers{% if stop.shower_count %} ({{ stop.shower_count }}){% endif %}</span>{% endif %}
+{% if stop.has_scale %}<span class="amenity">Scale{% if stop.scale_type %} ({{ stop.scale_type | upper }}){% endif %}</span>{% endif %}
+{% if stop.has_repair %}<span class="amenity">Repair</span>{% endif %}
+{% if stop.has_tire_service %}<span class="amenity">Tire Service</span>{% endif %}
+{% if stop.has_wifi %}<span class="amenity">WiFi</span>{% endif %}
+{% if stop.has_def %}<span class="amenity">DEF</span>{% endif %}
+{% if stop.has_laundry %}<span class="amenity">Laundry</span>{% endif %}
+{% if stop.has_ev_charging %}<span class="amenity">EV Charging</span>{% endif %}
+</div>

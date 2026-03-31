@@ -40,6 +40,9 @@ def create_app(config_class=None):
     app.register_blueprint(stops_api_bp, url_prefix='/api/v1')
     csrf.exempt(stops_api_bp)
 
+    from .stops import stops_public_bp
+    app.register_blueprint(stops_public_bp)
+
     csrf.exempt(api_bp)
 
     with app.app_context():
@@ -89,5 +92,16 @@ def create_app(config_class=None):
                 count += 1
             db.session.commit()
         print(f"Imported {count} {brand} stops.")
+
+    @app.cli.command('compute-border-distances')
+    def compute_border_distances_command():
+        """Recompute border distances for all truck stops."""
+        from .models.truck_stop import TruckStop
+        from .services.border_crossings import compute_border_distance
+        stops = TruckStop.query.all()
+        for stop in stops:
+            compute_border_distance(stop)
+        db.session.commit()
+        print(f"Updated border distances for {len(stops)} stops.")
 
     return app

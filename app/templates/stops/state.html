@@ -1,0 +1,7 @@
+{% extends "stops/base.html" %}
+{% block title %}Truck Stops in {{ state_name }}{% endblock %}
+{% block content %}
+<h1>Truck Stops in {{ state_name }}</h1>
+<p>{{ total }} stops</p>
+{% for stop in stops %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "stops/base.html" %}
+{% block title %}Truck Stops in {{ country_name }}{% endblock %}
+{% block content %}
+<h1>Truck Stops in {{ country_name }}</h1>
+{% for r in regions %}
+<a href="/{{ 'us' if country == 'US' else 'canada' }}/{{ r.slug }}">{{ r.name }} ({{ r.count }})</a>
+{% endfor %}
+{% endblock %}

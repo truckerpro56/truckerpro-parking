@@ -1,0 +1,8 @@
+{% extends "stops/base.html" %}
+{% block title %}Truck Stop Brands{% endblock %}
+{% block content %}
+<h1>Truck Stop Brands</h1>
+{% for brand_key, brand_name, count in brands %}
+<a href="/brands/{{ brand_key | replace('_', '-') }}">{{ brand_name or brand_key }} ({{ count }})</a>
+{% endfor %}
+{% endblock %}

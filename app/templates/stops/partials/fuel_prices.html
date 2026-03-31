@@ -1,0 +1,10 @@
+{% if fuel_prices %}
+<div class="fuel-prices">
+{% for fp in fuel_prices %}
+<div class="fuel-price">
+<span class="fuel-type">{{ fp.fuel_type | title }}</span>
+<span class="price">${{ "%.3f" | format(fp.price_cents / 100) }}</span>
+</div>
+{% endfor %}
+</div>
+{% endif %}

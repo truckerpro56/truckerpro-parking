@@ -1,0 +1,19 @@
+{% extends "stops/base.html" %}
+{% block title %}{{ stop.name }}{% endblock %}
+{% block content %}
+{% for banner in banners %}
+{% if banner.type == 'tms' %}{% include "stops/partials/banner_tms.html" %}
+{% elif banner.type == 'border' %}{% include "stops/partials/banner_border.html" %}
+{% elif banner.type == 'parking' %}{% include "stops/partials/banner_parking.html" %}
+{% elif banner.type == 'fmcsa' %}{% include "stops/partials/banner_fmcsa.html" %}
+{% endif %}
+{% endfor %}
+<h1>{{ stop.name }}</h1>
+<p>{{ stop.address }}, {{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}</p>
+{% if stop.highway %}<p>{{ stop.highway }}{% if stop.exit_number %} Exit {{ stop.exit_number }}{% endif %}</p>{% endif %}
+{% include "stops/partials/amenities_grid.html" %}
+<section>
+<h2>Nearby Stops</h2>
+{% for stop in nearby %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+</section>
+{% endblock %}
