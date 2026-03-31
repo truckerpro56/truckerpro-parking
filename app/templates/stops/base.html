@@ -6,6 +6,14 @@
     <title>{% block title %}Truck Stops Directory{% endblock %} — stops.truckerpro.net</title>
     <meta name="description" content="{% block meta_description %}Find truck stops across the US and Canada{% endblock %}">
     <link rel="stylesheet" href="{{ url_for('static', filename='stops/css/stops.css') }}">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-RREBK9SZZJ');
+    </script>
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -20,6 +28,16 @@
     </header>
     <main>{% block content %}{% endblock %}</main>
     <footer><p>Truck Stops Directory</p></footer>
+    <script>
+      document.addEventListener('click', function(e) {
+        var banner = e.target.closest('[data-ga-event]');
+        if (banner && typeof gtag === 'function') {
+          gtag('event', banner.dataset.gaEvent, {
+            target: banner.dataset.gaTarget || ''
+          });
+        }
+      });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
