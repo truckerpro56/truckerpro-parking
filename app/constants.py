@@ -71,3 +71,91 @@ AMENITY_LABELS = {
     'snow_removal': {'label': 'Snow Removal', 'icon': 'fas fa-snowplow'},
     'fuel_nearby': {'label': 'Fuel Nearby', 'icon': 'fas fa-gas-pump'},
 }
+
+# ── Truck Stops Directory ────────────────────────────────────
+
+US_STATES = {
+    'alabama': {'name': 'Alabama', 'code': 'AL'},
+    'alaska': {'name': 'Alaska', 'code': 'AK'},
+    'arizona': {'name': 'Arizona', 'code': 'AZ'},
+    'arkansas': {'name': 'Arkansas', 'code': 'AR'},
+    'california': {'name': 'California', 'code': 'CA'},
+    'colorado': {'name': 'Colorado', 'code': 'CO'},
+    'connecticut': {'name': 'Connecticut', 'code': 'CT'},
+    'delaware': {'name': 'Delaware', 'code': 'DE'},
+    'florida': {'name': 'Florida', 'code': 'FL'},
+    'georgia': {'name': 'Georgia', 'code': 'GA'},
+    'hawaii': {'name': 'Hawaii', 'code': 'HI'},
+    'idaho': {'name': 'Idaho', 'code': 'ID'},
+    'illinois': {'name': 'Illinois', 'code': 'IL'},
+    'indiana': {'name': 'Indiana', 'code': 'IN'},
+    'iowa': {'name': 'Iowa', 'code': 'IA'},
+    'kansas': {'name': 'Kansas', 'code': 'KS'},
+    'kentucky': {'name': 'Kentucky', 'code': 'KY'},
+    'louisiana': {'name': 'Louisiana', 'code': 'LA'},
+    'maine': {'name': 'Maine', 'code': 'ME'},
+    'maryland': {'name': 'Maryland', 'code': 'MD'},
+    'massachusetts': {'name': 'Massachusetts', 'code': 'MA'},
+    'michigan': {'name': 'Michigan', 'code': 'MI'},
+    'minnesota': {'name': 'Minnesota', 'code': 'MN'},
+    'mississippi': {'name': 'Mississippi', 'code': 'MS'},
+    'missouri': {'name': 'Missouri', 'code': 'MO'},
+    'montana': {'name': 'Montana', 'code': 'MT'},
+    'nebraska': {'name': 'Nebraska', 'code': 'NE'},
+    'nevada': {'name': 'Nevada', 'code': 'NV'},
+    'new-hampshire': {'name': 'New Hampshire', 'code': 'NH'},
+    'new-jersey': {'name': 'New Jersey', 'code': 'NJ'},
+    'new-mexico': {'name': 'New Mexico', 'code': 'NM'},
+    'new-york': {'name': 'New York', 'code': 'NY'},
+    'north-carolina': {'name': 'North Carolina', 'code': 'NC'},
+    'north-dakota': {'name': 'North Dakota', 'code': 'ND'},
+    'ohio': {'name': 'Ohio', 'code': 'OH'},
+    'oklahoma': {'name': 'Oklahoma', 'code': 'OK'},
+    'oregon': {'name': 'Oregon', 'code': 'OR'},
+    'pennsylvania': {'name': 'Pennsylvania', 'code': 'PA'},
+    'rhode-island': {'name': 'Rhode Island', 'code': 'RI'},
+    'south-carolina': {'name': 'South Carolina', 'code': 'SC'},
+    'south-dakota': {'name': 'South Dakota', 'code': 'SD'},
+    'tennessee': {'name': 'Tennessee', 'code': 'TN'},
+    'texas': {'name': 'Texas', 'code': 'TX'},
+    'utah': {'name': 'Utah', 'code': 'UT'},
+    'vermont': {'name': 'Vermont', 'code': 'VT'},
+    'virginia': {'name': 'Virginia', 'code': 'VA'},
+    'washington': {'name': 'Washington', 'code': 'WA'},
+    'west-virginia': {'name': 'West Virginia', 'code': 'WV'},
+    'wisconsin': {'name': 'Wisconsin', 'code': 'WI'},
+    'wyoming': {'name': 'Wyoming', 'code': 'WY'},
+}
+
+US_STATE_CODE_TO_SLUG = {v['code']: k for k, v in US_STATES.items()}
+
+ALL_REGIONS = {**US_STATES, **PROVINCE_MAP}
+ALL_REGION_CODE_TO_SLUG = {**US_STATE_CODE_TO_SLUG, **PROVINCE_CODE_TO_SLUG}
+
+BRAND_MAP = {
+    'loves': {'name': "Love's Travel Stops", 'slug': 'loves'},
+    'pilot_flying_j': {'name': 'Pilot Flying J', 'slug': 'pilot-flying-j'},
+    'ta_petro': {'name': 'TA / Petro', 'slug': 'ta-petro'},
+    'flying_j': {'name': 'Flying J', 'slug': 'flying-j'},
+    'petro': {'name': 'Petro Stopping Centers', 'slug': 'petro'},
+    'ambest': {'name': 'Ambest', 'slug': 'ambest'},
+    'husky': {'name': 'Husky', 'slug': 'husky'},
+    'esso': {'name': 'Esso', 'slug': 'esso'},
+    'shell': {'name': 'Shell', 'slug': 'shell'},
+    'independent': {'name': 'Independent', 'slug': 'independent'},
+}
+
+BRAND_SLUG_TO_KEY = {v['slug']: k for k, v in BRAND_MAP.items()}
+
+MAJOR_FREIGHT_CORRIDORS = [
+    'I-95', 'I-90', 'I-80', 'I-75', 'I-70', 'I-65', 'I-55', 'I-45',
+    'I-40', 'I-35', 'I-30', 'I-25', 'I-20', 'I-15', 'I-10', 'I-5',
+    '401', '400', 'QEW', 'Trans-Canada',
+]
+
+MAJOR_METROS = [
+    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Dallas', 'Atlanta',
+    'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego', 'Memphis',
+    'Nashville', 'Indianapolis', 'Louisville', 'Columbus', 'Charlotte',
+    'Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton', 'Winnipeg',
+]
