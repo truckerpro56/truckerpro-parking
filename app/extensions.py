@@ -7,6 +7,9 @@ from flask_login import LoginManager
 
 db = SQLAlchemy()
 socketio = SocketIO()
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(
+    key_func=get_remote_address,
+    storage_uri='memory://',  # overridden by RATELIMIT_STORAGE_URI in init_app
+)
 csrf = CSRFProtect()
 login_manager = LoginManager()

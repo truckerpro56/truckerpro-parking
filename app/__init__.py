@@ -210,7 +210,16 @@ def create_app(config_class=None):
     csrf.exempt(api_bp)
 
     with app.app_context():
-        db.create_all()
+        import sqlalchemy
+        for attempt in range(5):
+            try:
+                db.create_all()
+                break
+            except sqlalchemy.exc.OperationalError:
+                if attempt == 4:
+                    raise
+                import time
+                time.sleep(2 ** attempt)
 
     @app.cli.command('seed')
     def seed_command():
