@@ -57,11 +57,41 @@ def create_app(config_class=None):
 
     @app.cli.command('import-stops')
     @click.argument('brand')
-    @click.option('--file', 'file_path', required=True, help='Path to CSV file')
-    def import_stops_command(brand, file_path):
-        """Import truck stops from a CSV file."""
-        import csv
+    @click.option('--file', 'file_path', default=None, help='Path to CSV file')
+    @click.option('--source', default=None, help='Data source: "api" to pull from public API')
+    def import_stops_command(brand, file_path, source):
+        """Import truck stops from a CSV file or API."""
         from .import_stops.base import upsert_truck_stop, generate_stop_slug
+
+        if source == 'api':
+            if brand == 'loves':
+                from .import_stops.loves_api import fetch_loves_stores, parse_loves_api_store
+                print(f"Fetching {brand} stores from API...")
+                stores = fetch_loves_stores()
+                print(f"Got {len(stores)} stores. Importing...")
+                count = 0
+                for store in stores:
+                    data = parse_loves_api_store(store)
+                    if not data.get('latitude') or not data.get('longitude'):
+                        print(f"Skipping store {data.get('store_number', '?')} — no coordinates")
+                        continue
+                    data['slug'] = generate_stop_slug(
+                        data['brand'], data.get('store_number', ''),
+                        data['city'], data['state_province'],
+                    )
+                    upsert_truck_stop(data)
+                    count += 1
+                db.session.commit()
+                print(f"Imported {count} {brand} stops from API.")
+            else:
+                print(f"API import not available for brand: {brand}")
+            return
+
+        if not file_path:
+            print("Provide --file path/to/csv or --source api")
+            return
+
+        import csv
 
         brand_parsers = {
             'loves': 'app.import_stops.loves:parse_loves_row',
