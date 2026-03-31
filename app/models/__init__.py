@@ -3,3 +3,7 @@ from .location import ParkingLocation
 from .booking import ParkingBooking
 from .review import ParkingReview
 from .availability import ParkingAvailability
+from .truck_stop import TruckStop
+from .fuel_price import FuelPrice
+from .truck_stop_review import TruckStopReview
+from .truck_stop_report import TruckStopReport
