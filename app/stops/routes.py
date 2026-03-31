@@ -220,7 +220,54 @@ def highway_detail(highway_slug):
                            stops=[stop_to_card(s) for s in matched])
 
 
-# ── Sitemaps (Task 12) ──────────────────────────────────────
+# ── Robots.txt ───────────────────────────────────────────────
+
+_BLOCKED_BOT_NAMES = [
+    'GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ChatGPT Agent', 'Operator',
+    'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'Claude-SearchBot', 'Claude-User',
+    'GoogleOther', 'Google-Extended', 'GoogleOther-Image', 'GoogleOther-Video',
+    'Google-Agent', 'GoogleAgent-Mariner', 'Gemini-Deep-Research',
+    'Google-CloudVertexBot', 'CloudVertexBot', 'Google-NotebookLM',
+    'Meta-ExternalAgent', 'Meta-ExternalFetcher', 'FacebookBot', 'meta-webindexer',
+    'Applebot-Extended', 'Amazonbot', 'amazon-kendra', 'bedrockbot', 'NovaAct',
+    'AzureAI-SearchBot', 'Bytespider', 'DeepSeekBot', 'ChatGLM-Spider',
+    'PanguBot', 'TikTokSpider', 'PerplexityBot', 'Perplexity-User', 'Bravebot',
+    'DuckAssistBot', 'PhindBot', 'YouBot', 'Andibot', 'ExaBot', 'kagi-fetcher',
+    'cohere-ai', 'cohere-training-data-crawler', 'MistralAI-User',
+    'Ai2Bot', 'DiffBot', 'PetalBot', 'WRTNBot', 'Manus-User', 'Devin',
+    'CCBot', 'img2dataset', 'ImagesiftBot', 'ICC-Crawler',
+    'FirecrawlAgent', 'Crawl4AI', 'ApifyBot', 'Scrapy',
+    'LAIONDownloader', 'Brightbot', 'TavilyBot',
+    'SemrushBot-OCOB', 'SemrushBot-SWA', 'omgilibot', 'Webzio-Extended',
+    'Timpibot', 'aiHitBot',
+]
+
+
+@stops_public_bp.route('/robots.txt')
+@site_required('stops')
+def robots_txt():
+    lines = []
+    for bot in _BLOCKED_BOT_NAMES:
+        lines.append(f'User-agent: {bot}')
+        lines.append('Disallow: /')
+        lines.append('')
+    lines.extend([
+        'User-agent: Googlebot', 'Allow: /', '',
+        'User-agent: Bingbot', 'Allow: /', '',
+        'User-agent: *',
+        'Disallow: /api/',
+        'Disallow: /login',
+        'Disallow: /signup',
+        'Disallow: /logout',
+        '',
+        f'Sitemap: {STOPS_BASE}/sitemap.xml',
+    ])
+    resp = Response('\n'.join(lines), mimetype='text/plain')
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
+
+
+# ── Sitemaps ─────────────────────────────────────────────────
 
 @stops_public_bp.route('/sitemap.xml')
 @site_required('stops')
