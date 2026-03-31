@@ -58,3 +58,43 @@ Repo: https://github.com/truckerpro56/truckerpro-parking
 ## Docs
 - `docs/superpowers/specs/2026-03-24-truck-parking-club-extraction-design.md` — Full design spec
 - `docs/superpowers/plans/2026-03-24-truck-parking-club-extraction.md` — Implementation plan (all 15 tasks complete)
+
+## Truck Stops Directory (stops.truckerpro.net)
+Added 2026-03-31. Host-based routing serves stops.truckerpro.net from this same app.
+
+### Architecture
+- `app/middleware.py` — Host-based routing middleware (`g.site` = 'parking' or 'stops')
+- `app/stops/` — Public page routes for stops.truckerpro.net (home, state, city, detail, brands, highways)
+- `app/stops_api/` — API endpoints (truck-stops CRUD, contributions, admin)
+- `app/import_stops/` — CSV import pipeline (base upsert logic + brand-specific mappers)
+- `app/services/banner_service.py` — Smart contextual banners (TMS, border, parking, FMCSA)
+- `app/services/border_crossings.py` — US-Canada border crossing data + distance computation
+
+### Models
+- `TruckStop` (`truck_stops`) — Core truck stop data
+- `FuelPrice` (`fuel_prices`) — Timestamped fuel prices
+- `TruckStopReview` (`truck_stop_reviews`) — Driver reviews with moderation
+- `TruckStopReport` (`truck_stop_reports`) — Driver-contributed updates
+
+### Key Endpoints (stops.truckerpro.net)
+- `GET /` — Homepage
+- `GET /us`, `/canada` — Country overview
+- `GET /us/<state>`, `/canada/<province>` — State/province page
+- `GET /us/<state>/<city>` — City page
+- `GET /us/<state>/<city>/<slug>` — Individual truck stop page
+- `GET /brands`, `/brands/<brand>`, `/brands/<brand>/<state>` — Brand directory
+- `GET /highways`, `/highways/<highway>` — Highway directory
+- `GET /api/v1/truck-stops` — List/search API
+- `GET /api/v1/truck-stops/<id>` — Detail API with banners
+- `POST /api/v1/truck-stops/<id>/fuel-prices` — Submit fuel price (auth)
+- `POST /api/v1/truck-stops/<id>/reviews` — Submit review (auth)
+- `POST /api/v1/truck-stops/<id>/reports` — Submit report (auth)
+- `POST /api/v1/admin/truck-stops` — Admin bulk create (X-Admin-Key)
+- `GET /sitemap.xml` — Sitemap index
+
+### CLI Commands
+- `flask import-stops loves --file path/to/csv` — Import Loves CSV
+- `flask compute-border-distances` — Recompute border distances
+
+### Design Spec
+- `docs/superpowers/specs/2026-03-31-truck-stops-directory-design.md`
