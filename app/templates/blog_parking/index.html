@@ -1,14 +1,624 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><title>Blog | Truck Parking Club</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RREBK9SZZJ');
+    </script>
+
+    <title>{% if current_category %}{{ current_category|title }} Articles{% else %}Truck Parking Blog{% endif %} | Truck Parking Club</title>
+    <meta name="description" content="{% if current_category %}Read the latest {{ current_category }} articles from the Truck Parking Club blog — tips, guides, and industry news for Canadian truck drivers.{% else %}The Truck Parking Club blog — expert guides, safety tips, regulations, and industry news for Canadian truck drivers and fleet operators.{% endif %}">
+    <link rel="canonical" href="https://parking.truckerpro.ca/blog{% if current_category %}?category={{ current_category }}{% endif %}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% if current_category %}{{ current_category|title }} Articles{% else %}Truck Parking Blog{% endif %} | Truck Parking Club">
+    <meta property="og:description" content="Expert guides, safety tips, regulations, and industry news for Canadian truck drivers and fleet operators.">
+    <meta property="og:url" content="https://parking.truckerpro.ca/blog">
+    <meta property="og:site_name" content="Truck Parking Club">
+    <meta property="og:image" content="{{ url_for('static', filename='android-chrome-512x512.png', _external=True) }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% if current_category %}{{ current_category|title }} Articles{% else %}Truck Parking Blog{% endif %} | Truck Parking Club">
+    <meta name="twitter:description" content="Expert guides, safety tips, regulations, and industry news for Canadian truck drivers.">
+
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Truck Parking Club">
+
+    <!-- Bootstrap 5.3.3 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6.7.2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-hover: #1a1a1a;
+            --border: rgba(255,255,255,0.07);
+            --border-hover: rgba(34,197,94,0.3);
+            --green: #22c55e;
+            --green-dark: #16a34a;
+            --green-dim: rgba(34,197,94,0.1);
+            --white: #ffffff;
+            --gray-100: #f4f4f5;
+            --gray-200: #e4e4e7;
+            --gray-400: #a1a1aa;
+            --gray-500: #71717a;
+            --gray-600: #52525b;
+            --gray-800: #27272a;
+            --gray-900: #18181b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Navbar ── */
+        .blog-navbar {
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 0;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1100;
+        }
+        .blog-navbar .navbar-brand {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .blog-navbar .navbar-brand .brand-accent { color: var(--green); }
+        .blog-navbar .nav-link {
+            color: var(--gray-400) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.9rem !important;
+            transition: color 0.2s;
+        }
+        .blog-navbar .nav-link:hover { color: var(--green) !important; }
+        .blog-navbar .btn-nav-cta {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 0.45rem 1.1rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .blog-navbar .btn-nav-cta:hover {
+            background: var(--green-dark);
+            color: #fff;
+        }
+
+        /* ── Hero ── */
+        .blog-hero {
+            padding: 7rem 0 3.5rem;
+            background: linear-gradient(160deg, #0a0a0a 0%, #0f1a0f 50%, #0a0a0a 100%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .blog-hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -15%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .blog-hero .hero-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--green);
+            margin-bottom: 0.75rem;
+        }
+        .blog-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 0.75rem;
+        }
+        .blog-hero .hero-sub {
+            font-size: 1.1rem;
+            color: var(--gray-400);
+            max-width: 560px;
+            line-height: 1.65;
+            margin-bottom: 0;
+        }
+
+        /* ── Category Pills ── */
+        .category-pills {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+            position: sticky;
+            top: 60px;
+            z-index: 100;
+        }
+        .cat-pill {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            color: var(--gray-400);
+            background: transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .cat-pill:hover {
+            border-color: var(--green);
+            color: var(--green);
+        }
+        .cat-pill.active {
+            background: var(--green);
+            border-color: var(--green);
+            color: #000;
+        }
+
+        /* ── Post Grid ── */
+        .blog-grid {
+            padding: 3rem 0 4rem;
+        }
+
+        .post-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.25s, transform 0.25s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .post-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            color: inherit;
+        }
+        .post-card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+        .post-card-img-placeholder {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+        .placeholder-guides    { background: linear-gradient(135deg, #0f2d1a, #1a4a2a); color: #22c55e; }
+        .placeholder-regulations { background: linear-gradient(135deg, #1a1a0f, #2d2a0a); color: #eab308; }
+        .placeholder-safety    { background: linear-gradient(135deg, #1a0f0f, #2d1010); color: #ef4444; }
+        .placeholder-industry  { background: linear-gradient(135deg, #0f1a2d, #0a1a3a); color: #3b82f6; }
+        .placeholder-tips      { background: linear-gradient(135deg, #1a0f2d, #2a1040); color: #a855f7; }
+        .placeholder-default   { background: linear-gradient(135deg, #141414, #1e1e1e); color: #71717a; }
+
+        .post-card-body {
+            padding: 1.25rem 1.4rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .post-cat-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+            width: fit-content;
+        }
+        .badge-guides      { background: rgba(34,197,94,0.12);  color: #22c55e; }
+        .badge-regulations { background: rgba(234,179,8,0.12);  color: #eab308; }
+        .badge-safety      { background: rgba(239,68,68,0.12);  color: #ef4444; }
+        .badge-industry    { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .badge-tips        { background: rgba(168,85,247,0.12); color: #a855f7; }
+        .badge-default     { background: rgba(113,113,122,0.15); color: #a1a1aa; }
+
+        .post-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 0.6rem;
+            color: var(--white);
+        }
+        .post-card-excerpt {
+            font-size: 0.88rem;
+            color: var(--gray-400);
+            line-height: 1.6;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+        .post-card-meta {
+            font-size: 0.78rem;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: auto;
+        }
+
+        /* ── CTA Banner (mid-grid) ── */
+        .cta-banner {
+            background: linear-gradient(135deg, #0d2015, #0a1a10);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            margin: 2.5rem 0;
+        }
+        .cta-banner .cta-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--green);
+            margin-bottom: 0.6rem;
+        }
+        .cta-banner h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 0.6rem;
+        }
+        .cta-banner p {
+            color: var(--gray-400);
+            max-width: 480px;
+            margin: 0 auto 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .btn-green {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.75rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-green:hover {
+            background: var(--green-dark);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+        .empty-state p { color: var(--gray-500); }
+
+        /* ── Footer CTA ── */
+        .footer-cta {
+            background: #0a0a0a;
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+        }
+        .footer-cta-card {
+            background: linear-gradient(135deg, #0f1a24, #0a1020);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 14px;
+            padding: 2rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .footer-cta-card .cta-icon {
+            width: 48px; height: 48px;
+            background: rgba(59,130,246,0.1);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            color: #3b82f6;
+            flex-shrink: 0;
+        }
+        .footer-cta-card h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .footer-cta-card p { font-size: 0.88rem; color: var(--gray-400); margin: 0; }
+        .btn-outline-blue {
+            background: transparent;
+            color: #3b82f6;
+            border: 1.5px solid rgba(59,130,246,0.5);
+            border-radius: 10px;
+            padding: 0.65rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-outline-blue:hover {
+            background: rgba(59,130,246,0.1);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* ── Footer ── */
+        .blog-footer {
+            background: var(--gray-900);
+            border-top: 1px solid var(--border);
+            padding: 3rem 0 2rem;
+        }
+        .blog-footer .footer-brand {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        .blog-footer .footer-brand span { color: var(--green); }
+        .blog-footer .footer-tagline {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+        }
+        .blog-footer .footer-col-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--gray-500);
+            margin-bottom: 0.75rem;
+        }
+        .blog-footer .footer-link {
+            display: block;
+            font-size: 0.88rem;
+            color: var(--gray-400);
+            text-decoration: none;
+            margin-bottom: 0.4rem;
+            transition: color 0.2s;
+        }
+        .blog-footer .footer-link:hover { color: var(--green); }
+        .blog-footer .footer-divider {
+            border-color: var(--border);
+            margin: 2rem 0 1rem;
+        }
+        .blog-footer .footer-bottom {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+        }
+
+        @media (max-width: 768px) {
+            .blog-hero h1 { font-size: 2rem; }
+            .category-pills { top: 56px; }
+            .footer-cta-card { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
 <body>
-<h1>Blog</h1>
-{% for post in posts %}
-<article>
-  <h2><a href="/blog/{{ post.slug }}">{{ post.title }}</a></h2>
-  <span>{{ post.category }}</span>
-  <time>{{ post.date }}</time>
-</article>
-{% endfor %}
+
+<!-- Navbar -->
+<nav class="blog-navbar">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between w-100">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-parking brand-accent"></i>
+                Truck Parking <span class="brand-accent">Club</span>
+            </a>
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <a href="/search" class="nav-link">Find Parking</a>
+                <a href="/blog" class="nav-link">Blog</a>
+                <a href="https://www.truckerpro.ca/signup" class="btn-nav-cta ms-2" data-action="blog-cta-click" data-position="nav" data-target="https://www.truckerpro.ca/signup" data-slug="index">Free TMS Trial</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="blog-hero">
+    <div class="container">
+        <p class="hero-label"><i class="fas fa-truck-moving me-1"></i> Truck Parking Resources</p>
+        <h1>Truck Parking <span style="color:var(--green)">Blog</span></h1>
+        <p class="hero-sub">Expert guides, safety tips, provincial regulations, and industry news for Canadian truck drivers and fleet operators.</p>
+    </div>
+</section>
+
+<!-- Category Filter Pills -->
+<div class="category-pills">
+    <div class="container">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/blog" class="cat-pill {% if not current_category %}active{% endif %}">All</a>
+            {% for cat in categories %}
+            <a href="/blog?category={{ cat }}" class="cat-pill {% if current_category == cat %}active{% endif %}">
+                {{ cat|title }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Blog Grid -->
+<section class="blog-grid">
+    <div class="container">
+        {% if posts %}
+            <div class="row g-4">
+                {% for post in posts %}
+
+                    {# Insert CTA banner after 6th post #}
+                    {% if loop.index0 == 6 %}
+                    </div>
+                    <div class="cta-banner">
+                        <p class="cta-label"><i class="fas fa-truck me-1"></i> TruckerPro TMS</p>
+                        <h3>Manage Your Fleet with Canada's #1 TMS</h3>
+                        <p>Dispatch, compliance, IFTA, driver pay, and more — all in one platform built for Canadian carriers.</p>
+                        <a href="https://www.truckerpro.ca/signup" class="btn-green" data-action="blog-cta-click" data-position="mid-grid" data-target="https://www.truckerpro.ca/signup" data-slug="index">Start Free Trial &rarr;</a>
+                    </div>
+                    <div class="row g-4">
+                    {% endif %}
+
+                    <div class="col-lg-4 col-md-6">
+                        <a href="/blog/{{ post.slug }}" class="post-card d-block text-decoration-none" data-action="blog-card-click" data-slug="{{ post.slug }}">
+                            {% if post.featured_image %}
+                                <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="post-card-img" loading="lazy">
+                            {% else %}
+                                <div class="post-card-img-placeholder placeholder-{{ post.category if post.category in ['guides','regulations','safety','industry','tips'] else 'default' }}">
+                                    {% if post.category == 'guides' %}<i class="fas fa-map-signs"></i>
+                                    {% elif post.category == 'regulations' %}<i class="fas fa-gavel"></i>
+                                    {% elif post.category == 'safety' %}<i class="fas fa-shield-alt"></i>
+                                    {% elif post.category == 'industry' %}<i class="fas fa-industry"></i>
+                                    {% elif post.category == 'tips' %}<i class="fas fa-lightbulb"></i>
+                                    {% else %}<i class="fas fa-newspaper"></i>{% endif %}
+                                </div>
+                            {% endif %}
+                            <div class="post-card-body">
+                                <span class="post-cat-badge badge-{{ post.category if post.category in ['guides','regulations','safety','industry','tips'] else 'default' }}">
+                                    {{ post.category|title if post.category else 'General' }}
+                                </span>
+                                <div class="post-card-title">{{ post.title }}</div>
+                                {% if post.meta_description %}
+                                <p class="post-card-excerpt">{{ post.meta_description[:160] }}</p>
+                                {% endif %}
+                                <div class="post-card-meta">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>{{ post.date }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-newspaper"></i>
+                <h4>No articles found</h4>
+                <p>
+                    {% if current_category %}
+                        No articles in <strong>{{ current_category|title }}</strong> yet. <a href="/blog" style="color:var(--green)">View all articles</a>.
+                    {% else %}
+                        Check back soon — new articles are published regularly.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Footer CTA: eManifest -->
+<section class="footer-cta">
+    <div class="container">
+        <div class="footer-cta-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="cta-icon"><i class="fas fa-passport"></i></div>
+                <div>
+                    <h4>Cross the Border? File eManifest Online</h4>
+                    <p>Submit your Canada Border Services Agency eManifest before you reach the border. Fast, compliant, and paperless.</p>
+                </div>
+            </div>
+            <a href="https://border.truckerpro.ca" class="btn-outline-blue" data-action="blog-cta-click" data-position="footer-cta" data-target="https://border.truckerpro.ca" data-slug="index">
+                File eManifest &rarr;
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="blog-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand">Truck Parking <span>Club</span></div>
+                <p class="footer-tagline">Canada's truck parking directory. Find, compare, and book secure parking across all provinces and territories.</p>
+                <div class="d-flex gap-3">
+                    <a href="https://www.linkedin.com/in/truckerpro" class="footer-link" style="display:inline"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://www.instagram.com/trucker_pro/" class="footer-link" style="display:inline"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="footer-col-title">Blog</div>
+                <a href="/blog" class="footer-link">All Articles</a>
+                <a href="/blog?category=guides" class="footer-link">Guides</a>
+                <a href="/blog?category=regulations" class="footer-link">Regulations</a>
+                <a href="/blog?category=safety" class="footer-link">Safety</a>
+                <a href="/blog?category=tips" class="footer-link">Tips</a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="footer-col-title">Parking</div>
+                <a href="/" class="footer-link">Home</a>
+                <a href="/search" class="footer-link">Find Parking</a>
+                <a href="/ontario" class="footer-link">Ontario</a>
+                <a href="/alberta" class="footer-link">Alberta</a>
+                <a href="/british-columbia" class="footer-link">BC</a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-col-title">TruckerPro Suite</div>
+                <a href="https://www.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> TruckerPro TMS</a>
+                <a href="https://border.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> Border Clearing</a>
+                <a href="https://checks.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> Background Checks</a>
+                <a href="https://fmcsa.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> FMCSA Lookup</a>
+                <a href="https://stops.truckerpro.net" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> Truck Stops</a>
+            </div>
+        </div>
+        <hr class="footer-divider">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 footer-bottom">
+            <span>&copy; {{ 2026 }} Truck Parking Club by TruckerPro. All rights reserved.</span>
+            <span>
+                <a href="/privacy" class="footer-link d-inline">Privacy</a>
+                &middot;
+                <a href="/terms" class="footer-link d-inline">Terms</a>
+            </span>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Blog Analytics -->
+<script src="{{ url_for('static', filename='js/blog-analytics.js') }}"></script>
 </body>
 </html>

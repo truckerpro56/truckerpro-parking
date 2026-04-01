@@ -1,11 +1,980 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><title>{{ post.title }} | Truck Parking Club</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RREBK9SZZJ');
+    </script>
+
+    <title>{{ post.title }} | Truck Parking Club</title>
+    <meta name="description" content="{{ post.meta_description }}">
+    {% if post.meta_keywords %}<meta name="keywords" content="{{ post.meta_keywords }}">{% endif %}
+    <link rel="canonical" href="https://parking.truckerpro.ca/blog/{{ post.slug }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ post.title }} | Truck Parking Club">
+    <meta property="og:description" content="{{ post.meta_description }}">
+    <meta property="og:url" content="https://parking.truckerpro.ca/blog/{{ post.slug }}">
+    <meta property="og:site_name" content="Truck Parking Club">
+    {% if post.featured_image %}
+    <meta property="og:image" content="{{ post.featured_image }}">
+    {% else %}
+    <meta property="og:image" content="{{ url_for('static', filename='android-chrome-512x512.png', _external=True) }}">
+    {% endif %}
+    <meta property="article:published_time" content="{{ post.date }}">
+    <meta property="article:section" content="{{ post.category|title }}">
+    {% if post.meta_keywords %}<meta property="article:tag" content="{{ post.meta_keywords }}">{% endif %}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ post.title }} | Truck Parking Club">
+    <meta name="twitter:description" content="{{ post.meta_description }}">
+    {% if post.featured_image %}<meta name="twitter:image" content="{{ post.featured_image }}">{% endif %}
+
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <meta name="author" content="{{ post.author if post.author else 'Truck Parking Club' }}">
+
+    <!-- Bootstrap 5.3.3 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6.7.2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Schema.org BlogPosting JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": {{ post.title | tojson }},
+        "description": {{ post.meta_description | tojson }},
+        "url": "https://parking.truckerpro.ca/blog/{{ post.slug }}",
+        "datePublished": {{ post.date | tojson }},
+        "author": {
+            "@type": "Organization",
+            "name": "{{ post.author if post.author else 'Truck Parking Club' }}",
+            "url": "https://parking.truckerpro.ca"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Truck Parking Club",
+            "url": "https://parking.truckerpro.ca",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://parking.truckerpro.ca{{ url_for('static', filename='android-chrome-512x512.png') }}"
+            }
+        },
+        "articleSection": {{ post.category | tojson }},
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://parking.truckerpro.ca/blog/{{ post.slug }}"
+        }
+    }
+    </script>
+
+    <!-- BreadcrumbList JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://parking.truckerpro.ca/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://parking.truckerpro.ca/blog" },
+            { "@type": "ListItem", "position": 3, "name": {{ post.category|title | tojson }}, "item": "https://parking.truckerpro.ca/blog?category={{ post.category }}" },
+            { "@type": "ListItem", "position": 4, "name": {{ post.title | tojson }}, "item": "https://parking.truckerpro.ca/blog/{{ post.slug }}" }
+        ]
+    }
+    </script>
+
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-hover: #1a1a1a;
+            --border: rgba(255,255,255,0.07);
+            --border-hover: rgba(34,197,94,0.3);
+            --green: #22c55e;
+            --green-dark: #16a34a;
+            --green-dim: rgba(34,197,94,0.1);
+            --white: #ffffff;
+            --gray-100: #f4f4f5;
+            --gray-200: #e4e4e7;
+            --gray-400: #a1a1aa;
+            --gray-500: #71717a;
+            --gray-600: #52525b;
+            --gray-800: #27272a;
+            --gray-900: #18181b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Navbar ── */
+        .blog-navbar {
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 0;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1100;
+        }
+        .blog-navbar .navbar-brand {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .blog-navbar .navbar-brand .brand-accent { color: var(--green); }
+        .blog-navbar .nav-link {
+            color: var(--gray-400) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.9rem !important;
+            transition: color 0.2s;
+        }
+        .blog-navbar .nav-link:hover { color: var(--green) !important; }
+        .blog-navbar .btn-nav-cta {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 0.45rem 1.1rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .blog-navbar .btn-nav-cta:hover { background: var(--green-dark); color: #fff; }
+
+        /* ── Post Hero ── */
+        .post-hero {
+            padding: 6.5rem 0 2.5rem;
+            background: linear-gradient(160deg, #0a0a0a 0%, #0f1a0f 50%, #0a0a0a 100%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .post-hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb-nav {
+            font-size: 0.82rem;
+            color: var(--gray-500);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+        .breadcrumb-nav a {
+            color: var(--gray-500);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .breadcrumb-nav a:hover { color: var(--green); }
+        .breadcrumb-nav .sep { color: var(--gray-600); }
+        .breadcrumb-nav .current { color: var(--gray-400); }
+
+        /* ── Post meta / title ── */
+        .post-cat-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .badge-guides      { background: rgba(34,197,94,0.12);  color: #22c55e; }
+        .badge-regulations { background: rgba(234,179,8,0.12);  color: #eab308; }
+        .badge-safety      { background: rgba(239,68,68,0.12);  color: #ef4444; }
+        .badge-industry    { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .badge-tips        { background: rgba(168,85,247,0.12); color: #a855f7; }
+        .badge-default     { background: rgba(113,113,122,0.15); color: #a1a1aa; }
+
+        .post-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.25rem;
+        }
+        .post-meta {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+        }
+        .post-meta span { display: flex; align-items: center; gap: 0.35rem; }
+
+        /* ── Hero CTA Banner ── */
+        .hero-cta-banner {
+            background: linear-gradient(135deg, #0d2015, #0a1a10);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .hero-cta-banner .cta-text h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .hero-cta-banner .cta-text p {
+            font-size: 0.85rem;
+            color: var(--gray-400);
+            margin: 0;
+        }
+        .btn-green {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            padding: 0.65rem 1.4rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-green:hover { background: var(--green-dark); color: #fff; transform: translateY(-1px); }
+
+        /* ── Article Layout ── */
+        .post-layout {
+            padding: 3rem 0 4rem;
+        }
+        .article-body {
+            color: var(--gray-200);
+            line-height: 1.8;
+            font-size: 1.02rem;
+        }
+        .article-body h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .article-body h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .article-body h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gray-200);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .article-body p { margin-bottom: 1.1rem; }
+        .article-body ul, .article-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.1rem;
+        }
+        .article-body li { margin-bottom: 0.4rem; }
+        .article-body strong { color: var(--white); font-weight: 600; }
+        .article-body a {
+            color: var(--green);
+            text-decoration: underline;
+            text-decoration-color: rgba(34,197,94,0.3);
+        }
+        .article-body a:hover { color: #4ade80; text-decoration-color: var(--green); }
+        .article-body blockquote {
+            border-left: 3px solid var(--green);
+            padding: 0.75rem 1.25rem;
+            margin: 1.5rem 0;
+            background: rgba(34,197,94,0.04);
+            border-radius: 0 8px 8px 0;
+            color: var(--gray-300);
+            font-style: italic;
+        }
+        .article-body code {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.15em 0.4em;
+            font-size: 0.88em;
+            color: var(--green);
+        }
+        .article-body pre {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+        }
+        .article-body pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: var(--gray-200);
+        }
+        .article-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.92rem;
+        }
+        .article-body th {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.65rem 0.9rem;
+            font-weight: 700;
+            text-align: left;
+            color: var(--white);
+        }
+        .article-body td {
+            border: 1px solid var(--border);
+            padding: 0.6rem 0.9rem;
+            color: var(--gray-300);
+        }
+        .article-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+        /* ── Mid-article CTA ── */
+        .mid-cta-card {
+            border-left: 4px solid var(--green);
+            background: rgba(34,197,94,0.05);
+            border-radius: 0 12px 12px 0;
+            padding: 1.5rem 1.75rem;
+            margin: 2.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .mid-cta-card .cta-content h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .mid-cta-card .cta-content p {
+            font-size: 0.88rem;
+            color: var(--gray-400);
+            margin: 0;
+        }
+        .btn-green-sm {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.1rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        .btn-green-sm:hover { background: var(--green-dark); color: #fff; }
+
+        /* ── Sidebar ── */
+        .post-sidebar {
+            position: sticky;
+            top: 80px;
+        }
+        .sidebar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .sidebar-card h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+        }
+        .sidebar-cta-card {
+            background: linear-gradient(135deg, #0d2015, #0a1a10);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 14px;
+            padding: 1.5rem;
+        }
+        .sidebar-cta-card .icon {
+            width: 44px; height: 44px;
+            background: var(--green-dim);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            color: var(--green);
+            margin-bottom: 0.75rem;
+        }
+        .sidebar-cta-card h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: var(--white);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .sidebar-cta-card p {
+            font-size: 0.82rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+            line-height: 1.55;
+        }
+
+        /* ── Related Posts ── */
+        .related-section {
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+        }
+        .related-section .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.75rem;
+        }
+        .related-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .related-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            color: inherit;
+        }
+        .related-card-img-placeholder {
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .placeholder-guides    { background: linear-gradient(135deg, #0f2d1a, #1a4a2a); color: #22c55e; }
+        .placeholder-regulations { background: linear-gradient(135deg, #1a1a0f, #2d2a0a); color: #eab308; }
+        .placeholder-safety    { background: linear-gradient(135deg, #1a0f0f, #2d1010); color: #ef4444; }
+        .placeholder-industry  { background: linear-gradient(135deg, #0f1a2d, #0a1a3a); color: #3b82f6; }
+        .placeholder-tips      { background: linear-gradient(135deg, #1a0f2d, #2a1040); color: #a855f7; }
+        .placeholder-default   { background: linear-gradient(135deg, #141414, #1e1e1e); color: #71717a; }
+
+        .related-card-body { padding: 1.1rem; flex: 1; }
+        .related-cat-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        .related-card-body .card-title {
+            font-size: 0.93rem;
+            font-weight: 700;
+            line-height: 1.4;
+            color: var(--white);
+            margin-bottom: 0.4rem;
+        }
+        .related-card-body .card-date {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* ── Footer CTA ── */
+        .footer-cta {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+        }
+        .footer-cta-card {
+            background: linear-gradient(135deg, #0f1a24, #0a1020);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 14px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .footer-cta-card .cta-icon {
+            width: 48px; height: 48px;
+            background: rgba(59,130,246,0.1);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: #3b82f6; flex-shrink: 0;
+        }
+        .footer-cta-card h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .footer-cta-card p { font-size: 0.85rem; color: var(--gray-400); margin: 0; }
+        .btn-outline-blue {
+            background: transparent;
+            color: #3b82f6;
+            border: 1.5px solid rgba(59,130,246,0.5);
+            border-radius: 10px;
+            padding: 0.65rem 1.4rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .btn-outline-blue:hover { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #3b82f6; }
+
+        /* ── Footer ── */
+        .blog-footer {
+            background: var(--gray-900);
+            border-top: 1px solid var(--border);
+            padding: 3rem 0 2rem;
+        }
+        .blog-footer .footer-brand { font-size: 1.2rem; font-weight: 800; color: var(--white); margin-bottom: 0.5rem; }
+        .blog-footer .footer-brand span { color: var(--green); }
+        .blog-footer .footer-tagline { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 1.5rem; }
+        .blog-footer .footer-col-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray-500); margin-bottom: 0.75rem; }
+        .blog-footer .footer-link { display: block; font-size: 0.88rem; color: var(--gray-400); text-decoration: none; margin-bottom: 0.4rem; transition: color 0.2s; }
+        .blog-footer .footer-link:hover { color: var(--green); }
+        .blog-footer .footer-divider { border-color: var(--border); margin: 2rem 0 1rem; }
+        .blog-footer .footer-bottom { font-size: 0.8rem; color: var(--gray-600); }
+
+        /* ── Sticky Bottom Bar ── */
+        .sticky-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(13,32,21,0.97);
+            border-top: 1px solid rgba(34,197,94,0.25);
+            backdrop-filter: blur(10px);
+            z-index: 1050;
+            padding: 0.8rem 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .sticky-bar.visible { transform: translateY(0); }
+        .sticky-bar .bar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .sticky-bar .bar-text {
+            font-size: 0.9rem;
+            color: var(--gray-300);
+            font-weight: 500;
+        }
+        .sticky-bar .bar-text strong { color: var(--white); }
+        .sticky-bar .bar-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .sticky-bar .btn-bar-cta {
+            background: var(--green);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .sticky-bar .btn-bar-cta:hover { background: var(--green-dark); color: #fff; }
+        .sticky-bar .btn-dismiss {
+            background: transparent;
+            border: none;
+            color: var(--gray-500);
+            cursor: pointer;
+            padding: 0.4rem;
+            font-size: 1.1rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .sticky-bar .btn-dismiss:hover { color: var(--gray-300); }
+
+        @media (max-width: 768px) {
+            .post-title { font-size: 1.85rem; }
+            .hero-cta-banner { flex-direction: column; }
+            .mid-cta-card { flex-direction: column; }
+            .footer-cta-card { flex-direction: column; text-align: center; }
+            .sticky-bar .bar-text { font-size: 0.82rem; }
+        }
+    </style>
+</head>
 <body>
-<article>
-  <h1>{{ post.title }}</h1>
-  {{ post.html_before_cta|safe }}
-  {{ post.html_after_cta|safe }}
-</article>
+
+<!-- Navbar -->
+<nav class="blog-navbar">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between w-100">
+            <a href="/" class="navbar-brand">
+                <i class="fas fa-parking brand-accent"></i>
+                Truck Parking <span class="brand-accent">Club</span>
+            </a>
+            <div class="d-none d-md-flex align-items-center gap-2">
+                <a href="/search" class="nav-link">Find Parking</a>
+                <a href="/blog" class="nav-link">Blog</a>
+                <a href="https://www.truckerpro.ca/signup" class="btn-nav-cta ms-2" data-action="blog-cta-click" data-position="nav" data-target="https://www.truckerpro.ca/signup" data-slug="{{ post.slug }}">Free TMS Trial</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Post Hero -->
+<header class="post-hero">
+    <div class="container" style="max-width: 860px;">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="breadcrumb">
+            <a href="/">Home</a>
+            <span class="sep">/</span>
+            <a href="/blog">Blog</a>
+            <span class="sep">/</span>
+            <a href="/blog?category={{ post.category }}">{{ post.category|title }}</a>
+            <span class="sep">/</span>
+            <span class="current">{{ post.title[:50] }}{% if post.title|length > 50 %}&hellip;{% endif %}</span>
+        </nav>
+
+        <!-- Category badge -->
+        <span class="post-cat-badge badge-{{ post.category if post.category in ['guides','regulations','safety','industry','tips'] else 'default' }}">
+            {{ post.category|title if post.category else 'General' }}
+        </span>
+
+        <!-- Title -->
+        <h1 class="post-title" data-slug="{{ post.slug }}">{{ post.title }}</h1>
+
+        <!-- Meta -->
+        <div class="post-meta">
+            <span><i class="fas fa-calendar-alt"></i> {{ post.date }}</span>
+            {% if post.author %}<span><i class="fas fa-user-circle"></i> {{ post.author }}</span>{% endif %}
+            <span><i class="fas fa-clock"></i> ~5 min read</span>
+        </div>
+
+        <!-- Hero CTA Banner -->
+        {% if post.cta_primary %}
+        <div class="hero-cta-banner" id="hero-cta">
+            <div class="cta-text">
+                <h4>{{ post.cta_primary.get('heading', 'Manage Your Fleet with Canada\'s #1 TMS') }}</h4>
+                <p>{{ post.cta_primary.get('subheading', 'Dispatch, compliance, IFTA, and driver pay — all in one platform.') }}</p>
+            </div>
+            <a href="{{ post.cta_primary.get('url', 'https://www.truckerpro.ca/signup') }}"
+               class="btn-green"
+               data-action="blog-cta-click"
+               data-position="hero"
+               data-target="{{ post.cta_primary.get('url', 'https://www.truckerpro.ca/signup') }}"
+               data-slug="{{ post.slug }}">
+                {{ post.cta_primary.get('label', 'Start Free Trial') }} &rarr;
+            </a>
+        </div>
+        {% else %}
+        <div class="hero-cta-banner" id="hero-cta">
+            <div class="cta-text">
+                <h4>Manage Your Fleet with Canada's #1 TMS</h4>
+                <p>Dispatch, compliance, IFTA, driver pay, and more — built for Canadian carriers.</p>
+            </div>
+            <a href="https://www.truckerpro.ca/signup"
+               class="btn-green"
+               data-action="blog-cta-click"
+               data-position="hero"
+               data-target="https://www.truckerpro.ca/signup"
+               data-slug="{{ post.slug }}">
+                Start Free Trial &rarr;
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</header>
+
+<!-- Featured image (if present) -->
+{% if post.featured_image %}
+<div style="background: var(--bg); padding: 2rem 0 0;">
+    <div class="container" style="max-width: 860px;">
+        <img src="{{ post.featured_image }}" alt="{{ post.title }}" style="width:100%; border-radius: 14px; border: 1px solid var(--border); display:block;" loading="eager">
+    </div>
+</div>
+{% endif %}
+
+<!-- Article Layout -->
+<main class="post-layout">
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Article Body -->
+            <div class="col-lg-8">
+                <article class="article-body">
+
+                    <!-- Before-CTA content -->
+                    {{ post.html_before_cta|safe }}
+
+                    <!-- Mid-article CTA -->
+                    {% if post.html_after_cta %}
+                    <div class="mid-cta-card">
+                        <div class="cta-content">
+                            {% if post.cta_secondary %}
+                            <h5>{{ post.cta_secondary.get('heading', 'Looking for Truck Parking in Canada?') }}</h5>
+                            <p>{{ post.cta_secondary.get('subheading', 'Browse 75+ locations across all provinces. Find, compare, and book secure truck parking.') }}</p>
+                            {% else %}
+                            <h5>Looking for Truck Parking in Canada?</h5>
+                            <p>Browse 75+ verified locations across all provinces. Find, compare, and book secure truck parking.</p>
+                            {% endif %}
+                        </div>
+                        <a href="{% if post.cta_secondary %}{{ post.cta_secondary.get('url', '/search') }}{% else %}/search{% endif %}"
+                           class="btn-green-sm"
+                           data-action="blog-cta-click"
+                           data-position="mid"
+                           data-target="{% if post.cta_secondary %}{{ post.cta_secondary.get('url', '/search') }}{% else %}/search{% endif %}"
+                           data-slug="{{ post.slug }}">
+                            {% if post.cta_secondary %}{{ post.cta_secondary.get('label', 'Find Parking') }}{% else %}Find Parking{% endif %} &rarr;
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- After-CTA content -->
+                    {{ post.html_after_cta|safe }}
+
+                </article>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4 d-none d-lg-block">
+                <aside class="post-sidebar">
+                    <!-- TMS CTA card -->
+                    <div class="sidebar-cta-card mb-4">
+                        <div class="icon"><i class="fas fa-truck"></i></div>
+                        <h5>Canada's #1 Trucking TMS</h5>
+                        <p>Dispatch, IFTA, compliance, driver pay, and more — purpose-built for Canadian carriers.</p>
+                        <a href="https://www.truckerpro.ca/signup"
+                           class="btn-green d-block text-center"
+                           data-action="blog-cta-click"
+                           data-position="sidebar"
+                           data-target="https://www.truckerpro.ca/signup"
+                           data-slug="{{ post.slug }}">
+                            Start Free Trial &rarr;
+                        </a>
+                    </div>
+                    <!-- Find Parking card -->
+                    <div class="sidebar-card">
+                        <h5><i class="fas fa-map-marker-alt me-1" style="color:var(--green)"></i> Find Truck Parking</h5>
+                        <p style="font-size:0.85rem; color:var(--gray-400); margin-bottom:1rem;">75+ verified locations across Canada. Search by province, city, or amenity.</p>
+                        <a href="/search" class="btn-green-sm d-block text-center" data-action="blog-cta-click" data-position="sidebar-parking" data-target="/search" data-slug="{{ post.slug }}">Search Locations &rarr;</a>
+                    </div>
+                    <!-- eManifest card -->
+                    <div class="sidebar-card" style="border-color: rgba(59,130,246,0.15);">
+                        <h5><i class="fas fa-passport me-1" style="color:#3b82f6"></i> eManifest Filing</h5>
+                        <p style="font-size:0.85rem; color:var(--gray-400); margin-bottom:1rem;">Cross the border with confidence. File your CBSA eManifest online — fast and paperless.</p>
+                        <a href="https://border.truckerpro.ca" class="btn-outline-blue d-block text-center" target="_blank" rel="noopener" data-action="blog-cta-click" data-position="sidebar-border" data-target="https://border.truckerpro.ca" data-slug="{{ post.slug }}">File eManifest &rarr;</a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Related Posts -->
+{% if related %}
+<section class="related-section">
+    <div class="container">
+        <h2 class="section-title">Related Articles</h2>
+        <div class="row g-4">
+            {% for r in related %}
+            <div class="col-md-4">
+                <a href="/blog/{{ r.slug }}"
+                   class="related-card"
+                   data-action="blog-related-click"
+                   data-slug="{{ r.slug }}">
+                    <div class="related-card-img-placeholder placeholder-{{ r.category if r.category in ['guides','regulations','safety','industry','tips'] else 'default' }}">
+                        {% if r.category == 'guides' %}<i class="fas fa-map-signs"></i>
+                        {% elif r.category == 'regulations' %}<i class="fas fa-gavel"></i>
+                        {% elif r.category == 'safety' %}<i class="fas fa-shield-alt"></i>
+                        {% elif r.category == 'industry' %}<i class="fas fa-industry"></i>
+                        {% elif r.category == 'tips' %}<i class="fas fa-lightbulb"></i>
+                        {% else %}<i class="fas fa-newspaper"></i>{% endif %}
+                    </div>
+                    <div class="related-card-body">
+                        <span class="related-cat-badge badge-{{ r.category if r.category in ['guides','regulations','safety','industry','tips'] else 'default' }}">{{ r.category|title if r.category else 'General' }}</span>
+                        <div class="card-title">{{ r.title }}</div>
+                        <div class="card-date"><i class="fas fa-calendar-alt me-1"></i>{{ r.date }}</div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Footer CTA: eManifest -->
+<section class="footer-cta">
+    <div class="container">
+        <div class="footer-cta-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="cta-icon"><i class="fas fa-passport"></i></div>
+                <div>
+                    <h4>Cross the Border? File eManifest Online</h4>
+                    <p>Submit your CBSA eManifest before you reach the border. Fast, compliant, and paperless.</p>
+                </div>
+            </div>
+            <a href="https://border.truckerpro.ca"
+               class="btn-outline-blue"
+               data-action="blog-cta-click"
+               data-position="footer-cta"
+               data-target="https://border.truckerpro.ca"
+               data-slug="{{ post.slug }}">
+                File eManifest &rarr;
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="blog-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand">Truck Parking <span>Club</span></div>
+                <p class="footer-tagline">Canada's truck parking directory. Find, compare, and book secure parking across all provinces and territories.</p>
+            </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="footer-col-title">Blog</div>
+                <a href="/blog" class="footer-link">All Articles</a>
+                <a href="/blog?category=guides" class="footer-link">Guides</a>
+                <a href="/blog?category=regulations" class="footer-link">Regulations</a>
+                <a href="/blog?category=safety" class="footer-link">Safety</a>
+                <a href="/blog?category=tips" class="footer-link">Tips</a>
+            </div>
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="footer-col-title">Parking</div>
+                <a href="/" class="footer-link">Home</a>
+                <a href="/search" class="footer-link">Find Parking</a>
+                <a href="/ontario" class="footer-link">Ontario</a>
+                <a href="/alberta" class="footer-link">Alberta</a>
+                <a href="/british-columbia" class="footer-link">BC</a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-col-title">TruckerPro Suite</div>
+                <a href="https://www.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> TruckerPro TMS</a>
+                <a href="https://border.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> Border Clearing</a>
+                <a href="https://checks.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> Background Checks</a>
+                <a href="https://fmcsa.truckerpro.ca" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> FMCSA Lookup</a>
+                <a href="https://stops.truckerpro.net" class="footer-link" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square fa-xs me-1"></i> Truck Stops</a>
+            </div>
+        </div>
+        <hr class="footer-divider">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 footer-bottom">
+            <span>&copy; {{ 2026 }} Truck Parking Club by TruckerPro. All rights reserved.</span>
+            <span>
+                <a href="/privacy" class="footer-link d-inline">Privacy</a>
+                &middot;
+                <a href="/terms" class="footer-link d-inline">Terms</a>
+            </span>
+        </div>
+    </div>
+</footer>
+
+<!-- Sticky Bottom Bar -->
+<div class="sticky-bar" id="sticky-bar" role="complementary" aria-label="Quick action bar">
+    <div class="container">
+        <div class="bar-inner">
+            <span class="bar-text"><strong>TruckerPro TMS</strong> — Canada's #1 fleet management platform</span>
+            <div class="bar-actions">
+                <a href="https://www.truckerpro.ca/signup"
+                   class="btn-bar-cta"
+                   data-action="blog-cta-click"
+                   data-position="sticky"
+                   data-target="https://www.truckerpro.ca/signup"
+                   data-slug="{{ post.slug }}">
+                    Start Free Trial
+                </a>
+                <button class="btn-dismiss" id="dismiss-sticky-bar" aria-label="Dismiss">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Sticky bar JS (CSP-safe, event delegation) -->
+<script>
+(function() {
+    'use strict';
+    var bar = document.getElementById('sticky-bar');
+    var heroCta = document.getElementById('hero-cta');
+    var dismissed = false;
+
+    if (!bar) return;
+
+    // Show bar after scrolling past the hero CTA
+    window.addEventListener('scroll', function() {
+        if (dismissed) return;
+        if (!heroCta) {
+            if (window.scrollY > 400) bar.classList.add('visible');
+            return;
+        }
+        var rect = heroCta.getBoundingClientRect();
+        if (rect.bottom < 0) {
+            bar.classList.add('visible');
+        } else {
+            bar.classList.remove('visible');
+        }
+    }, {passive: true});
+
+    // Dismiss button via event delegation
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#dismiss-sticky-bar')) {
+            dismissed = true;
+            bar.classList.remove('visible');
+            bar.style.display = 'none';
+        }
+    });
+})();
+</script>
+
+<!-- Blog Analytics -->
+<script src="{{ url_for('static', filename='js/blog-analytics.js') }}"></script>
 </body>
 </html>
