@@ -49,4 +49,7 @@ def stops_client(app):
             kwargs.setdefault('headers', {})['Host'] = 'stops.localhost'
             return self._client.post(*args, **kwargs)
 
+        def session_transaction(self):
+            return self._client.session_transaction()
+
     return StopsClient(c)

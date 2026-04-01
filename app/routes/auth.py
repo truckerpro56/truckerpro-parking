@@ -1,5 +1,5 @@
 import re
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, g
 from flask_login import login_user, logout_user, login_required, current_user
 import bcrypt
 from . import pages_bp
@@ -12,6 +12,10 @@ _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 @pages_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("10/minute")
 def login():
+    # Delegate to OTP login flow for stops.truckerpro.net
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.auth import stops_login
+        return stops_login()
     if current_user.is_authenticated:
         return redirect(url_for('pages.landing'))
     next_page = request.args.get('next', '')
@@ -65,8 +69,22 @@ def signup():
     return render_template('auth/signup.html')
 
 
+@pages_bp.route('/verify', methods=['GET', 'POST'])
+@limiter.limit("10/minute")
+def verify():
+    # OTP verify flow for stops.truckerpro.net
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.auth import stops_verify
+        return stops_verify()
+    # Parking site has no /verify — redirect to login
+    return redirect(url_for('pages.login'))
+
+
 @pages_bp.route('/logout', methods=['GET', 'POST'])
-@login_required
 def logout():
+    # Delegate to stops logout for stops.truckerpro.net
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.auth import stops_logout
+        return stops_logout()
     logout_user()
     return redirect(url_for('pages.landing'))

@@ -8,9 +8,13 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    name = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True)
+    name = db.Column(db.String(255), nullable=True, default='')
     phone = db.Column(db.String(20))
+    # OTP auth (stops.truckerpro.net — no passwords)
+    otp_code = db.Column(db.String(128))         # SHA256 hash of OTP
+    otp_expires_at = db.Column(db.DateTime(timezone=True))
+    otp_attempts = db.Column(db.Integer, default=0)
     role = db.Column(db.String(20), default='driver')  # driver, owner, admin
     stripe_customer_id = db.Column(db.String(255))
     is_active = db.Column(db.Boolean, default=True)
