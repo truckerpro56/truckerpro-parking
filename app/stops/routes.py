@@ -473,3 +473,16 @@ def sitemap_blog():
         xml.append(f"<url><loc>https://stops.truckerpro.net/blog/{bp['slug']}</loc><lastmod>{bp['date']}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>")
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
+
+
+@stops_public_bp.route('/sw.js')
+@site_required('stops')
+def service_worker():
+    """Serve the PWA service worker from the root scope."""
+    import os
+    from flask import send_file
+    sw_path = os.path.join(current_app.static_folder, 'sw.js')
+    response = send_file(sw_path, mimetype='application/javascript')
+    response.cache_control.no_store = True
+    response.cache_control.max_age = 0
+    return response

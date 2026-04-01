@@ -1,0 +1,31 @@
+{
+    "name": "Truck Stops Directory",
+    "short_name": "Truck Stops",
+    "description": "Find truck stops, rest areas, and weigh stations across the US and Canada",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#0f2440",
+    "orientation": "portrait-primary",
+    "categories": ["travel", "navigation"],
+    "icons": [
+        {
+            "src": "/static/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#0f2440"/>
+  <!-- Gas pump body -->
+  <rect x="120" y="160" width="176" height="272" rx="16" fill="#2563eb"/>
+  <!-- Display window -->
+  <rect x="148" y="192" width="120" height="80" rx="10" fill="#0f2440"/>
+  <!-- Display text highlight -->
+  <rect x="160" y="208" width="96" height="12" rx="4" fill="#60a5fa" opacity="0.6"/>
+  <rect x="160" y="228" width="72" height="12" rx="4" fill="#60a5fa" opacity="0.4"/>
+  <!-- Nozzle holder -->
+  <rect x="148" y="296" width="52" height="20" rx="6" fill="#60a5fa"/>
+  <!-- Pump hose arm -->
+  <path d="M296 224 L344 224 L344 336 Q344 360 320 360 L296 360" fill="none" stroke="#60a5fa" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Nozzle tip -->
+  <circle cx="344" cy="224" r="18" fill="none" stroke="#60a5fa" stroke-width="16"/>
+  <!-- Base -->
+  <rect x="104" y="432" width="208" height="20" rx="8" fill="#1d4ed8"/>
+</svg>
