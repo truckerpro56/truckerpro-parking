@@ -1,8 +1,20 @@
 {% extends "stops/base.html" %}
 {% block title %}Truck Stops in {{ state_name }}{% endblock %}
-{% block meta_description %}{{ total }} truck stops in {{ state_name }}. Find diesel fuel, parking, showers, scales, and repairs near you.{% endblock %}
+{% block meta_description %}Find {{ total }} truck stops in {{ state_name }}. Diesel, showers, scales, parking, and more. Browse by city or view all locations.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/{{ 'us' if country == 'US' else 'canada' }}/{{ state_slug }}{% endblock %}
 
 {% block head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://stops.truckerpro.net/"},
+    {"@type": "ListItem", "position": 2, "name": "{{ 'United States' if country == 'US' else 'Canada' }}", "item": "https://stops.truckerpro.net/{{ 'us' if country == 'US' else 'canada' }}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ state_name }}"}
+  ]
+}
+</script>
 <style>
   .stops-page-header {
     background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%);
@@ -186,6 +198,7 @@
 <!-- City Filter Pills -->
 {% if cities | length > 1 %}
 <div class="stops-section" style="padding-bottom:0;">
+  <h2 style="font-size:1rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Cities with Truck Stops in {{ state_name }}</h2>
   <div class="city-filter-row">
     <span class="city-filter-label">Filter by city:</span>
     {% for city_name_val, city_count in cities %}
@@ -203,6 +216,7 @@
 
 <!-- Stops Grid -->
 <section class="stops-section">
+  <h2 style="font-size:1.15rem;font-weight:700;color:#0f172a;margin-bottom:20px;">All Truck Stops in {{ state_name }}</h2>
   {% if stops %}
   <div class="stops-grid">
     {% for stop in stops %}
@@ -219,6 +233,21 @@
 
 <!-- Pagination -->
 {% include "stops/partials/pagination.html" %}
+
+<!-- Cross-links -->
+<div style="max-width:1200px; margin:0 auto; padding:0 24px 32px;">
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+    <a href="/brands" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:9px 18px;font-size:0.85rem;font-weight:600;color:#0f172a;text-decoration:none;transition:border-color .15s,color .15s;" data-ga-event="crosslink_click" data-ga-target="brands">
+      <i class="fas fa-store" style="color:#2563eb;"></i> Browse by Brand
+    </a>
+    <a href="/highways" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:9px 18px;font-size:0.85rem;font-weight:600;color:#0f172a;text-decoration:none;transition:border-color .15s,color .15s;" data-ga-event="crosslink_click" data-ga-target="highways">
+      <i class="fas fa-road" style="color:#2563eb;"></i> Popular Highways
+    </a>
+    <a href="/{{ 'us' if country == 'US' else 'canada' }}" style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:9px 18px;font-size:0.85rem;font-weight:600;color:#0f172a;text-decoration:none;transition:border-color .15s,color .15s;" data-ga-event="crosslink_click" data-ga-target="country">
+      <i class="fas fa-arrow-left" style="color:#2563eb;"></i> All {{ 'US' if country == 'US' else 'Canadian' }} States
+    </a>
+  </div>
+</div>
 
 <!-- CTA Banner -->
 <div style="max-width:1200px; margin:0 auto; padding:0 24px 56px;">

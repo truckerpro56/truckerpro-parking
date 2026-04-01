@@ -13,6 +13,20 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://stops.truckerpro.net/"},
+    {"@type": "ListItem", "position": 2, "name": "{{ 'United States' if stop.country == 'US' else 'Canada' }}", "item": "https://stops.truckerpro.net/{{ 'us' if stop.country == 'US' else 'canada' }}"},
+    {"@type": "ListItem", "position": 3, "name": "{{ stop.state_province }}", "item": "https://stops.truckerpro.net/{{ 'us' if stop.country == 'US' else 'canada' }}/{{ state_slug }}"},
+    {"@type": "ListItem", "position": 4, "name": "{{ stop.city }}", "item": "https://stops.truckerpro.net/{{ 'us' if stop.country == 'US' else 'canada' }}/{{ state_slug }}/{{ city_slug }}"},
+    {"@type": "ListItem", "position": 5, "name": "{{ stop.name }}"}
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "TruckStop",
   "name": "{{ stop.name | e }}",
   "address": {
@@ -850,6 +864,44 @@
         {% endfor %}
     </div>
 </div>
+{% endif %}
+
+<!-- ═══════════════ Driver Reviews ═══════════════ -->
+{% set review_list = stop.reviews.all() %}
+{% if review_list %}
+<div class="info-card mt-4">
+    <h2><i class="fa-solid fa-star" style="color:var(--accent)"></i> Driver Reviews ({{ review_list|length }})</h2>
+    {% for review in review_list[:5] %}
+    <div class="py-3 {% if not loop.last %}border-bottom{% endif %}">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="d-flex gap-1">
+                {% for i in range(review.rating) %}<i class="fa-solid fa-star" style="color:#f59e0b;font-size:0.8rem"></i>{% endfor %}
+                {% for i in range(5 - review.rating) %}<i class="fa-regular fa-star" style="color:#d1d5db;font-size:0.8rem"></i>{% endfor %}
+            </div>
+            <span style="color:var(--text-sec);font-size:0.8rem">{{ review.created_at.strftime('%b %d, %Y') if review.created_at else '' }}</span>
+        </div>
+        {% if review.comment %}
+        <p style="color:var(--text-sec);font-size:0.9rem;margin:0">{{ review.comment }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- ═══════════════ Brand Cross-link ═══════════════ -->
+{% if stop.brand_display_name %}
+<div class="text-center mt-4">
+    <a href="/brands/{{ stop.brand | lower | replace(' ', '-') }}" class="btn btn-outline-primary">
+        View all {{ stop.brand_display_name }} locations <i class="fa-solid fa-arrow-right"></i>
+    </a>
+</div>
+{% endif %}
+
+<!-- ═══════════════ Last Updated ═══════════════ -->
+{% if stop.updated_at %}
+<p class="text-muted text-center mt-4" style="font-size: 0.8rem;">
+    <i class="fa-regular fa-clock"></i> Last updated: {{ stop.updated_at.strftime('%B %d, %Y') }}
+</p>
 {% endif %}
 
 {% endblock %}

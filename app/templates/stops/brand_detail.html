@@ -1,7 +1,21 @@
 {% extends "stops/base.html" %}
 {% block title %}{{ brand_name }} Truck Stop Locations{% endblock %}
-{% block meta_description %}{{ total }} {{ brand_name }} truck stop locations across the US and Canada. Find diesel, parking, showers, and amenities at {{ brand_name }} stops.{% endblock %}
+{% block meta_description %}{{ total }} {{ brand_name }} truck stops. Find locations, amenities, fuel prices, and driver reviews.{% endblock %}
 {% block canonical %}https://stops.truckerpro.net/brands/{{ brand_slug }}{% endblock %}
+
+{% block head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://stops.truckerpro.net/"},
+    {"@type": "ListItem", "position": 2, "name": "Brands", "item": "https://stops.truckerpro.net/brands"},
+    {"@type": "ListItem", "position": 3, "name": "{{ brand_name }}"}
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 
