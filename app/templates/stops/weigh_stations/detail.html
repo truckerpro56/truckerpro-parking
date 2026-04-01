@@ -1,0 +1,149 @@
+{% extends "stops/base.html" %}
+{% block title %}{{ ws.name }} — {{ ws.state_province }}{% endblock %}
+{% block meta_description %}{{ ws.name }} weigh station in {{ ws.state_province }}{% if ws.highway %} on {{ ws.highway }}{% endif %}. Annual truck count, days active, and location details.{% endblock %}
+
+{% block head %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CivicStructure",
+    "name": {{ ws.name | tojson }},
+    "address": {"@type": "PostalAddress", "addressRegion": {{ ws.state_province | tojson }}, "addressCountry": "US"}
+    {% if ws.latitude and ws.longitude %}
+    ,"geo": {"@type": "GeoCoordinates", "latitude": {{ ws.latitude }}, "longitude": {{ ws.longitude }}}
+    {% endif %}
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-nav">
+    <a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span>
+    <a href="/weigh-stations">Weigh Stations</a> <span class="sep">/</span>
+    <a href="/weigh-stations/{{ state_slug }}">{{ ws.state_province }}</a> <span class="sep">/</span>
+    <span class="current">{{ ws.name }}</span>
+</nav>
+
+<div class="page-hero rounded-3 mb-4" style="padding:2rem">
+    <div class="d-flex align-items-start gap-3 flex-wrap">
+        <div class="flex-grow-1">
+            <span class="badge mb-2" style="background:rgba(255,255,255,.18);color:#fff;font-size:.72rem;border-radius:999px;padding:.3rem .8rem"><i class="fa-solid fa-weight-scale me-1"></i> Weigh Station</span>
+            <h1 style="color:#fff;margin-bottom:8px">{{ ws.name }}</h1>
+            {% if ws.highway %}
+            <div style="color:rgba(255,255,255,.8);font-size:.9rem"><i class="fa-solid fa-road" style="color:#60a5fa;width:16px"></i> {{ ws.highway }}{% if ws.direction %} ({{ ws.direction }}){% endif %}</div>
+            {% endif %}
+            <div style="color:rgba(255,255,255,.8);font-size:.9rem"><i class="fa-solid fa-location-dot" style="color:#60a5fa;width:16px"></i> {{ ws.state_province }}</div>
+        </div>
+        {% if ws.latitude and ws.longitude %}
+        <a href="https://maps.google.com/?q={{ ws.latitude }},{{ ws.longitude }}" target="_blank" rel="noopener"
+           class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none">
+            <i class="fa-solid fa-diamond-turn-right me-1"></i> Get Directions
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="info-card">
+            <h2><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Station Details</h2>
+            <div class="row g-3">
+                {% if ws.station_id %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-id-badge" style="font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.72rem;color:var(--text-sec);font-weight:600;margin-bottom:2px">Station ID</div>
+                        <div style="font-size:0.88rem;font-weight:700">{{ ws.station_id }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if ws.functional_class %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-road" style="font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.72rem;color:var(--text-sec);font-weight:600;margin-bottom:2px">Functional Class</div>
+                        <div style="font-size:0.88rem;font-weight:700">{{ ws.functional_class }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if ws.annual_truck_count %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-truck" style="font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.72rem;color:var(--text-sec);font-weight:600;margin-bottom:2px">Annual Truck Count</div>
+                        <div style="font-size:0.88rem;font-weight:700">{{ "{:,}".format(ws.annual_truck_count) }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if ws.days_active %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-calendar-days" style="font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.72rem;color:var(--text-sec);font-weight:600;margin-bottom:2px">Days Active / Year</div>
+                        <div style="font-size:0.88rem;font-weight:700">{{ ws.days_active }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-weight-scale" style="font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.72rem;color:var(--text-sec);font-weight:600;margin-bottom:2px">Type</div>
+                        <div style="font-size:0.88rem;font-weight:700">{{ ws.station_type.replace('_', ' ').title() }}</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-circle-check" style="font-size:1.3rem;color:{% if ws.is_permanent %}var(--accent){% else %}var(--border){% endif %};margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.72rem;color:var(--text-sec);font-weight:600;margin-bottom:2px">Permanent</div>
+                        <div style="font-size:0.88rem;font-weight:700;color:{% if ws.is_permanent %}var(--text){% else %}var(--text-sec){% endif %}">{{ 'Yes' if ws.is_permanent else 'No' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        {% if ws.latitude and ws.longitude and google_maps_key %}
+        <div class="info-card">
+            <h2><i class="fa-solid fa-map" style="color:var(--accent)"></i> Map</h2>
+            <div style="border-radius:8px;overflow:hidden;height:250px">
+                <iframe width="100%" height="250" frameborder="0" style="border:0"
+                        src="https://www.google.com/maps/embed/v1/place?key={{ google_maps_key }}&q={{ ws.latitude }},{{ ws.longitude }}&zoom=14&maptype=satellite"
+                        allowfullscreen loading="lazy"></iframe>
+            </div>
+        </div>
+        {% endif %}
+        <div class="info-card" style="margin-top:{% if ws.latitude and ws.longitude and google_maps_key %}16px{% else %}0{% endif %}">
+            <h2><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> About Weigh Stations</h2>
+            <p style="font-size:0.88rem;color:var(--text-sec);margin-bottom:0">
+                Weigh stations enforce truck weight limits to protect highway infrastructure.
+                Commercial vehicles over 10,000 lbs GVWR are typically required to stop.
+                Data sourced from the Bureau of Transportation Statistics (BTS) / FHWA
+                Weigh-in-Motion program.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if nearby %}
+<h2 style="font-size:1.2rem;font-weight:700;margin:32px 0 16px"><i class="fa-solid fa-map-pin" style="color:var(--accent)"></i> Nearby Weigh Stations</h2>
+<div class="row g-3">
+    {% for nws in nearby %}
+    <div class="col-md-6 col-lg-4">
+        <div class="stop-card">
+            <div class="stop-card-header">
+                <h3><a href="/weigh-stations/{{ state_slug }}/{{ nws.slug }}">{{ nws.name }}</a></h3>
+                <div class="stop-location"><i class="fa-solid fa-location-dot"></i> {{ nws.state_province }}</div>
+            </div>
+            <div class="stop-card-body">
+                {% if nws.highway %}<div class="stop-highway"><i class="fa-solid fa-road"></i> {{ nws.highway }}</div>{% endif %}
+                <div class="amenity-tags">
+                    <span class="amenity-tag"><i class="fa-solid fa-weight-scale"></i> Weigh Station</span>
+                    {% if nws.annual_truck_count %}<span class="amenity-tag"><i class="fa-solid fa-truck"></i> {{ "{:,}".format(nws.annual_truck_count) }} trucks/yr</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

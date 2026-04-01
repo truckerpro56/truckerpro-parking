@@ -221,6 +221,7 @@ def create_app(config_class=None):
         from .models.favorite_stop import FavoriteStop  # noqa: F401
         from .models.stop_photo import StopPhoto  # noqa: F401
         from .models.rest_area import RestArea  # noqa: F401
+        from .models.weigh_station import WeighStation  # noqa: F401
         import sqlalchemy
         for attempt in range(5):
             try:
@@ -448,6 +449,31 @@ def create_app(config_class=None):
         print(f"Imported {count} rest areas.")
         total = RestArea.query.filter_by(is_active=True).count()
         print(f"Total active rest areas: {total}")
+
+    @app.cli.command('import-weigh-stations')
+    def import_weigh_stations_command():
+        """Import weigh stations from BTS/FHWA dataset."""
+        from .import_stops.weigh_stations_bts import fetch_weigh_stations, parse_bts_feature
+        from .models.weigh_station import WeighStation
+        print("Fetching BTS weigh stations...")
+        features = fetch_weigh_stations()
+        print(f"Got {len(features)} features. Importing...")
+        count = 0
+        for feature in features:
+            data = parse_bts_feature(feature)
+            if not data.get('latitude') or not data.get('longitude') or not data.get('state_province'):
+                continue
+            existing = WeighStation.query.filter_by(slug=data['slug']).first()
+            if existing:
+                for key, val in data.items():
+                    if key != 'id' and val is not None:
+                        setattr(existing, key, val)
+            else:
+                ws = WeighStation(**data)
+                db.session.add(ws)
+            count += 1
+        db.session.commit()
+        print(f"Imported {count} weigh stations.")
 
     @app.cli.command('compute-border-distances')
     def compute_border_distances_command():

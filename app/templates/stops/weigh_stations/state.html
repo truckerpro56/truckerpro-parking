@@ -1,0 +1,33 @@
+{% extends "stops/base.html" %}
+{% block title %}Weigh Stations in {{ state_name }}{% endblock %}
+{% block meta_description %}{{ total }} highway weigh stations in {{ state_name }}. BTS/FHWA truck weigh-in-motion and inspection station data.{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-nav"><a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span> <a href="/weigh-stations">Weigh Stations</a> <span class="sep">/</span> <span class="current">{{ state_name }}</span></nav>
+
+<h1 style="font-size:1.5rem;font-weight:800;margin-bottom:4px">Weigh Stations in {{ state_name }}</h1>
+<p style="color:var(--text-sec);margin-bottom:24px">{{ total }} weigh stations</p>
+
+<div class="row g-3">
+    {% for ws in stations %}
+    <div class="col-md-6 col-lg-4">
+        <div class="stop-card">
+            <div class="stop-card-header">
+                <h3><a href="/weigh-stations/{{ state_slug }}/{{ ws.slug }}">{{ ws.name }}</a></h3>
+                <div class="stop-location"><i class="fa-solid fa-location-dot"></i> {{ ws.state_province }}</div>
+            </div>
+            <div class="stop-card-body">
+                {% if ws.highway %}<div class="stop-highway"><i class="fa-solid fa-road"></i> {{ ws.highway }}</div>{% endif %}
+                <div class="amenity-tags">
+                    <span class="amenity-tag"><i class="fa-solid fa-weight-scale"></i> Weigh Station</span>
+                    {% if ws.annual_truck_count %}<span class="amenity-tag"><i class="fa-solid fa-truck"></i> {{ "{:,}".format(ws.annual_truck_count) }} trucks/yr</span>{% endif %}
+                    {% if ws.days_active %}<span class="amenity-tag"><i class="fa-solid fa-calendar"></i> {{ ws.days_active }} days/yr</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% include "stops/partials/pagination.html" %}
+{% endblock %}

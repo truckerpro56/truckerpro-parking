@@ -347,6 +347,7 @@ def sitemap_index():
     for name in ['stops', 'states', 'brands', 'highways', 'cities']:
         xml.append(f'<sitemap><loc>{STOPS_BASE}/sitemap-{name}.xml</loc></sitemap>')
     xml.append(f'<sitemap><loc>{STOPS_BASE}/sitemap-rest-areas.xml</loc></sitemap>')
+    xml.append(f'<sitemap><loc>{STOPS_BASE}/sitemap-weigh-stations.xml</loc></sitemap>')
     xml.append(f'<sitemap><loc>https://stops.truckerpro.net/sitemap-blog.xml</loc></sitemap>')
     xml.append('</sitemapindex>')
     return Response('\n'.join(xml), mimetype='application/xml')
@@ -440,6 +441,21 @@ def sitemap_rest_areas():
     for a in areas:
         state_sl = state_code_to_slug(a.state_province)
         xml.append(f'<url><loc>{STOPS_BASE}/rest-areas/{state_sl}/{a.slug}</loc></url>')
+    xml.append('</urlset>')
+    return Response('\n'.join(xml), mimetype='application/xml')
+
+
+@stops_public_bp.route('/sitemap-weigh-stations.xml')
+@site_required('stops')
+def sitemap_weigh_stations():
+    from ..models.weigh_station import WeighStation
+    stations = WeighStation.query.filter_by(is_active=True).all()
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    xml.append(f'<url><loc>{STOPS_BASE}/weigh-stations</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
+    for ws in stations:
+        state_sl = state_code_to_slug(ws.state_province)
+        xml.append(f'<url><loc>{STOPS_BASE}/weigh-stations/{state_sl}/{ws.slug}</loc></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
