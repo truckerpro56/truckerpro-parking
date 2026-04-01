@@ -34,10 +34,481 @@
   {% endif %}
 }
 </script>
+
+<style>
+/* ── Photo Gallery ─────────────────────────────── */
+.detail-gallery {
+  margin: -16px -12px 0;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  background: var(--navy);
+  position: relative;
+}
+.gallery-main {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  max-height: 420px;
+  overflow: hidden;
+  position: relative;
+}
+.gallery-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity .3s ease;
+}
+.gallery-thumbs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--navy);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.2) transparent;
+}
+.gallery-thumb {
+  flex-shrink: 0;
+  width: 100px;
+  height: 68px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  opacity: .6;
+  transition: opacity .2s, border-color .2s, transform .15s;
+}
+.gallery-thumb.active,
+.gallery-thumb:hover {
+  opacity: 1;
+  border-color: var(--accent);
+}
+.gallery-thumb:hover {
+  transform: scale(1.04);
+}
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.gallery-counter {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+/* ── Fallback hero (no photos) ─────────────────── */
+.detail-hero-fallback {
+  margin: -16px -12px 0;
+  background: var(--navy-gradient);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  position: relative;
+}
+.detail-hero-fallback .hero-map-embed {
+  width: 100%;
+  height: 280px;
+  border: 0;
+  display: block;
+  opacity: .85;
+}
+.detail-hero-fallback .hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to top, var(--navy) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ── Store Header ──────────────────────────────── */
+.store-header {
+  padding: 32px 0 24px;
+}
+.store-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.store-brand-badge i {
+  font-size: .68rem;
+}
+.store-header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 8px;
+  letter-spacing: -.02em;
+  line-height: 1.15;
+}
+.store-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.store-rating-stars {
+  color: #f59e0b;
+  font-size: .95rem;
+  display: flex;
+  gap: 2px;
+}
+.store-rating-count {
+  color: var(--text-sec);
+  font-size: .85rem;
+  font-weight: 500;
+}
+.store-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.store-info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .9rem;
+  color: var(--text-sec);
+}
+.store-info-row i {
+  color: var(--accent);
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  font-size: .85rem;
+}
+.store-info-row a {
+  color: var(--text-sec);
+  text-decoration: none;
+  transition: color .15s;
+}
+.store-info-row a:hover {
+  color: var(--accent);
+}
+.store-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn-directions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 22px;
+  font-size: .88rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .15s, transform .12s;
+  box-shadow: 0 2px 8px rgba(37,99,235,.3);
+}
+.btn-directions:hover {
+  background: var(--accent-hover);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.btn-website {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 22px;
+  font-size: .88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .15s, transform .12s, box-shadow .15s;
+}
+.btn-website:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Quick Info Bar ────────────────────────────── */
+.quick-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 32px;
+}
+.quick-info-item {
+  flex: 1 1 0;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 12px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  gap: 4px;
+}
+.quick-info-item:last-child {
+  border-right: none;
+}
+.quick-info-icon {
+  font-size: 1.35rem;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+.quick-info-label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--text-sec);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.quick-info-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+
+/* ── Amenity Cards ─────────────────────────────── */
+.amenity-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.amenity-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 14px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+.amenity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #bfdbfe;
+}
+.amenity-card-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 10px;
+  background: #eff6ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+.amenity-card-name {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.amenity-card-detail {
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--text-sec);
+}
+.amenity-unavailable {
+  opacity: .35;
+}
+.amenity-unavailable .amenity-card-icon {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+/* ── Detail Sections ───────────────────────────── */
+.detail-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+}
+.detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-section-title i {
+  color: var(--accent);
+  font-size: .95rem;
+}
+
+/* ── Fuel Price Cards (override) ───────────────── */
+.fuel-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+.fuel-card-modern {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: border-color .15s;
+}
+.fuel-card-modern:hover {
+  border-color: var(--accent);
+}
+.fuel-card-type {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--text-sec);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+.fuel-card-price {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -.02em;
+}
+
+/* ── Restaurant & Loyalty ──────────────────────── */
+.restaurant-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.restaurant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: .82rem;
+  font-weight: 600;
+}
+.loyalty-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+/* ── Map Embed ─────────────────────────────────── */
+.map-embed-frame {
+  width: 100%;
+  height: 300px;
+  border: 0;
+  border-radius: 12px;
+  display: block;
+}
+
+/* ── Responsive ────────────────────────────────── */
+@media (max-width: 991px) {
+  .amenity-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .detail-gallery, .detail-hero-fallback {
+    margin: -16px -12px 0;
+    border-radius: 0;
+  }
+  .gallery-main {
+    aspect-ratio: 16 / 9;
+    max-height: 260px;
+  }
+  .gallery-thumb {
+    width: 72px;
+    height: 48px;
+  }
+  .amenity-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .amenity-card {
+    padding: 14px 10px;
+  }
+  .quick-info-bar {
+    border-radius: 10px;
+  }
+  .quick-info-item {
+    min-width: 100px;
+    padding: 14px 8px;
+  }
+  .detail-section {
+    padding: 20px 16px;
+  }
+  .store-header h1 {
+    font-size: 1.5rem;
+  }
+  .store-actions {
+    flex-direction: column;
+  }
+  .store-actions a {
+    text-align: center;
+    justify-content: center;
+  }
+}
+@media (max-width: 576px) {
+  .quick-info-item {
+    flex: 1 1 45%;
+    border-bottom: 1px solid var(--border);
+  }
+  .quick-info-item:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+}
+</style>
 {% endblock %}
 
 {% block content %}
 {% set country_slug = 'us' if stop.country == 'US' else 'canada' %}
+{% set review_count = stop.reviews.count() %}
+{% set fuel_list = stop.fuel_prices.all() %}
 
 <!-- Breadcrumb -->
 <nav class="breadcrumb-nav py-2 px-0" aria-label="Breadcrumb">
@@ -52,135 +523,368 @@
     <span class="current">{{ stop.name }}</span>
 </nav>
 
-<!-- Stop Hero -->
-<div class="page-hero rounded-3 mb-4" style="padding:2rem 2rem 1.75rem;">
-    <div class="d-flex align-items-start gap-3 flex-wrap">
-        <div class="flex-grow-1">
-            {% if stop.brand_display_name %}
-            <div class="mb-2">
-                <span class="badge" style="background:rgba(255,255,255,.18);color:#ffffff;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:.3rem .8rem;">
-                    <i class="fa-solid fa-gas-pump me-1"></i>{{ stop.brand_display_name }}
-                </span>
-            </div>
-            {% endif %}
-            <h1 class="mb-2" style="color:#fff;">{{ stop.name }}</h1>
-            <div class="d-flex flex-column gap-1 mt-2">
-                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-                    <i class="fa-solid fa-location-dot" style="color:#60a5fa;width:16px;"></i>
-                    {{ stop.address }}, {{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}{% if stop.country %}, {{ stop.country }}{% endif %}
-                </div>
-                {% if stop.highway %}
-                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-                    <i class="fa-solid fa-road" style="color:#60a5fa;width:16px;"></i>
-                    {{ stop.highway }}{% if stop.exit_number %} &mdash; Exit {{ stop.exit_number }}{% endif %}
-                </div>
-                {% endif %}
-                {% if stop.phone %}
-                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-                    <i class="fa-solid fa-phone" style="color:#60a5fa;width:16px;"></i>
-                    <a href="tel:{{ stop.phone }}" style="color:rgba(255,255,255,.85);text-decoration:none;">{{ stop.phone }}</a>
-                </div>
-                {% endif %}
-                {% if stop.hours %}
-                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
-                    <i class="fa-solid fa-clock" style="color:#60a5fa;width:16px;"></i>
-                    {{ stop.hours }}
-                </div>
-                {% endif %}
-            </div>
+<!-- ═══════════════ Photo Gallery Hero ═══════════════ -->
+{% if photos %}
+<div class="detail-gallery">
+    <div class="gallery-main">
+        <img id="gallery-main-img" src="{{ photos[0] }}" alt="{{ stop.name }} — photo 1" loading="eager">
+        <div class="gallery-counter"><span id="gallery-index">1</span> / {{ photos | length }}</div>
+    </div>
+    {% if photos | length > 1 %}
+    <div class="gallery-thumbs">
+        {% for photo_url in photos %}
+        <div class="gallery-thumb{% if loop.first %} active{% endif %}" data-action="gallery-thumb" data-index="{{ loop.index0 }}" data-src="{{ photo_url }}">
+            <img src="{{ photo_url }}" alt="{{ stop.name }} — photo {{ loop.index }}" loading="lazy">
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<!-- Fallback: gradient hero with satellite map -->
+<div class="detail-hero-fallback">
+    {% if stop.latitude and stop.longitude and google_maps_key %}
+    <iframe class="hero-map-embed"
+            src="https://www.google.com/maps/embed/v1/place?key={{ google_maps_key }}&q={{ stop.latitude }},{{ stop.longitude }}&zoom=15&maptype=satellite"
+            allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            title="Map of {{ stop.name }}"></iframe>
+    {% else %}
+    <div style="height:280px;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;color:rgba(255,255,255,.5);">
+            <i class="fa-solid fa-gas-pump" style="font-size:3rem;margin-bottom:12px;display:block;"></i>
+            <span style="font-size:.9rem;font-weight:600;">{{ stop.name }}</span>
+        </div>
+    </div>
+    {% endif %}
+    <div class="hero-overlay"></div>
+</div>
+{% endif %}
+
+<!-- ═══════════════ Store Header ═══════════════ -->
+<div class="store-header">
+    {% if stop.brand_display_name %}
+    <div class="store-brand-badge">
+        <i class="fa-solid fa-gas-pump"></i>{{ stop.brand_display_name }}
+    </div>
+    {% endif %}
+
+    <h1>{{ stop.name }}</h1>
+
+    {% if review_count > 0 %}
+    <div class="store-rating-row">
+        <div class="store-rating-stars">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+        </div>
+        <span class="store-rating-count">{{ review_count }} review{{ 's' if review_count != 1 else '' }}</span>
+    </div>
+    {% endif %}
+
+    <div class="store-info-rows">
+        <div class="store-info-row">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>{{ stop.address }}, {{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}{% if stop.country %}, {{ stop.country }}{% endif %}</span>
+        </div>
+        {% if stop.highway %}
+        <div class="store-info-row">
+            <i class="fa-solid fa-road"></i>
+            <span>{{ stop.highway }}{% if stop.exit_number %} &mdash; Exit {{ stop.exit_number }}{% endif %}</span>
+        </div>
+        {% endif %}
+        {% if stop.phone %}
+        <div class="store-info-row">
+            <i class="fa-solid fa-phone"></i>
+            <a href="tel:{{ stop.phone }}">{{ stop.phone }}</a>
+        </div>
+        {% endif %}
+        {% if stop.hours_of_operation %}
+        <div class="store-info-row">
+            <i class="fa-solid fa-clock"></i>
+            <span>
+                {% if stop.hours_of_operation is mapping %}
+                    {% for day, hrs in stop.hours_of_operation.items() %}{{ day }}: {{ hrs }}{% if not loop.last %}, {% endif %}{% endfor %}
+                {% else %}
+                    {{ stop.hours_of_operation }}
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+        {% if stop.store_number %}
+        <div class="store-info-row">
+            <i class="fa-solid fa-hashtag"></i>
+            <span>Store #{{ stop.store_number }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="store-actions">
+        {% if stop.latitude and stop.longitude %}
+        <a href="https://maps.google.com/?q={{ stop.latitude }},{{ stop.longitude }}"
+           rel="noopener" target="_blank" class="btn-directions"
+           data-ga-event="get_directions" data-ga-target="{{ stop.slug }}">
+            <i class="fa-solid fa-diamond-turn-right"></i>Get Directions
+        </a>
+        {% endif %}
         {% if stop.website %}
-        <div class="mt-2">
-            <a href="{{ stop.website }}" class="btn btn-sm" rel="noopener" target="_blank"
-               style="background:rgba(255,255,255,.15);color:#ffffff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;">
-                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Visit Website
-            </a>
-        </div>
+        <a href="{{ stop.website }}" rel="noopener" target="_blank" class="btn-website"
+           data-ga-event="visit_website" data-ga-target="{{ stop.slug }}">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>Visit Website
+        </a>
         {% endif %}
     </div>
 </div>
 
-<!-- Banners -->
+<!-- ═══════════════ Quick Info Bar ═══════════════ -->
+<div class="quick-info-bar">
+    {% if stop.total_parking_spots %}
+    <div class="quick-info-item">
+        <div class="quick-info-icon"><i class="fa-solid fa-square-parking"></i></div>
+        <div class="quick-info-value">{{ stop.total_parking_spots }}</div>
+        <div class="quick-info-label">Parking Spots</div>
+    </div>
+    {% endif %}
+    {% if stop.truck_spots %}
+    <div class="quick-info-item">
+        <div class="quick-info-icon"><i class="fa-solid fa-truck"></i></div>
+        <div class="quick-info-value">{{ stop.truck_spots }}</div>
+        <div class="quick-info-label">Truck Spots</div>
+    </div>
+    {% endif %}
+    {% if stop.has_diesel %}
+    <div class="quick-info-item">
+        <div class="quick-info-icon"><i class="fa-solid fa-gas-pump"></i></div>
+        <div class="quick-info-value"><i class="fa-solid fa-check" style="color:#16a34a;font-size:.95rem;"></i></div>
+        <div class="quick-info-label">Diesel</div>
+    </div>
+    {% endif %}
+    {% if stop.has_showers %}
+    <div class="quick-info-item">
+        <div class="quick-info-icon"><i class="fa-solid fa-shower"></i></div>
+        <div class="quick-info-value">{% if stop.shower_count %}{{ stop.shower_count }}{% else %}<i class="fa-solid fa-check" style="color:#16a34a;font-size:.95rem;"></i>{% endif %}</div>
+        <div class="quick-info-label">Showers</div>
+    </div>
+    {% endif %}
+    {% if stop.has_scale %}
+    <div class="quick-info-item">
+        <div class="quick-info-icon"><i class="fa-solid fa-weight-scale"></i></div>
+        <div class="quick-info-value">{% if stop.scale_type %}{{ stop.scale_type | upper }}{% else %}<i class="fa-solid fa-check" style="color:#16a34a;font-size:.95rem;"></i>{% endif %}</div>
+        <div class="quick-info-label">Scale</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ═══════════════ Banner: TMS ═══════════════ -->
 {% for banner in banners %}
-{% if banner.type == 'tms' %}{% include "stops/partials/banner_tms.html" %}
-{% elif banner.type == 'border' %}{% include "stops/partials/banner_border.html" %}
-{% elif banner.type == 'parking' %}{% include "stops/partials/banner_parking.html" %}
-{% elif banner.type == 'fmcsa' %}{% include "stops/partials/banner_fmcsa.html" %}
-{% endif %}
+{% if banner.type == 'tms' %}{% include "stops/partials/banner_tms.html" %}{% endif %}
 {% endfor %}
 
-<div class="row g-4">
-    <div class="col-lg-8">
-
-        <!-- Amenities -->
-        <div class="info-card">
-            <h2><i class="fa-solid fa-list-check"></i> Amenities</h2>
-            {% include "stops/partials/amenities_grid.html" %}
-            {% if stop.total_parking_spots %}
-            <div class="mt-3 pt-3" style="border-top:1px solid var(--border);">
-                <div style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:var(--text-sec);">
-                    <i class="fa-solid fa-square-parking" style="color:var(--accent);"></i>
-                    <strong>{{ stop.total_parking_spots }}</strong>&nbsp;parking spots available
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Fuel Prices -->
-        {% with fuel_prices=stop.fuel_prices %}
-        {% include "stops/partials/fuel_prices.html" %}
-        {% endwith %}
-
+<!-- ═══════════════ Amenities Section ═══════════════ -->
+<div class="detail-section">
+    <div class="detail-section-title">
+        <i class="fa-solid fa-list-check"></i>Amenities &amp; Services
     </div>
-
-    <div class="col-lg-4">
-
-        <!-- Location card -->
-        <div class="info-card">
-            <h2><i class="fa-solid fa-map-pin"></i> Location</h2>
-            <div class="d-flex flex-column gap-2" style="font-size:.875rem;color:var(--text-sec);">
-                <div><i class="fa-solid fa-location-dot me-2" style="color:var(--accent);width:16px;"></i>{{ stop.address }}</div>
-                <div><i class="fa-solid fa-city me-2" style="color:var(--accent);width:16px;"></i>{{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}</div>
-                {% if stop.highway %}
-                <div><i class="fa-solid fa-road me-2" style="color:var(--accent);width:16px;"></i>{{ stop.highway }}{% if stop.exit_number %}, Exit {{ stop.exit_number }}{% endif %}</div>
-                {% endif %}
-            </div>
-            {% if stop.latitude and stop.longitude %}
-            <div class="mt-3">
-                <a href="https://maps.google.com/?q={{ stop.latitude }},{{ stop.longitude }}"
-                   rel="noopener" target="_blank"
-                   class="btn btn-sm w-100"
-                   style="background:var(--accent);color:#fff;border-radius:8px;font-size:.82rem;font-weight:600;text-decoration:none;padding:.45rem 1rem;display:block;text-align:center;">
-                    <i class="fa-solid fa-map-location-dot me-1"></i>Open in Maps
-                </a>
-            </div>
-            {% endif %}
+    <div class="amenity-card-grid">
+        <div class="amenity-card{% if not stop.has_diesel %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-gas-pump"></i></div>
+            <div class="amenity-card-name">Diesel</div>
+            <div class="amenity-card-detail">{% if stop.has_diesel %}Available{% else %}Not available{% endif %}</div>
         </div>
-
-        <!-- Store number if available -->
-        {% if stop.store_number %}
-        <div class="info-card">
-            <h2><i class="fa-solid fa-hashtag"></i> Store Number</h2>
-            <div style="font-size:1.25rem;font-weight:700;color:var(--accent);">#{{ stop.store_number }}</div>
+        <div class="amenity-card{% if not stop.has_showers %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-shower"></i></div>
+            <div class="amenity-card-name">Showers</div>
+            <div class="amenity-card-detail">{% if stop.has_showers %}{% if stop.shower_count %}{{ stop.shower_count }} available{% else %}Available{% endif %}{% else %}Not available{% endif %}</div>
+        </div>
+        <div class="amenity-card{% if not stop.has_scale %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-weight-scale"></i></div>
+            <div class="amenity-card-name">Scale</div>
+            <div class="amenity-card-detail">{% if stop.has_scale %}{% if stop.scale_type %}{{ stop.scale_type | title }}{% else %}Available{% endif %}{% else %}Not available{% endif %}</div>
+        </div>
+        <div class="amenity-card{% if not stop.has_repair %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-wrench"></i></div>
+            <div class="amenity-card-name">Repair</div>
+            <div class="amenity-card-detail">{% if stop.has_repair %}Available{% else %}Not available{% endif %}</div>
+        </div>
+        <div class="amenity-card{% if not stop.has_tire_service %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-circle-dot"></i></div>
+            <div class="amenity-card-name">Tire Service</div>
+            <div class="amenity-card-detail">{% if stop.has_tire_service %}Available{% else %}Not available{% endif %}</div>
+        </div>
+        <div class="amenity-card{% if not stop.has_wifi %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-wifi"></i></div>
+            <div class="amenity-card-name">WiFi</div>
+            <div class="amenity-card-detail">{% if stop.has_wifi %}Available{% else %}Not available{% endif %}</div>
+        </div>
+        <div class="amenity-card{% if not stop.has_def %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-droplet"></i></div>
+            <div class="amenity-card-name">DEF</div>
+            <div class="amenity-card-detail">{% if stop.has_def %}Available{% else %}Not available{% endif %}</div>
+        </div>
+        <div class="amenity-card{% if not stop.has_laundry %} amenity-unavailable{% endif %}">
+            <div class="amenity-card-icon"><i class="fa-solid fa-shirt"></i></div>
+            <div class="amenity-card-name">Laundry</div>
+            <div class="amenity-card-detail">{% if stop.has_laundry %}Available{% else %}Not available{% endif %}</div>
+        </div>
+        {% if stop.has_ev_charging %}
+        <div class="amenity-card">
+            <div class="amenity-card-icon"><i class="fa-solid fa-charging-station"></i></div>
+            <div class="amenity-card-name">EV Charging</div>
+            <div class="amenity-card-detail">Available</div>
         </div>
         {% endif %}
-
     </div>
 </div>
 
-<!-- Nearby Stops -->
-{% if nearby %}
-<div class="section-header mt-5">
-    <i class="fa-solid fa-map-pin section-icon"></i>
-    <h2>Nearby Truck Stops</h2>
-</div>
-<div class="row g-3">
-    {% for stop in nearby %}
-    <div class="col-lg-4 col-md-6">
-        {% include "stops/partials/stop_card.html" %}
+<!-- ═══════════════ Banner: Border ═══════════════ -->
+{% for banner in banners %}
+{% if banner.type == 'border' %}{% include "stops/partials/banner_border.html" %}{% endif %}
+{% endfor %}
+
+<!-- ═══════════════ Fuel Prices ═══════════════ -->
+{% if fuel_list %}
+<div class="detail-section">
+    <div class="detail-section-title">
+        <i class="fa-solid fa-gas-pump"></i>Current Fuel Prices
     </div>
-    {% endfor %}
+    <div class="fuel-grid-modern">
+        {% for fp in fuel_list %}
+        <div class="fuel-card-modern">
+            <div class="fuel-card-type">{{ fp.fuel_type | title }}</div>
+            <div class="fuel-card-price">${{ "%.3f" | format(fp.price_cents / 100) }}</div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 
+<div class="row g-4">
+    <div class="col-lg-7">
+
+        <!-- ═══════════════ Restaurants ═══════════════ -->
+        {% if stop.restaurants %}
+        <div class="detail-section">
+            <div class="detail-section-title">
+                <i class="fa-solid fa-utensils"></i>Restaurants &amp; Food
+            </div>
+            <div class="restaurant-list">
+                {% for r in stop.restaurants %}
+                <span class="restaurant-chip"><i class="fa-solid fa-utensils"></i>{{ r }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ═══════════════ Loyalty Programs ═══════════════ -->
+        {% if stop.loyalty_programs %}
+        <div class="detail-section">
+            <div class="detail-section-title">
+                <i class="fa-solid fa-id-card"></i>Loyalty Programs
+            </div>
+            <div class="restaurant-list">
+                {% for lp in stop.loyalty_programs %}
+                <span class="loyalty-chip"><i class="fa-solid fa-award"></i>{{ lp }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ═══════════════ Banner: Parking ═══════════════ -->
+        {% for banner in banners %}
+        {% if banner.type == 'parking' %}{% include "stops/partials/banner_parking.html" %}{% endif %}
+        {% endfor %}
+
+    </div>
+
+    <div class="col-lg-5">
+
+        <!-- ═══════════════ Location Map ═══════════════ -->
+        {% if stop.latitude and stop.longitude %}
+        <div class="detail-section">
+            <div class="detail-section-title">
+                <i class="fa-solid fa-map-location-dot"></i>Location
+            </div>
+            {% if google_maps_key %}
+            <iframe class="map-embed-frame"
+                    src="https://www.google.com/maps/embed/v1/place?key={{ google_maps_key }}&q={{ stop.latitude }},{{ stop.longitude }}&zoom=15"
+                    allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    title="Map of {{ stop.name }}"></iframe>
+            {% else %}
+            <div style="height:300px;background:#f1f5f9;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <div style="text-align:center;color:var(--text-sec);">
+                    <i class="fa-solid fa-map" style="font-size:2rem;margin-bottom:8px;display:block;"></i>
+                    <div style="font-size:.85rem;">{{ stop.latitude }}, {{ stop.longitude }}</div>
+                </div>
+            </div>
+            {% endif %}
+            <div style="margin-top:14px;">
+                <a href="https://maps.google.com/?q={{ stop.latitude }},{{ stop.longitude }}"
+                   rel="noopener" target="_blank" class="btn-directions" style="width:100%;justify-content:center;"
+                   data-ga-event="get_directions_map" data-ga-target="{{ stop.slug }}">
+                    <i class="fa-solid fa-diamond-turn-right"></i>Get Directions
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ═══════════════ Banner: FMCSA ═══════════════ -->
+        {% for banner in banners %}
+        {% if banner.type == 'fmcsa' %}{% include "stops/partials/banner_fmcsa.html" %}{% endif %}
+        {% endfor %}
+
+    </div>
+</div>
+
+<!-- ═══════════════ Nearby Stops ═══════════════ -->
+{% if nearby %}
+<div style="margin-top:48px;">
+    <div class="detail-section-title" style="margin-bottom:20px;">
+        <i class="fa-solid fa-map-pin"></i>Nearby Truck Stops
+    </div>
+    <div class="row g-3">
+        {% for stop in nearby[:6] %}
+        <div class="col-lg-4 col-md-6">
+            {% include "stops/partials/stop_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    // Photo gallery thumbnail click handler
+    document.addEventListener('click', function(e) {
+        var thumb = e.target.closest('[data-action="gallery-thumb"]');
+        if (!thumb) return;
+
+        var mainImg = document.getElementById('gallery-main-img');
+        var indexEl = document.getElementById('gallery-index');
+        if (!mainImg) return;
+
+        var src = thumb.getAttribute('data-src');
+        var idx = parseInt(thumb.getAttribute('data-index'), 10);
+
+        mainImg.src = src;
+        mainImg.alt = mainImg.alt.replace(/photo \d+/, 'photo ' + (idx + 1));
+        if (indexEl) indexEl.textContent = idx + 1;
+
+        // Update active state
+        var allThumbs = document.querySelectorAll('[data-action="gallery-thumb"]');
+        for (var i = 0; i < allThumbs.length; i++) {
+            allThumbs[i].classList.remove('active');
+        }
+        thumb.classList.add('active');
+
+        // GA tracking
+        if (typeof gtag === 'function') {
+            gtag('event', 'gallery_photo_view', { index: idx });
+        }
+    });
+})();
+</script>
 {% endblock %}
