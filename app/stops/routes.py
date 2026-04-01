@@ -7,6 +7,7 @@ from . import stops_public_bp
 from ..extensions import db
 from ..middleware import site_required
 from ..models.truck_stop import TruckStop
+from ..models.fuel_price import FuelPrice
 from ..services.banner_service import get_banners
 from ..services.google_places import get_place_photos
 from ..services.geo_service import slugify as _slugify
@@ -148,10 +149,35 @@ def stop_detail(state_slug, city_slug, slug):
         TruckStop.state_province == stop.state_province,
         TruckStop.id != stop.id,
     ).limit(6).all()
+
+    # Get latest fuel price per type
+    latest_prices = db.session.query(
+        FuelPrice.fuel_type,
+        FuelPrice.price_cents,
+        FuelPrice.currency,
+        FuelPrice.created_at,
+        FuelPrice.is_verified,
+    ).filter_by(truck_stop_id=stop.id).order_by(
+        FuelPrice.fuel_type, FuelPrice.created_at.desc()
+    ).all()
+    seen = set()
+    fuel_prices = []
+    for fp in latest_prices:
+        if fp.fuel_type not in seen:
+            seen.add(fp.fuel_type)
+            fuel_prices.append({
+                'fuel_type': fp.fuel_type,
+                'price_cents': fp.price_cents,
+                'currency': fp.currency,
+                'updated': fp.created_at,
+                'is_verified': fp.is_verified,
+            })
+
     return render_template('stops/stop_detail.html',
                            stop=stop, banners=banners, photos=photos,
                            nearby=[stop_to_card(s) for s in nearby],
                            state_slug=state_slug, city_slug=city_slug,
+                           fuel_prices=fuel_prices,
                            google_maps_key=current_app.config.get('GOOGLE_MAPS_API_KEY', ''))
 
 

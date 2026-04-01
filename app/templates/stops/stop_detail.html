@@ -522,7 +522,6 @@
 {% block content %}
 {% set country_slug = 'us' if stop.country == 'US' else 'canada' %}
 {% set review_count = stop.reviews.count() %}
-{% set fuel_list = stop.fuel_prices.all() %}
 
 <!-- Breadcrumb -->
 <nav class="breadcrumb-nav py-2 px-0" aria-label="Breadcrumb">
@@ -757,21 +756,7 @@
 {% endfor %}
 
 <!-- ═══════════════ Fuel Prices ═══════════════ -->
-{% if fuel_list %}
-<div class="detail-section">
-    <div class="detail-section-title">
-        <i class="fa-solid fa-gas-pump"></i>Current Fuel Prices
-    </div>
-    <div class="fuel-grid-modern">
-        {% for fp in fuel_list %}
-        <div class="fuel-card-modern">
-            <div class="fuel-card-type">{{ fp.fuel_type | title }}</div>
-            <div class="fuel-card-price">${{ "%.3f" | format(fp.price_cents / 100) }}</div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
+{% include "stops/partials/fuel_prices.html" %}
 
 <div class="row g-4">
     <div class="col-lg-7">
@@ -880,11 +865,43 @@
             </div>
             <span style="color:var(--text-sec);font-size:0.8rem">{{ review.created_at.strftime('%b %d, %Y') if review.created_at else '' }}</span>
         </div>
-        {% if review.comment %}
-        <p style="color:var(--text-sec);font-size:0.9rem;margin:0">{{ review.comment }}</p>
+        {% if review.review_text %}
+        <p style="color:var(--text-sec);font-size:0.9rem;margin:0">{{ review.review_text }}</p>
         {% endif %}
     </div>
     {% endfor %}
+</div>
+{% endif %}
+
+<!-- ═══════════════ Write a Review ═══════════════ -->
+{% if current_user.is_authenticated %}
+<div class="info-card mt-4" id="write-review">
+    <h2><i class="fa-solid fa-pen" style="color:var(--accent)"></i> Write a Review</h2>
+    <form id="review-form">
+        <div class="mb-3">
+            <label style="font-size:0.85rem;font-weight:600;color:var(--text);display:block;margin-bottom:8px">Your Rating</label>
+            <div id="star-rating" style="display:flex;gap:4px;cursor:pointer">
+                {% for i in range(1, 6) %}
+                <i class="fa-regular fa-star" data-action="set-rating" data-value="{{ i }}" style="font-size:1.5rem;color:#d1d5db;transition:color 0.15s"></i>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="rating" id="rating-value" value="">
+        </div>
+        <div class="mb-3">
+            <label style="font-size:0.85rem;font-weight:600;color:var(--text);display:block;margin-bottom:8px">Your Review (optional)</label>
+            <textarea name="review_text" rows="3" maxlength="2000" placeholder="How was your experience at this stop?"
+                      style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit;resize:vertical"></textarea>
+        </div>
+        <button type="submit" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit"
+                data-action="submit-review">
+            Submit Review <i class="fa-solid fa-paper-plane"></i>
+        </button>
+        <div id="review-msg" style="font-size:0.85rem;margin-top:8px"></div>
+    </form>
+</div>
+{% else %}
+<div class="info-card mt-4">
+    <p style="color:var(--text-sec);font-size:0.9rem"><a href="/login?next={{ request.path }}" style="color:var(--accent);font-weight:600">Sign in</a> to write a review</p>
 </div>
 {% endif %}
 
@@ -937,6 +954,118 @@
             gtag('event', 'gallery_photo_view', { index: idx });
         }
     });
+})();
+</script>
+
+<script>
+(function() {
+    var stopId = {{ stop.id }};
+
+    // ── Fuel Price Submission ──
+    var fuelForm = document.getElementById('fuel-price-form');
+    if (fuelForm) {
+        fuelForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fuelType = fuelForm.querySelector('[name="fuel_type"]').value;
+            var price = parseFloat(fuelForm.querySelector('[name="price"]').value);
+            var msg = document.getElementById('fuel-price-msg');
+            if (!price || price < 0.5 || price > 9.99) {
+                msg.innerHTML = '<span style="color:#ef4444">Enter a price between $0.50 and $9.99</span>';
+                return;
+            }
+            var priceCents = Math.round(price * 100);
+            fetch('/api/v1/truck-stops/' + stopId + '/fuel-prices', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({fuel_type: fuelType, price_cents: priceCents})
+            }).then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.id) {
+                    msg.innerHTML = '<span style="color:#10b981"><i class="fa-solid fa-check-circle"></i> Price submitted! Thank you.</span>';
+                    fuelForm.reset();
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Failed to submit') + '</span>';
+                }
+            }).catch(function() {
+                msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';
+            });
+        });
+    }
+
+    // ── Star Rating ──
+    var selectedRating = 0;
+    document.addEventListener('click', function(e) {
+        var star = e.target.closest('[data-action="set-rating"]');
+        if (!star) return;
+        selectedRating = parseInt(star.getAttribute('data-value'));
+        document.getElementById('rating-value').value = selectedRating;
+        var stars = document.querySelectorAll('#star-rating i');
+        stars.forEach(function(s, i) {
+            if (i < selectedRating) {
+                s.className = 'fa-solid fa-star';
+                s.style.color = '#f59e0b';
+            } else {
+                s.className = 'fa-regular fa-star';
+                s.style.color = '#d1d5db';
+            }
+        });
+    });
+
+    // Star hover
+    var starContainer = document.getElementById('star-rating');
+    if (starContainer) {
+        starContainer.addEventListener('mouseover', function(e) {
+            var star = e.target.closest('[data-action="set-rating"]');
+            if (!star) return;
+            var val = parseInt(star.getAttribute('data-value'));
+            var stars = starContainer.querySelectorAll('i');
+            stars.forEach(function(s, i) {
+                if (i < val) { s.style.color = '#f59e0b'; s.className = 'fa-solid fa-star'; }
+                else { s.style.color = '#d1d5db'; s.className = 'fa-regular fa-star'; }
+            });
+        });
+        starContainer.addEventListener('mouseleave', function() {
+            var stars = starContainer.querySelectorAll('i');
+            stars.forEach(function(s, i) {
+                if (i < selectedRating) { s.style.color = '#f59e0b'; s.className = 'fa-solid fa-star'; }
+                else { s.style.color = '#d1d5db'; s.className = 'fa-regular fa-star'; }
+            });
+        });
+    }
+
+    // ── Review Submission ──
+    var reviewForm = document.getElementById('review-form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var rating = parseInt(document.getElementById('rating-value').value);
+            var reviewText = reviewForm.querySelector('[name="review_text"]').value;
+            var msg = document.getElementById('review-msg');
+            if (!rating || rating < 1 || rating > 5) {
+                msg.innerHTML = '<span style="color:#ef4444">Please select a star rating</span>';
+                return;
+            }
+            fetch('/api/v1/truck-stops/' + stopId + '/reviews', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({rating: rating, review_text: reviewText})
+            }).then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.id) {
+                    msg.innerHTML = '<span style="color:#10b981"><i class="fa-solid fa-check-circle"></i> Review submitted! Thank you.</span>';
+                    reviewForm.reset();
+                    selectedRating = 0;
+                    var stars = document.querySelectorAll('#star-rating i');
+                    stars.forEach(function(s) { s.className = 'fa-regular fa-star'; s.style.color = '#d1d5db'; });
+                } else {
+                    msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Failed to submit') + '</span>';
+                }
+            }).catch(function() {
+                msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';
+            });
+        });
+    }
 })();
 </script>
 {% endblock %}

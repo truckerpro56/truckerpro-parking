@@ -1,13 +1,53 @@
-{% if fuel_prices %}
-<div class="fuel-prices-grid">
-    <h3><i class="fa-solid fa-gas-pump" style="color:var(--accent)"></i> Current Fuel Prices</h3>
-    <div class="fuel-price-cards">
+<div class="info-card mt-4" id="fuel-prices">
+    <h2><i class="fa-solid fa-gas-pump" style="color:var(--accent)"></i> Fuel Prices</h2>
+
+    {% if fuel_prices %}
+    <div class="row g-3 mb-3">
         {% for fp in fuel_prices %}
-        <div class="fuel-price-card">
-            <div class="fuel-type">{{ fp.fuel_type | title }}</div>
-            <div class="fuel-amount">${{ "%.3f" | format(fp.price_cents / 100) }}</div>
+        <div class="col-6 col-md-3">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center">
+                <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-sec);font-weight:600;margin-bottom:4px">{{ fp.fuel_type | title }}</div>
+                <div style="font-size:1.5rem;font-weight:800;color:var(--text)">${{ "%.3f" | format(fp.price_cents / 100) }}</div>
+                <div style="font-size:0.7rem;color:var(--text-sec);margin-top:4px">
+                    {% if fp.is_verified %}<i class="fa-solid fa-circle-check" style="color:#10b981"></i> Verified{% else %}<i class="fa-regular fa-clock"></i> Unverified{% endif %}
+                    {% if fp.updated %} &middot; {{ fp.updated.strftime('%b %d') }}{% endif %}
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <p style="color:var(--text-sec);font-size:0.9rem">No fuel prices reported yet. Be the first to submit!</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+        <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:12px"><i class="fa-solid fa-plus-circle" style="color:var(--accent)"></i> Report a Price</h4>
+        <form id="fuel-price-form" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+            <div>
+                <label style="font-size:0.75rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Fuel Type</label>
+                <select name="fuel_type" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;background:var(--card)">
+                    <option value="diesel">Diesel</option>
+                    <option value="def">DEF</option>
+                    <option value="gas">Gas</option>
+                    <option value="biodiesel">Biodiesel</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.75rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Price per gallon</label>
+                <input type="number" name="price" step="0.001" min="0.50" max="9.99" placeholder="3.899" required
+                       style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;width:120px;font-family:inherit">
+            </div>
+            <button type="submit" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit"
+                    data-action="submit-fuel-price">
+                Submit <i class="fa-solid fa-paper-plane"></i>
+            </button>
+            <div id="fuel-price-msg" style="font-size:0.8rem;width:100%"></div>
+        </form>
+    </div>
+    {% else %}
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
+        <p style="color:var(--text-sec);font-size:0.85rem"><a href="/login?next={{ request.path }}" style="color:var(--accent);font-weight:600">Sign in</a> to report fuel prices</p>
+    </div>
+    {% endif %}
 </div>
-{% endif %}

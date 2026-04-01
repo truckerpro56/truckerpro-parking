@@ -17,5 +17,10 @@
         {% if stop.total_parking_spots %}
         <div class="stop-parking"><i class="fa-solid fa-square-parking"></i> {{ stop.total_parking_spots }} parking spots</div>
         {% endif %}
+        {% if stop.latest_diesel_cents %}
+        <div style="margin-top:8px;font-size:0.8rem;color:var(--accent);font-weight:700">
+            <i class="fa-solid fa-gas-pump"></i> Diesel: ${{ "%.3f" | format(stop.latest_diesel_cents / 100) }}/gal
+        </div>
+        {% endif %}
     </div>
 </div>
