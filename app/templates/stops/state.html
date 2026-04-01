@@ -1,8 +1,241 @@
 {% extends "stops/base.html" %}
 {% block title %}Truck Stops in {{ state_name }}{% endblock %}
 {% block meta_description %}{{ total }} truck stops in {{ state_name }}. Find diesel fuel, parking, showers, scales, and repairs near you.{% endblock %}
+
+{% block head %}
+<style>
+  .stops-page-header {
+    background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%);
+    padding: 48px 24px 40px;
+    color: #fff;
+  }
+  .stops-page-header .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .stops-page-header .breadcrumb a { color: #93c5fd; text-decoration: none; }
+  .stops-page-header .breadcrumb a:hover { color: #fff; }
+  .stops-page-header .breadcrumb i { font-size: 0.7rem; color: #64748b; }
+  .stops-page-header h1 {
+    font-size: clamp(1.4rem, 3vw, 2.1rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  .stops-page-header .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+  .stops-page-header .header-meta i { color: #60a5fa; }
+  /* Section */
+  .stops-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+  .stops-section + .stops-section { padding-top: 0; }
+  .section-header { margin-bottom: 20px; }
+  .section-header h2 { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+  /* City filter pills */
+  .city-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .city-filter-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-right: 4px;
+  }
+  .city-pill {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+    white-space: nowrap;
+  }
+  .city-pill:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+    text-decoration: none;
+  }
+  /* Stops grid */
+  .stops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  /* Pagination */
+  .pagination-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 32px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .page-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    text-decoration: none;
+    transition: border-color 0.12s, color 0.12s;
+  }
+  .page-link:hover { border-color: #2563eb; color: #2563eb; text-decoration: none; }
+  .page-info { font-size: 0.875rem; color: #64748b; }
+  /* CTA */
+  .cta-banner {
+    background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%);
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+    color: #fff;
+    max-width: 1200px;
+    margin: 0 auto 56px;
+    padding-left: 24px; padding-right: 24px;
+  }
+  .cta-banner { margin: 0 24px 56px; max-width: 1152px; margin-left: auto; margin-right: auto; }
+  .cta-banner h2 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .cta-banner p { color: #94a3b8; margin-bottom: 24px; }
+  .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-cta-primary {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 11px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-cta-primary:hover { background: #1d4ed8; color: #fff; text-decoration: none; }
+  .btn-cta-secondary {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 11px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.15s;
+  }
+  .btn-cta-secondary:hover { background: rgba(255,255,255,0.18); color: #fff; text-decoration: none; }
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #64748b;
+  }
+  .empty-state i { font-size: 2.5rem; color: #e2e8f0; margin-bottom: 12px; display: block; }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>Truck Stops in {{ state_name }}</h1>
-<p>{{ total }} stops</p>
-{% for stop in stops %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+
+<!-- Page Header -->
+<div class="stops-page-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Truck Stops</a>
+    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+    {% if country == 'US' %}
+    <a href="/us">United States</a>
+    {% else %}
+    <a href="/canada">Canada</a>
+    {% endif %}
+    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+    <span>{{ state_name }}</span>
+  </nav>
+  <h1>Truck Stops in {{ state_name }}</h1>
+  <p class="header-meta">
+    <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+    {{ total }} stop{% if total != 1 %}s{% endif %} found
+  </p>
+</div>
+
+<!-- City Filter Pills -->
+{% if cities | length > 1 %}
+<div class="stops-section" style="padding-bottom:0;">
+  <div class="city-filter-row">
+    <span class="city-filter-label">Filter by city:</span>
+    {% for city_name_val, city_count in cities %}
+    {% set city_slug_val = city_name_val | lower | replace(' ', '-') | replace("'", '') %}
+    <a href="/{{ 'us' if country == 'US' else 'canada' }}/{{ state_slug }}/{{ city_slug_val }}"
+       class="city-pill"
+       data-ga-event="city_filter_click" data-ga-target="{{ city_slug_val }}">
+      {{ city_name_val }}
+      <span style="color:#94a3b8;font-size:0.75em;"> ({{ city_count }})</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Stops Grid -->
+<section class="stops-section">
+  {% if stops %}
+  <div class="stops-grid">
+    {% for stop in stops %}
+    <div>{% include "stops/partials/stop_card.html" %}</div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+    <p>No truck stops found in {{ state_name }} yet.</p>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Pagination -->
+{% include "stops/partials/pagination.html" %}
+
+<!-- CTA Banner -->
+<div style="max-width:1200px; margin:0 auto; padding:0 24px 56px;">
+  <div class="cta-banner">
+    <h2>Manage Your Fleet with Canada's #1 TMS</h2>
+    <p>Dispatch, compliance, ELD, driver pay, and more — built for Canadian carriers.</p>
+    <div class="cta-actions">
+      <a href="https://www.truckerpro.ca/signup" class="btn-cta-primary"
+         data-ga-event="cta_click" data-ga-target="tms_signup">
+        Start Free Trial
+      </a>
+      <a href="https://border.truckerpro.ca" class="btn-cta-secondary"
+         data-ga-event="cta_click" data-ga-target="border_clearing">
+        Border Clearing
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

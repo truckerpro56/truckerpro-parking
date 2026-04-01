@@ -1,9 +1,190 @@
 {% extends "stops/base.html" %}
 {% block title %}Truck Stops in {{ country_name }}{% endblock %}
 {% block meta_description %}Find truck stops in {{ country_name }}. Browse by state or province for diesel, parking, showers, and more.{% endblock %}
+
+{% block head %}
+<style>
+  .stops-page-header {
+    background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%);
+    padding: 48px 24px 40px;
+    color: #fff;
+  }
+  .stops-page-header .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .stops-page-header .breadcrumb a { color: #93c5fd; text-decoration: none; }
+  .stops-page-header .breadcrumb a:hover { color: #fff; }
+  .stops-page-header .breadcrumb i { font-size: 0.7rem; color: #64748b; }
+  .stops-page-header h1 {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .stops-page-header .flag { font-size: 2rem; }
+  /* Region grid */
+  .stops-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+  .section-header { margin-bottom: 24px; }
+  .section-header h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .region-card {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    text-decoration: none;
+    color: #0f172a;
+    transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .region-card:hover {
+    box-shadow: 0 6px 20px rgba(37,99,235,0.12);
+    border-color: #93c5fd;
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #0f172a;
+  }
+  .region-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #0f172a;
+  }
+  .region-card .region-count {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+  .region-card .region-count i { color: #2563eb; }
+  .region-card .region-link {
+    margin-top: auto;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  /* CTA */
+  .cta-banner {
+    background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%);
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+    color: #fff;
+  }
+  .cta-banner h2 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .cta-banner p { color: #94a3b8; margin-bottom: 24px; }
+  .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-cta-primary {
+    display: inline-block;
+    background: #2563eb;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 11px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .btn-cta-primary:hover { background: #1d4ed8; color: #fff; text-decoration: none; }
+  .btn-cta-secondary {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 11px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.15s;
+  }
+  .btn-cta-secondary:hover { background: rgba(255,255,255,0.18); color: #fff; text-decoration: none; }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>Truck Stops in {{ country_name }}</h1>
-{% for r in regions %}
-<a href="/{{ 'us' if country == 'US' else 'canada' }}/{{ r.slug }}">{{ r.name }} ({{ r.count }})</a>
-{% endfor %}
+
+<!-- Page Header -->
+<div class="stops-page-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Truck Stops</a>
+    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+    <span>{{ country_name }}</span>
+  </nav>
+  <h1>
+    <span class="flag" aria-hidden="true">{% if country == 'US' %}🇺🇸{% else %}🇨🇦{% endif %}</span>
+    Truck Stops in {{ country_name }}
+  </h1>
+</div>
+
+<!-- Region Grid -->
+<section class="stops-section">
+  <div class="section-header">
+    <h2>Browse by {% if country == 'US' %}State{% else %}Province{% endif %}</h2>
+  </div>
+  {% if regions %}
+  <div class="region-grid">
+    {% for r in regions %}
+    <a href="/{{ 'us' if country == 'US' else 'canada' }}/{{ r.slug }}"
+       class="region-card"
+       data-ga-event="region_click" data-ga-target="{{ r.slug }}">
+      <h3>{{ r.name }}</h3>
+      <p class="region-count">
+        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+        {{ r.count }} stop{% if r.count != 1 %}s{% endif %}
+      </p>
+      <span class="region-link">
+        View stops <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color:#64748b; font-size:0.95rem;">No stops found for this country.</p>
+  {% endif %}
+</section>
+
+<!-- CTA Banner -->
+<div style="max-width:1200px; margin:0 auto; padding:0 24px 56px;">
+  <div class="cta-banner">
+    <h2>Manage Your Fleet with Canada's #1 TMS</h2>
+    <p>Dispatch, compliance, ELD, driver pay, and more — built for Canadian carriers.</p>
+    <div class="cta-actions">
+      <a href="https://www.truckerpro.ca/signup" class="btn-cta-primary"
+         data-ga-event="cta_click" data-ga-target="tms_signup">
+        Start Free Trial
+      </a>
+      <a href="https://border.truckerpro.ca" class="btn-cta-secondary"
+         data-ga-event="cta_click" data-ga-target="border_clearing">
+        Border Clearing
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
