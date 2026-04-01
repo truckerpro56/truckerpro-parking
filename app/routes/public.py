@@ -2,7 +2,7 @@
 import json
 import logging
 from datetime import date
-from flask import render_template, jsonify, request, abort, current_app, make_response, Response
+from flask import render_template, jsonify, request, abort, current_app, g, make_response, Response
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -158,6 +158,9 @@ def sitemap():
 
 @pages_bp.route('/robots.txt')
 def robots():
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.routes import robots_txt
+        return robots_txt()
     txt = (
         'User-agent: *\n'
         'Allow: /\n'
@@ -181,6 +184,10 @@ def robots():
 @pages_bp.route('/')
 def landing():
     """Main landing page -- public, SEO-optimized."""
+    # Delegate to stops homepage when accessed via stops.truckerpro.net
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.routes import home as stops_home
+        return stops_home()
     # Province counts
     province_counts = {}
     try:
