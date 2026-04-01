@@ -169,21 +169,46 @@ def robots():
     if getattr(g, 'site', 'parking') == 'stops':
         from ..stops.routes import robots_txt
         return robots_txt()
-    txt = (
-        'User-agent: *\n'
-        'Allow: /\n'
-        '\n'
-        'Disallow: /my-bookings\n'
-        'Disallow: /owner/\n'
-        'Disallow: /api/\n'
-        'Disallow: /login\n'
-        'Disallow: /signup\n'
-        '\n'
-        '# Crawl-delay for polite bots\n'
-        'Crawl-delay: 2\n'
-        '\n'
-        f'Sitemap: {BASE_URL}/sitemap.xml\n'
-    )
+    # Shared bot blocklist for both domains
+    blocked_bots = [
+        'GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ChatGPT Agent', 'Operator',
+        'ClaudeBot', 'Claude-Web', 'anthropic-ai', 'Claude-SearchBot', 'Claude-User',
+        'GoogleOther', 'Google-Extended', 'GoogleOther-Image', 'GoogleOther-Video',
+        'Google-Agent', 'GoogleAgent-Mariner', 'Gemini-Deep-Research',
+        'Google-CloudVertexBot', 'CloudVertexBot', 'Google-NotebookLM',
+        'Meta-ExternalAgent', 'Meta-ExternalFetcher', 'FacebookBot', 'meta-webindexer',
+        'Applebot-Extended', 'Amazonbot', 'amazon-kendra', 'bedrockbot', 'NovaAct',
+        'AzureAI-SearchBot', 'Bytespider', 'DeepSeekBot', 'ChatGLM-Spider',
+        'PanguBot', 'TikTokSpider', 'PerplexityBot', 'Perplexity-User', 'Bravebot',
+        'DuckAssistBot', 'PhindBot', 'YouBot', 'Andibot', 'ExaBot', 'kagi-fetcher',
+        'cohere-ai', 'cohere-training-data-crawler', 'MistralAI-User',
+        'Ai2Bot', 'DiffBot', 'PetalBot', 'WRTNBot', 'Manus-User', 'Devin',
+        'CCBot', 'img2dataset', 'ImagesiftBot', 'ICC-Crawler',
+        'FirecrawlAgent', 'Crawl4AI', 'ApifyBot', 'Scrapy',
+        'LAIONDownloader', 'Brightbot', 'TavilyBot',
+        'SemrushBot-OCOB', 'SemrushBot-SWA', 'omgilibot', 'Webzio-Extended',
+        'Timpibot', 'aiHitBot',
+    ]
+    lines = []
+    for bot in blocked_bots:
+        lines.append(f'User-agent: {bot}')
+        lines.append('Disallow: /')
+        lines.append('')
+    lines.extend([
+        'User-agent: Googlebot', 'Allow: /', '',
+        'User-agent: Bingbot', 'Allow: /', '',
+        'User-agent: *',
+        'Disallow: /my-bookings',
+        'Disallow: /owner/',
+        'Disallow: /api/',
+        'Disallow: /login',
+        'Disallow: /signup',
+        '',
+        'Crawl-delay: 2',
+        '',
+        f'Sitemap: {BASE_URL}/sitemap.xml',
+    ])
+    txt = '\n'.join(lines)
     return Response(txt, mimetype='text/plain')
 
 
