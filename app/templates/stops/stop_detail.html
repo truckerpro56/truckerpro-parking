@@ -1,7 +1,106 @@
 {% extends "stops/base.html" %}
-{% block title %}{{ stop.name }}{% endblock %}
-{% block meta_description %}{{ stop.name }} in {{ stop.city }}, {{ stop.state_province }}. Amenities, fuel prices, parking, reviews, and directions.{% endblock %}
+{% block title %}{{ stop.name }} — {{ stop.city }}, {{ stop.state_province }}{% endblock %}
+{% block meta_description %}{{ stop.name }} in {{ stop.city }}, {{ stop.state_province }}. Amenities, fuel prices, parking, and directions for truck drivers.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/{{ stop.country | lower }}/{{ state_slug }}/{{ city_slug }}/{{ stop.slug }}{% endblock %}
+
+{% block head %}
+<meta property="og:type" content="place">
+<meta property="og:title" content="{{ stop.name }} — Truck Stop in {{ stop.city }}, {{ stop.state_province }}">
+<meta property="og:description" content="{{ stop.name }} at {{ stop.address }}, {{ stop.city }}, {{ stop.state_province }}. Find diesel, parking, showers, and amenities.">
+<meta property="og:url" content="https://stops.truckerpro.net/{{ stop.country | lower }}/{{ state_slug }}/{{ city_slug }}/{{ stop.slug }}">
+<meta property="og:site_name" content="Truck Stops Directory">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TruckStop",
+  "name": "{{ stop.name | e }}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{ stop.address | e }}",
+    "addressLocality": "{{ stop.city | e }}",
+    "addressRegion": "{{ stop.state_province | e }}",
+    "postalCode": "{{ stop.postal_code | e }}",
+    "addressCountry": "{{ stop.country | e }}"
+  }
+  {% if stop.phone %},"telephone": "{{ stop.phone | e }}"{% endif %}
+  {% if stop.website %},"url": "{{ stop.website | e }}"{% endif %}
+  {% if stop.latitude and stop.longitude %}
+  ,"geo": {
+    "@type": "GeoCoordinates",
+    "latitude": {{ stop.latitude }},
+    "longitude": {{ stop.longitude }}
+  }
+  {% endif %}
+}
+</script>
+{% endblock %}
+
 {% block content %}
+{% set country_slug = 'us' if stop.country == 'US' else 'canada' %}
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb-nav py-2 px-0" aria-label="Breadcrumb">
+    <a href="/"><i class="fa-solid fa-house fa-xs me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <a href="/{{ country_slug }}">{{ 'United States' if stop.country == 'US' else 'Canada' }}</a>
+    <span class="sep">/</span>
+    <a href="/{{ country_slug }}/{{ state_slug }}">{{ stop.state_province }}</a>
+    <span class="sep">/</span>
+    <a href="/{{ country_slug }}/{{ state_slug }}/{{ city_slug }}">{{ stop.city }}</a>
+    <span class="sep">/</span>
+    <span class="current">{{ stop.name }}</span>
+</nav>
+
+<!-- Stop Hero -->
+<div class="page-hero rounded-3 mb-4" style="padding:2rem 2rem 1.75rem;">
+    <div class="d-flex align-items-start gap-3 flex-wrap">
+        <div class="flex-grow-1">
+            {% if stop.brand_display_name %}
+            <div class="mb-2">
+                <span class="badge" style="background:rgba(255,255,255,.18);color:#ffffff;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:.3rem .8rem;">
+                    <i class="fa-solid fa-gas-pump me-1"></i>{{ stop.brand_display_name }}
+                </span>
+            </div>
+            {% endif %}
+            <h1 class="mb-2" style="color:#fff;">{{ stop.name }}</h1>
+            <div class="d-flex flex-column gap-1 mt-2">
+                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fa-solid fa-location-dot" style="color:#60a5fa;width:16px;"></i>
+                    {{ stop.address }}, {{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}{% if stop.country %}, {{ stop.country }}{% endif %}
+                </div>
+                {% if stop.highway %}
+                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fa-solid fa-road" style="color:#60a5fa;width:16px;"></i>
+                    {{ stop.highway }}{% if stop.exit_number %} &mdash; Exit {{ stop.exit_number }}{% endif %}
+                </div>
+                {% endif %}
+                {% if stop.phone %}
+                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fa-solid fa-phone" style="color:#60a5fa;width:16px;"></i>
+                    <a href="tel:{{ stop.phone }}" style="color:rgba(255,255,255,.85);text-decoration:none;">{{ stop.phone }}</a>
+                </div>
+                {% endif %}
+                {% if stop.hours %}
+                <div style="color:rgba(255,255,255,.8);font-size:.9rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fa-solid fa-clock" style="color:#60a5fa;width:16px;"></i>
+                    {{ stop.hours }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if stop.website %}
+        <div class="mt-2">
+            <a href="{{ stop.website }}" class="btn btn-sm" rel="noopener" target="_blank"
+               style="background:rgba(255,255,255,.15);color:#ffffff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Visit Website
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Banners -->
 {% for banner in banners %}
 {% if banner.type == 'tms' %}{% include "stops/partials/banner_tms.html" %}
 {% elif banner.type == 'border' %}{% include "stops/partials/banner_border.html" %}
@@ -9,12 +108,79 @@
 {% elif banner.type == 'fmcsa' %}{% include "stops/partials/banner_fmcsa.html" %}
 {% endif %}
 {% endfor %}
-<h1>{{ stop.name }}</h1>
-<p>{{ stop.address }}, {{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}</p>
-{% if stop.highway %}<p>{{ stop.highway }}{% if stop.exit_number %} Exit {{ stop.exit_number }}{% endif %}</p>{% endif %}
-{% include "stops/partials/amenities_grid.html" %}
-<section>
-<h2>Nearby Stops</h2>
-{% for stop in nearby %}{% include "stops/partials/stop_card.html" %}{% endfor %}
-</section>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Amenities -->
+        <div class="info-card">
+            <h2><i class="fa-solid fa-list-check"></i> Amenities</h2>
+            {% include "stops/partials/amenities_grid.html" %}
+            {% if stop.total_parking_spots %}
+            <div class="mt-3 pt-3" style="border-top:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;color:var(--text-sec);">
+                    <i class="fa-solid fa-square-parking" style="color:var(--accent);"></i>
+                    <strong>{{ stop.total_parking_spots }}</strong>&nbsp;parking spots available
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Fuel Prices -->
+        {% with fuel_prices=stop.fuel_prices %}
+        {% include "stops/partials/fuel_prices.html" %}
+        {% endwith %}
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <!-- Location card -->
+        <div class="info-card">
+            <h2><i class="fa-solid fa-map-pin"></i> Location</h2>
+            <div class="d-flex flex-column gap-2" style="font-size:.875rem;color:var(--text-sec);">
+                <div><i class="fa-solid fa-location-dot me-2" style="color:var(--accent);width:16px;"></i>{{ stop.address }}</div>
+                <div><i class="fa-solid fa-city me-2" style="color:var(--accent);width:16px;"></i>{{ stop.city }}, {{ stop.state_province }} {{ stop.postal_code }}</div>
+                {% if stop.highway %}
+                <div><i class="fa-solid fa-road me-2" style="color:var(--accent);width:16px;"></i>{{ stop.highway }}{% if stop.exit_number %}, Exit {{ stop.exit_number }}{% endif %}</div>
+                {% endif %}
+            </div>
+            {% if stop.latitude and stop.longitude %}
+            <div class="mt-3">
+                <a href="https://maps.google.com/?q={{ stop.latitude }},{{ stop.longitude }}"
+                   rel="noopener" target="_blank"
+                   class="btn btn-sm w-100"
+                   style="background:var(--accent);color:#fff;border-radius:8px;font-size:.82rem;font-weight:600;text-decoration:none;padding:.45rem 1rem;display:block;text-align:center;">
+                    <i class="fa-solid fa-map-location-dot me-1"></i>Open in Maps
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Store number if available -->
+        {% if stop.store_number %}
+        <div class="info-card">
+            <h2><i class="fa-solid fa-hashtag"></i> Store Number</h2>
+            <div style="font-size:1.25rem;font-weight:700;color:var(--accent);">#{{ stop.store_number }}</div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- Nearby Stops -->
+{% if nearby %}
+<div class="section-header mt-5">
+    <i class="fa-solid fa-map-pin section-icon"></i>
+    <h2>Nearby Truck Stops</h2>
+</div>
+<div class="row g-3">
+    {% for stop in nearby %}
+    <div class="col-lg-4 col-md-6">
+        {% include "stops/partials/stop_card.html" %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 {% endblock %}

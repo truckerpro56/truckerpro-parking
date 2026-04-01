@@ -1,7 +1,61 @@
 {% extends "stops/base.html" %}
 {% block title %}{{ brand_name }} in {{ state_name }}{% endblock %}
-{% block meta_description %}{{ brand_name }} truck stops in {{ state_name }}. Locations, amenities, fuel prices, and driver reviews.{% endblock %}
+{% block meta_description %}{{ brand_name }} truck stops in {{ state_name }}. Locations, amenities, fuel prices, and driver reviews for {{ brand_name }} in {{ state_name }}.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/brands/{{ brand_slug }}/{{ state_slug }}{% endblock %}
+
 {% block content %}
-<h1>{{ brand_name }} in {{ state_name }}</h1>
-{% for stop in stops %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+
+<!-- Page Header -->
+<div class="page-hero mb-4">
+    <div class="inner">
+        <nav class="breadcrumb-nav mb-2" style="color:rgba(255,255,255,.7);">
+            <a href="/" style="color:rgba(255,255,255,.7);">Home</a>
+            <span class="sep">/</span>
+            <a href="/brands" style="color:rgba(255,255,255,.7);">Brands</a>
+            <span class="sep">/</span>
+            <a href="/brands/{{ brand_slug }}" style="color:rgba(255,255,255,.7);">{{ brand_name }}</a>
+            <span class="sep">/</span>
+            <span style="color:#fff;">{{ state_name }}</span>
+        </nav>
+        <h1>{{ brand_name }} in {{ state_name }}</h1>
+        <p>
+            <i class="fa-solid fa-location-dot me-1"></i>
+            {{ stops | length }} location{{ 's' if stops | length != 1 else '' }} found
+        </p>
+    </div>
+</div>
+
+<div class="container py-2">
+
+    {% if stops %}
+    <div class="row g-3 mb-4">
+        {% for stop in stops %}
+        <div class="col-lg-4 col-md-6">
+            {% include "stops/partials/stop_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fa-solid fa-gas-pump" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:1rem;"></i>
+        <p style="color:var(--text-sec);">No {{ brand_name }} locations found in {{ state_name }}.</p>
+        <a href="/brands/{{ brand_slug }}" style="color:var(--accent);font-weight:500;">View all {{ brand_name }} locations</a>
+    </div>
+    {% endif %}
+
+    <!-- CTA -->
+    <div class="banner banner-border mt-4" style="border-radius:12px;" data-ga-event="brand_state_cta" data-ga-target="border">
+        <div class="banner-content">
+            <div class="banner-icon"><i class="fa-solid fa-passport"></i></div>
+            <div class="banner-text">
+                <strong>Crossing the US-Canada Border?</strong>
+                <span>File your eManifest online in minutes. Fast, compliant, trusted by carriers across North America.</span>
+            </div>
+        </div>
+        <a href="https://border.truckerpro.app" class="banner-cta">
+            File eManifest <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+</div>
 {% endblock %}

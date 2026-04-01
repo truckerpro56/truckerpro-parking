@@ -1,9 +1,64 @@
 {% extends "stops/base.html" %}
-{% block title %}Truck Stops by Highway{% endblock %}
-{% block meta_description %}Find truck stops by highway. Browse I-95, I-35, I-10, and more major routes across the US and Canada.{% endblock %}
+{% block title %}Truck Stops by Highway — Browse by Route{% endblock %}
+{% block meta_description %}Find truck stops by highway. Browse I-95, I-35, I-10, US-30, and more major routes across the US and Canada.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/highways{% endblock %}
+
 {% block content %}
-<h1>Truck Stops by Highway</h1>
-{% for hwy, count in highways %}
-<a href="/highways/{{ hwy | lower | replace(' ', '-') }}">{{ hwy }} ({{ count }})</a>
-{% endfor %}
+
+<!-- Page Header -->
+<div class="page-hero mb-4">
+    <div class="inner">
+        <nav class="breadcrumb-nav mb-2" style="color:rgba(255,255,255,.7);">
+            <a href="/" style="color:rgba(255,255,255,.7);">Home</a>
+            <span class="sep">/</span>
+            <span style="color:#fff;">Highways</span>
+        </nav>
+        <h1>Browse by Highway</h1>
+        <p>Find truck stops along major interstates and US routes across North America.</p>
+    </div>
+</div>
+
+<div class="container py-2">
+
+    {% if highways %}
+    <div class="section-header">
+        <i class="fa-solid fa-road section-icon"></i>
+        <h2>{{ highways | length }} Highway{{ 's' if highways | length != 1 else '' }}</h2>
+    </div>
+
+    <div class="highway-grid" role="list">
+        {% for highway_name, count in highways | sort(attribute=1, reverse=True) %}
+        <a href="/highways/{{ highway_name | lower | replace(' ', '-') | replace('.', '') }}"
+           class="highway-pill"
+           role="listitem"
+           data-ga-event="highway_click"
+           data-ga-target="{{ highway_name }}">
+            <i class="fa-solid fa-road" style="color:var(--accent);font-size:.8rem;"></i>
+            {{ highway_name }}
+            <span class="hw-count">{{ count }} stop{{ 's' if count != 1 else '' }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fa-solid fa-road" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:1rem;"></i>
+        <p style="color:var(--text-sec);">No highways found.</p>
+    </div>
+    {% endif %}
+
+    <!-- CTA -->
+    <div class="banner banner-tms mt-5" style="border-radius:12px;" data-ga-event="highway_index_cta" data-ga-target="tms">
+        <div class="banner-content">
+            <div class="banner-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="banner-text">
+                <strong>Plan Routes Smarter with TruckerPro TMS</strong>
+                <span>Dispatch, driver management, compliance, and ELD — all in one platform built for carriers.</span>
+            </div>
+        </div>
+        <a href="https://tms.truckerpro.ca" class="banner-cta">
+            Try Free <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+</div>
 {% endblock %}

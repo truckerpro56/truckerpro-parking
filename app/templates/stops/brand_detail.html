@@ -1,8 +1,68 @@
 {% extends "stops/base.html" %}
-{% block title %}{{ brand_name }} Locations{% endblock %}
-{% block meta_description %}{{ total }} {{ brand_name }} truck stop locations. Find diesel, parking, showers, and amenities at {{ brand_name }} stops.{% endblock %}
+{% block title %}{{ brand_name }} Truck Stop Locations{% endblock %}
+{% block meta_description %}{{ total }} {{ brand_name }} truck stop locations across the US and Canada. Find diesel, parking, showers, and amenities at {{ brand_name }} stops.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/brands/{{ brand_slug }}{% endblock %}
+
 {% block content %}
-<h1>{{ brand_name }}</h1>
-<p>{{ total }} locations</p>
-{% for stop in stops %}{% include "stops/partials/stop_card.html" %}{% endfor %}
+
+<!-- Page Header -->
+<div class="page-hero mb-4">
+    <div class="inner">
+        <nav class="breadcrumb-nav mb-2" style="color:rgba(255,255,255,.7);">
+            <a href="/" style="color:rgba(255,255,255,.7);">Home</a>
+            <span class="sep">/</span>
+            <a href="/brands" style="color:rgba(255,255,255,.7);">Brands</a>
+            <span class="sep">/</span>
+            <span style="color:#fff;">{{ brand_name }}</span>
+        </nav>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div>
+                <h1>{{ brand_name }}</h1>
+                <p>
+                    <i class="fa-solid fa-location-dot me-1"></i>
+                    {{ total }} location{{ 's' if total != 1 else '' }} across the US &amp; Canada
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-2">
+
+    {% if stops %}
+    <!-- Stop Cards -->
+    <div class="row g-3 mb-4">
+        {% for stop in stops %}
+        <div class="col-lg-4 col-md-6">
+            {% include "stops/partials/stop_card.html" %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% include "stops/partials/pagination.html" %}
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fa-solid fa-gas-pump" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:1rem;"></i>
+        <p style="color:var(--text-sec);">No locations found for {{ brand_name }}.</p>
+        <a href="/brands" style="color:var(--accent);font-weight:500;">Browse all brands</a>
+    </div>
+    {% endif %}
+
+    <!-- CTA -->
+    <div class="banner banner-tms mt-4" style="border-radius:12px;" data-ga-event="brand_detail_cta" data-ga-target="tms">
+        <div class="banner-content">
+            <div class="banner-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="banner-text">
+                <strong>Plan Your Routes with TruckerPro TMS</strong>
+                <span>Dispatch, compliance, ELD integration, and driver management — built for Canadian carriers.</span>
+            </div>
+        </div>
+        <a href="https://tms.truckerpro.ca" class="banner-cta">
+            Try Free <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+</div>
 {% endblock %}

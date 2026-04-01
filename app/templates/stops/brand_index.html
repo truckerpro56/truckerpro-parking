@@ -1,9 +1,62 @@
 {% extends "stops/base.html" %}
-{% block title %}Truck Stop Brands{% endblock %}
-{% block meta_description %}Browse truck stops by brand. Love's, Pilot Flying J, TA/Petro, and independent stops across the US and Canada.{% endblock %}
+{% block title %}Truck Stop Brands — Browse by Brand{% endblock %}
+{% block meta_description %}Browse truck stops by brand. Love's, Pilot Flying J, TA Petro, Sheetz, and independent stops across the US and Canada.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/brands{% endblock %}
+
 {% block content %}
-<h1>Truck Stop Brands</h1>
-{% for brand_key, brand_name, count in brands %}
-<a href="/brands/{{ brand_key | replace('_', '-') }}">{{ brand_name or brand_key }} ({{ count }})</a>
-{% endfor %}
+
+<!-- Page Header -->
+<div class="page-hero mb-4">
+    <div class="inner">
+        <nav class="breadcrumb-nav mb-2" style="color:rgba(255,255,255,.7);">
+            <a href="/" style="color:rgba(255,255,255,.7);">Home</a>
+            <span class="sep">/</span>
+            <span style="color:#fff;">Brands</span>
+        </nav>
+        <h1>Browse by Brand</h1>
+        <p>Find truck stops from your favorite chains or discover new ones across North America.</p>
+    </div>
+</div>
+
+<div class="container py-2">
+
+    <!-- Brand Grid -->
+    <div class="brands-grid" role="list">
+        {% for brand_key, brand_name, count in brands %}
+        <a href="/brands/{{ brand_key | replace('_', '-') | lower }}"
+           class="brand-card"
+           role="listitem"
+           data-ga-event="brand_click"
+           data-ga-target="{{ brand_key }}">
+            <div class="brand-icon" aria-hidden="true">
+                <i class="fa-solid fa-gas-pump"></i>
+            </div>
+            <div class="brand-name">{{ brand_name or brand_key | replace('_', ' ') | title }}</div>
+            <div class="brand-count">
+                <i class="fa-solid fa-location-dot me-1"></i>{{ count }} location{{ 's' if count != 1 else '' }}
+            </div>
+        </a>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="fa-solid fa-store" style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:1rem;"></i>
+            <p style="color:var(--text-sec);">No brands found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- CTA -->
+    <div class="banner banner-tms mt-5" style="border-radius:12px;" data-ga-event="brand_index_cta" data-ga-target="tms">
+        <div class="banner-content">
+            <div class="banner-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="banner-text">
+                <strong>Manage Your Fleet with Canada's #1 TMS</strong>
+                <span>Dispatch, compliance, ELD integration, and driver management — all in one platform.</span>
+            </div>
+        </div>
+        <a href="https://tms.truckerpro.ca" class="banner-cta">
+            Try TruckerPro Free <i class="fa-solid fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+</div>
 {% endblock %}
