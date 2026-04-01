@@ -303,11 +303,28 @@ def create_app(config_class=None):
         'Contact: info@truckerpro.ca | Based in Canada, serving US and Canadian carriers.\n'
     )
 
+    # Paths that should never be blocked (sitemaps, robots, health checks, verification)
+    _EXEMPT_PATHS = ('/sitemap', '/robots.txt', '/health', '/ready', '/sw.js', '/static/')
+
+    # Google crawlers that must always be allowed
+    _ALLOWED_BOTS = ('Googlebot', 'Google-InspectionTool', 'Google-Site-Verification',
+                     'Bingbot', 'bingbot', 'Storebot-Google', 'AdsBot-Google')
+
     @app.before_request
     def block_ai_bots():
         if app.config.get('TESTING'):
             return
+        # Never block sitemaps, robots.txt, health checks, static files
+        path = request.path
+        if any(path.startswith(p) for p in _EXEMPT_PATHS):
+            return
+        # Never block verification key files
+        if path.endswith('.txt') and len(path) > 10:
+            return
         ua = request.headers.get('User-Agent', '')
+        # Always allow legitimate search engine crawlers
+        if any(bot in ua for bot in _ALLOWED_BOTS):
+            return
         if any(bot in ua for bot in _BLOCKED_BOTS):
             return _AI_BOT_AD, 403, {'Content-Type': 'text/plain'}
         if not ua or ua == '-':
