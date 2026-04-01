@@ -66,13 +66,13 @@ def create_booking():
     if not loc.is_bookable:
         return jsonify({'success': False, 'error': 'Location does not accept bookings'}), 400
 
-    # Check availability — count overlapping confirmed bookings
+    # Check availability — count overlapping confirmed bookings (locked to prevent races)
     overlap_count = ParkingBooking.query.filter(
         ParkingBooking.location_id == location_id,
-        ParkingBooking.status.in_(['confirmed', 'checked_in']),
+        ParkingBooking.status.in_(['confirmed', 'checked_in', 'pending_payment']),
         ParkingBooking.start_datetime < end_dt,
         ParkingBooking.end_datetime > start_dt,
-    ).count()
+    ).with_for_update().count()
 
     total_spots = loc.total_spots or 0
     if total_spots > 0 and overlap_count >= total_spots:
@@ -86,11 +86,13 @@ def create_booking():
         'monthly': loc.monthly_rate,
     }
     rate = rate_map.get(booking_type)
-    if rate is None:
+    if not rate or rate <= 0:
         return jsonify({'success': False, 'error': f'No {booking_type} rate available'}), 400
 
     # Calculate pricing
     subtotal = calculate_subtotal(rate, booking_type, start_dt, end_dt)
+    if subtotal < 50:
+        return jsonify({'success': False, 'error': 'Minimum booking amount is $0.50 CAD'}), 400
     tax_amount, tax_type = calculate_tax(subtotal, loc.province)
     total_amount = subtotal + tax_amount
     commission = calculate_commission(subtotal)
@@ -125,6 +127,8 @@ def create_booking():
         )
 
         payment_status = 'paid' if payment_intent.status == 'succeeded' else 'pending'
+        # Only confirm booking if payment actually succeeded
+        booking_status = 'confirmed' if payment_status == 'paid' else 'pending_payment'
 
         # Create booking record
         booking = ParkingBooking(
@@ -143,7 +147,7 @@ def create_booking():
             commission_amount=commission,
             stripe_payment_intent_id=payment_intent.id,
             payment_status=payment_status,
-            status='confirmed',
+            status=booking_status,
         )
         db.session.add(booking)
         db.session.commit()

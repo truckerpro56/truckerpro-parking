@@ -40,6 +40,9 @@ def _handle_payment_succeeded(event):
     booking = ParkingBooking.query.filter_by(stripe_payment_intent_id=pi_id).first()
     if booking and booking.payment_status != 'paid':
         booking.payment_status = 'paid'
+        # Confirm booking if it was waiting on payment (3DS, etc.)
+        if booking.status == 'pending_payment':
+            booking.status = 'confirmed'
         db.session.commit()
         logger.info("Booking %s payment confirmed via webhook", booking.booking_ref)
 
