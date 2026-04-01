@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import func
 
 from . import stops_api_bp
-from ..extensions import db
+from ..extensions import db, limiter
 from ..middleware import site_required
 from ..models.truck_stop import TruckStop
 from ..models.fuel_price import FuelPrice
@@ -14,6 +14,10 @@ from ..models.truck_stop_review import TruckStopReview
 from ..models.truck_stop_report import TruckStopReport
 
 logger = logging.getLogger(__name__)
+
+ALLOWED_FUEL_TYPES = ('diesel', 'gas', 'def', 'cng', 'lng', 'biodiesel')
+ALLOWED_REPORT_TYPES = ('parking_availability', 'fuel_price_correction', 'amenity_update',
+                        'closure', 'hazard', 'hours_change', 'other')
 
 
 def _should_auto_verify_price(truck_stop_id, fuel_type, price_cents):
@@ -29,14 +33,23 @@ def _should_auto_verify_price(truck_stop_id, fuel_type, price_cents):
 @stops_api_bp.route('/truck-stops/<int:stop_id>/fuel-prices', methods=['POST'])
 @site_required('stops')
 @login_required
+@limiter.limit("10/minute")
 def submit_fuel_price(stop_id):
     stop = TruckStop.query.get_or_404(stop_id)
-    data = request.get_json()
+    data = request.get_json() or {}
     fuel_type = data.get('fuel_type')
     price_cents = data.get('price_cents')
     currency = data.get('currency', 'USD')
-    if not fuel_type or not price_cents:
+    if not fuel_type or price_cents is None:
         return jsonify({'error': 'fuel_type and price_cents required'}), 400
+    if fuel_type not in ALLOWED_FUEL_TYPES:
+        return jsonify({'error': f'fuel_type must be one of: {", ".join(ALLOWED_FUEL_TYPES)}'}), 400
+    try:
+        price_cents = int(price_cents)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'price_cents must be a number'}), 400
+    if price_cents < 1 or price_cents > 99999:
+        return jsonify({'error': 'price_cents must be between 1 and 99999'}), 400
     is_verified = _should_auto_verify_price(stop_id, fuel_type, price_cents)
     fp = FuelPrice(
         truck_stop_id=stop_id, fuel_type=fuel_type,
@@ -52,22 +65,32 @@ def submit_fuel_price(stop_id):
 @stops_api_bp.route('/truck-stops/<int:stop_id>/reviews', methods=['POST'])
 @site_required('stops')
 @login_required
+@limiter.limit("5/minute")
 def submit_review(stop_id):
     stop = TruckStop.query.get_or_404(stop_id)
-    data = request.get_json()
+    data = request.get_json() or {}
     rating = data.get('rating')
     review_text = data.get('review_text', '')
-    if not rating or rating < 1 or rating > 5:
+    try:
+        rating = int(rating)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'rating must be a number'}), 400
+    if rating < 1 or rating > 5:
         return jsonify({'error': 'rating must be 1-5'}), 400
+    review_text = str(review_text)[:2000]
     existing = TruckStopReview.query.filter_by(
         truck_stop_id=stop_id, user_id=current_user.id
     ).first()
     if existing:
         return jsonify({'error': 'You already reviewed this stop'}), 409
+    photos = data.get('photos', [])
+    if not isinstance(photos, list):
+        photos = []
+    photos = [str(p)[:500] for p in photos[:20] if isinstance(p, str) and p.startswith('http')]
     review = TruckStopReview(
         truck_stop_id=stop_id, user_id=current_user.id,
         rating=rating, review_text=review_text,
-        photos=data.get('photos', []),
+        photos=photos,
     )
     db.session.add(review)
     db.session.commit()
@@ -77,13 +100,16 @@ def submit_review(stop_id):
 @stops_api_bp.route('/truck-stops/<int:stop_id>/reports', methods=['POST'])
 @site_required('stops')
 @login_required
+@limiter.limit("10/minute")
 def submit_report(stop_id):
     stop = TruckStop.query.get_or_404(stop_id)
-    data = request.get_json()
+    data = request.get_json() or {}
     report_type = data.get('report_type')
     report_data = data.get('data')
     if not report_type or not report_data:
         return jsonify({'error': 'report_type and data required'}), 400
+    if report_type not in ALLOWED_REPORT_TYPES:
+        return jsonify({'error': f'report_type must be one of: {", ".join(ALLOWED_REPORT_TYPES)}'}), 400
     expires_at = None
     if report_type == 'parking_availability':
         expires_at = datetime.now(timezone.utc) + timedelta(hours=4)

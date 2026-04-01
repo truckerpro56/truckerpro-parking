@@ -1,4 +1,5 @@
 """Truck stop API endpoints — list, detail, search."""
+import math
 import logging
 from flask import jsonify, request
 from sqlalchemy import func
@@ -136,7 +137,7 @@ def list_truck_stops():
     distances = {}
     if lat is not None and lng is not None:
         delta_lat = radius / 111.0
-        delta_lng = radius / (111.0 * abs(float(lat)) * 0.01745 + 0.001)
+        delta_lng = radius / (111.0 * max(math.cos(math.radians(lat)), 0.0001))
         query = query.filter(
             TruckStop.latitude.between(lat - delta_lat, lat + delta_lat),
             TruckStop.longitude.between(lng - delta_lng, lng + delta_lng),
@@ -150,9 +151,8 @@ def list_truck_stops():
                 filtered.append(s)
         filtered.sort(key=lambda s: distances[s.id])
         total = len(filtered)
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)
-        per_page = min(per_page, 100)
+        page = max(1, request.args.get('page', 1, type=int))
+        per_page = max(1, min(request.args.get('per_page', 20, type=int), 100))
         start = (page - 1) * per_page
         page_stops = filtered[start:start + per_page]
         return jsonify({
@@ -161,9 +161,8 @@ def list_truck_stops():
             'stops': [_serialize_stop(s, distances.get(s.id)) for s in page_stops],
         })
 
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
-    per_page = min(per_page, 100)
+    page = max(1, request.args.get('page', 1, type=int))
+    per_page = max(1, min(request.args.get('per_page', 20, type=int), 100))
     total = query.count()
     stops = query.order_by(TruckStop.name).offset((page - 1) * per_page).limit(per_page).all()
     return jsonify({

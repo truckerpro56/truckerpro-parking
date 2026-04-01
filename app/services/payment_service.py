@@ -34,4 +34,6 @@ def refund_payment(payment_intent_id):
 def verify_webhook_signature(payload, sig_header):
     """Verify Stripe webhook signature and return constructed event."""
     endpoint_secret = current_app.config.get('STRIPE_WEBHOOK_SECRET', '')
+    if not endpoint_secret:
+        raise ValueError('STRIPE_WEBHOOK_SECRET not configured')
     return stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)

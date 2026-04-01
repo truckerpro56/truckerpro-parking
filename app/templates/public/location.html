@@ -976,12 +976,11 @@
     };
 
     const taxInfo = {
-        type: "{{ tax_info.type }}",
-        rate: {{ tax_info.rate }}
+        type: "{{ tax_info.type|default('GST', true) }}",
+        rate: {{ tax_info.rate|default(0) }}
     };
 
-    // Check if user is logged in (set by the backend)
-    const isUserLoggedIn = typeof window.userLoggedIn !== 'undefined' ? window.userLoggedIn : false;
+    const isUserLoggedIn = {{ 'true' if current_user.is_authenticated else 'false' }};
 
     // Google Map
     function initMap() {

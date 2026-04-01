@@ -15,7 +15,7 @@ def login():
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         user = User.query.filter_by(email=email, is_active=True).first()
-        if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
+        if user and user.password_hash and bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
             login_user(user)
             next_page = request.args.get('next', '')
             if next_page and next_page.startswith('/') and not next_page.startswith('//'):
@@ -56,7 +56,7 @@ def signup():
     return render_template('auth/signup.html')
 
 
-@pages_bp.route('/logout')
+@pages_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     logout_user()

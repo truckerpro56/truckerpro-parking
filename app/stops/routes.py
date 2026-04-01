@@ -22,6 +22,7 @@ STOPS_BASE = 'https://stops.truckerpro.net'
 
 
 def _paginate(query, page, per_page=PER_PAGE):
+    page = max(1, page)
     total = query.count()
     items = query.offset((page - 1) * per_page).limit(per_page).all()
     pages = (total + per_page - 1) // per_page

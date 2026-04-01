@@ -1,5 +1,6 @@
 """Owner dashboard routes — stats, listings, recent bookings."""
-from flask import render_template
+from datetime import datetime, timezone
+from flask import render_template, abort
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -15,6 +16,8 @@ from ..services.geo_service import format_price
 @login_required
 def owner_dashboard():
     """Property owner dashboard with locations, stats, and recent bookings."""
+    if current_user.role not in ('owner', 'admin'):
+        abort(403)
     # Get owner's locations
     locations = ParkingLocation.query.filter_by(
         owner_id=current_user.id,
@@ -26,18 +29,24 @@ def owner_dashboard():
     recent_bookings = []
 
     if location_ids:
-        # Total bookings and monthly revenue
-        stats_row = db.session.query(
+        # Total bookings
+        total_bookings = db.session.query(
             func.count(ParkingBooking.id),
+        ).filter(
+            ParkingBooking.location_id.in_(location_ids),
+        ).scalar() or 0
+        stats['total_bookings'] = total_bookings
+
+        # Monthly revenue (current month only)
+        month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        revenue_month = db.session.query(
             func.coalesce(func.sum(ParkingBooking.total_amount), 0),
         ).filter(
             ParkingBooking.location_id.in_(location_ids),
-        ).first()
-
-        stats['total_bookings'] = stats_row[0] if stats_row else 0
-        revenue_total = stats_row[1] if stats_row else 0
-        stats['revenue_month'] = revenue_total
-        stats['revenue_month_display'] = format_price(revenue_total)
+            ParkingBooking.created_at >= month_start,
+        ).scalar() or 0
+        stats['revenue_month'] = revenue_month
+        stats['revenue_month_display'] = format_price(revenue_month)
 
         # Average rating
         avg_rating = db.session.query(

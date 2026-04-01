@@ -1,5 +1,5 @@
 """Booking API endpoints — create parking bookings with Stripe payment."""
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import jsonify, request
 from flask_login import login_required, current_user
 import logging
@@ -35,6 +35,11 @@ def create_booking():
     if not all([location_id, start, end, payment_method_id]):
         return jsonify({'success': False, 'error': 'Missing required fields'}), 400
 
+    try:
+        location_id = int(location_id)
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': 'Invalid location_id'}), 400
+
     # Validate dates
     try:
         start_dt = datetime.fromisoformat(start)
@@ -42,23 +47,32 @@ def create_booking():
     except (ValueError, TypeError):
         return jsonify({'success': False, 'error': 'Invalid date format'}), 400
 
+    # Ensure timezone-aware (default to UTC)
+    if start_dt.tzinfo is None:
+        start_dt = start_dt.replace(tzinfo=timezone.utc)
+    if end_dt.tzinfo is None:
+        end_dt = end_dt.replace(tzinfo=timezone.utc)
+
     if end_dt <= start_dt:
         return jsonify({'success': False, 'error': 'End date must be after start date'}), 400
 
-    # Get location
-    loc = ParkingLocation.query.filter_by(id=location_id, is_active=True).first()
+    if start_dt < datetime.now(timezone.utc):
+        return jsonify({'success': False, 'error': 'Start date must be in the future'}), 400
+
+    # Get location (lock row to serialize concurrent bookings)
+    loc = ParkingLocation.query.filter_by(id=location_id, is_active=True).with_for_update().first()
     if not loc:
         return jsonify({'success': False, 'error': 'Location not found'}), 404
     if not loc.is_bookable:
         return jsonify({'success': False, 'error': 'Location does not accept bookings'}), 400
 
-    # Check availability — count overlapping confirmed bookings (with row lock to prevent race condition)
+    # Check availability — count overlapping confirmed bookings
     overlap_count = ParkingBooking.query.filter(
         ParkingBooking.location_id == location_id,
         ParkingBooking.status.in_(['confirmed', 'checked_in']),
         ParkingBooking.start_datetime < end_dt,
         ParkingBooking.end_datetime > start_dt,
-    ).with_for_update().count()
+    ).count()
 
     total_spots = loc.total_spots or 0
     if total_spots > 0 and overlap_count >= total_spots:
