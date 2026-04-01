@@ -1,10 +1,35 @@
-<div class="banner banner-border" data-ga-event="banner_click" data-ga-target="border">
-    <div class="banner-content">
-        <div class="banner-icon"><i class="fa-solid fa-passport"></i></div>
-        <div class="banner-text">
-            <strong>Border Clearing</strong>
-            <span>{{ banner['copy'] }}</span>
+<div class="native-promo native-promo-border" data-ga-event="banner_click" data-ga-target="border">
+    <div class="native-promo-inner">
+        <div class="native-promo-content">
+            <div class="native-promo-badge"><i class="fa-solid fa-passport"></i> Cross-Border</div>
+            <h3>{{ banner['copy'] }}</h3>
+            <p class="native-promo-desc">File ACE &amp; ACI eManifest online. Skip the paperwork, clear customs faster, avoid penalties up to $10,000.</p>
+            <div class="native-promo-features">
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> ACE &amp; ACI eManifest</div>
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> File in under 5 minutes</div>
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> CBSA &amp; CBP compliant</div>
+            </div>
+            <a href="{{ banner.url }}" class="native-promo-btn native-promo-btn-border">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="native-promo-visual">
+            <div class="native-promo-stat-grid">
+                <div class="native-promo-stat">
+                    <div class="stat-value" style="color:#10b981">5 min</div>
+                    <div class="stat-label">Average filing time</div>
+                </div>
+                <div class="native-promo-stat">
+                    <div class="stat-value" style="color:#10b981">$0</div>
+                    <div class="stat-label">Filing penalties</div>
+                </div>
+                <div class="native-promo-stat">
+                    <div class="stat-value" style="color:#10b981">24/7</div>
+                    <div class="stat-label">Online access</div>
+                </div>
+                <div class="native-promo-stat">
+                    <div class="stat-value" style="color:#10b981">100%</div>
+                    <div class="stat-label">Compliance rate</div>
+                </div>
+            </div>
         </div>
     </div>
-    <a href="{{ banner.url }}" class="banner-cta">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
 </div>

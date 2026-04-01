@@ -9,6 +9,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="canonical" href="{% block canonical %}https://stops.truckerpro.net{% endblock %}">
     <!-- Bootstrap 5.3.3 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <!-- Font Awesome 6.7.2 -->
@@ -680,6 +681,63 @@
         .fuel-price-cards { gap: 8px; }
         .fuel-price-card { min-width: 90px; padding: 10px 12px; }
         .stops-footer .footer-bottom { flex-direction: column; text-align: center; }
+      }
+
+      /* ── Native Content Promos ─────────────────────── */
+      .native-promo { border-radius: 16px; overflow: hidden; margin: 20px 0; }
+      .native-promo-inner { display: flex; align-items: stretch; min-height: 200px; }
+      .native-promo-content { flex: 1; padding: 32px; display: flex; flex-direction: column; justify-content: center; }
+      .native-promo-visual { width: 340px; flex-shrink: 0; padding: 32px; display: flex; align-items: center; justify-content: center; }
+
+      .native-promo-tms { background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%); color: #fff; }
+      .native-promo-border { background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); color: #fff; }
+      .native-promo-parking { background: linear-gradient(135deg, #3b0764 0%, #5b21b6 100%); color: #fff; }
+      .native-promo-fmcsa { background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: #fff; }
+
+      .native-promo-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); padding: 5px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; width: fit-content; }
+      .native-promo h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 8px; line-height: 1.3; }
+      .native-promo-desc { color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px; }
+
+      .native-promo-features { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 20px; }
+      .native-promo-feat { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: rgba(255,255,255,0.85); }
+      .native-promo-feat i { color: #34d399; font-size: 0.75rem; }
+
+      .native-promo-btn { display: inline-flex; align-items: center; gap: 8px; background: #2563eb; color: #fff; padding: 12px 28px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
+      .native-promo-btn:hover { background: #1d4ed8; color: #fff; transform: translateY(-1px); }
+      .native-promo-btn-border { background: #10b981; }
+      .native-promo-btn-border:hover { background: #059669; color: #fff; }
+      .native-promo-btn-parking { background: #8b5cf6; }
+      .native-promo-btn-parking:hover { background: #7c3aed; color: #fff; }
+      .native-promo-btn-fmcsa { background: #6b7280; }
+      .native-promo-btn-fmcsa:hover { background: #4b5563; color: #fff; }
+
+      /* Mockup widget */
+      .native-promo-mockup { background: rgba(255,255,255,0.08); border-radius: 10px; width: 100%; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+      .mockup-bar { display: flex; gap: 5px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+      .mockup-bar span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+      .mockup-body { padding: 10px; }
+      .mockup-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; font-size: 0.75rem; color: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(255,255,255,0.05); }
+      .mockup-row:last-child { border-bottom: none; }
+      .mockup-row i { font-size: 0.85rem; }
+      .mockup-row span:first-of-type { flex: 1; }
+      .mockup-badge-green { background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+      .mockup-badge-yellow { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+      .mockup-badge-blue { background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+
+      /* Stat grid */
+      .native-promo-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+      .native-promo-stat { text-align: center; background: rgba(255,255,255,0.08); border-radius: 10px; padding: 16px 12px; }
+      .native-promo-stat .stat-value { font-size: 1.5rem; font-weight: 800; margin-bottom: 2px; }
+      .native-promo-stat .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+
+      /* Location list */
+      .native-promo-locations { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+      .loc-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.82rem; color: rgba(255,255,255,0.8); }
+
+      @media (max-width: 768px) {
+        .native-promo-inner { flex-direction: column; }
+        .native-promo-visual { width: 100%; padding: 0 24px 24px; }
+        .native-promo-stat-grid { grid-template-columns: 1fr 1fr; }
       }
     </style>
     {% block head %}{% endblock %}

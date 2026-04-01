@@ -1,10 +1,25 @@
-<div class="banner banner-parking" data-ga-event="banner_click" data-ga-target="parking">
-    <div class="banner-content">
-        <div class="banner-icon"><i class="fa-solid fa-square-parking"></i></div>
-        <div class="banner-text">
-            <strong>Truck Parking Club</strong>
-            <span>{{ banner['copy'] }}</span>
+<div class="native-promo native-promo-parking" data-ga-event="banner_click" data-ga-target="parking">
+    <div class="native-promo-inner">
+        <div class="native-promo-content">
+            <div class="native-promo-badge"><i class="fa-solid fa-square-parking"></i> Secure Parking</div>
+            <h3>{{ banner['copy'] }}</h3>
+            <p class="native-promo-desc">Book secure, monitored truck parking across 75+ Canadian locations. Reserve your spot before you arrive.</p>
+            <div class="native-promo-features">
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> 75+ locations across Canada</div>
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> Online booking in 2 min</div>
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> Gated &amp; monitored lots</div>
+            </div>
+            <a href="{{ banner.url }}" class="native-promo-btn native-promo-btn-parking">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="native-promo-visual">
+            <div class="native-promo-locations">
+                <div class="loc-item"><i class="fa-solid fa-location-dot" style="color:#8b5cf6"></i> Toronto / GTA</div>
+                <div class="loc-item"><i class="fa-solid fa-location-dot" style="color:#8b5cf6"></i> Montreal / QC</div>
+                <div class="loc-item"><i class="fa-solid fa-location-dot" style="color:#8b5cf6"></i> Vancouver / BC</div>
+                <div class="loc-item"><i class="fa-solid fa-location-dot" style="color:#8b5cf6"></i> Calgary / AB</div>
+                <div class="loc-item"><i class="fa-solid fa-location-dot" style="color:#8b5cf6"></i> Winnipeg / MB</div>
+                <div class="loc-item"><i class="fa-solid fa-location-dot" style="color:#8b5cf6"></i> + 70 more</div>
+            </div>
         </div>
     </div>
-    <a href="{{ banner.url }}" class="banner-cta">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
 </div>

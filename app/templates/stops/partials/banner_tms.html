@@ -1,10 +1,25 @@
-<div class="banner banner-tms" data-ga-event="banner_click" data-ga-target="tms">
-    <div class="banner-content">
-        <div class="banner-icon"><i class="fa-solid fa-truck-fast"></i></div>
-        <div class="banner-text">
-            <strong>TruckerPro TMS</strong>
-            <span>{{ banner['copy'] }}</span>
+<div class="native-promo native-promo-tms" data-ga-event="banner_click" data-ga-target="tms">
+    <div class="native-promo-inner">
+        <div class="native-promo-content">
+            <div class="native-promo-badge"><i class="fa-solid fa-bolt"></i> Fleet Management</div>
+            <h3>{{ banner['copy'] }}</h3>
+            <p class="native-promo-desc">All-in-one TMS with dispatch, ELD tracking, compliance, invoicing, and driver management for US &amp; Canadian carriers.</p>
+            <div class="native-promo-features">
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> Real-time GPS tracking</div>
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> ELD &amp; HOS compliance</div>
+                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> Automated invoicing</div>
+            </div>
+            <a href="{{ banner.url }}" class="native-promo-btn">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="native-promo-visual">
+            <div class="native-promo-mockup">
+                <div class="mockup-bar"><span></span><span></span><span></span></div>
+                <div class="mockup-body">
+                    <div class="mockup-row"><i class="fa-solid fa-truck" style="color:#3b82f6"></i> <span>Load #4521 — Toronto → Chicago</span> <span class="mockup-badge-green">In Transit</span></div>
+                    <div class="mockup-row"><i class="fa-solid fa-truck" style="color:#3b82f6"></i> <span>Load #4522 — Montreal → NYC</span> <span class="mockup-badge-yellow">Dispatched</span></div>
+                    <div class="mockup-row"><i class="fa-solid fa-truck" style="color:#3b82f6"></i> <span>Load #4523 — Calgary → Vancouver</span> <span class="mockup-badge-blue">Quoted</span></div>
+                </div>
+            </div>
         </div>
     </div>
-    <a href="{{ banner.url }}" class="banner-cta">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
 </div>
