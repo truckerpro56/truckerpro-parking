@@ -209,6 +209,10 @@ def create_app(config_class=None):
 
     csrf.exempt(api_bp)
 
+    from .blog import blog_bp, get_blog_posts
+    get_blog_posts(app)
+    app.register_blueprint(blog_bp)
+
     with app.app_context():
         import sqlalchemy
         for attempt in range(5):
