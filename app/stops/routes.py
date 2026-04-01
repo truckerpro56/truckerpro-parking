@@ -276,6 +276,7 @@ def sitemap_index():
            '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for name in ['stops', 'states', 'brands', 'highways', 'cities']:
         xml.append(f'<sitemap><loc>{STOPS_BASE}/sitemap-{name}.xml</loc></sitemap>')
+    xml.append(f'<sitemap><loc>https://stops.truckerpro.net/sitemap-blog.xml</loc></sitemap>')
     xml.append('</sitemapindex>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -353,5 +354,20 @@ def sitemap_cities():
         state_sl = state_code_to_slug(code)
         city_sl = _slugify(city)
         xml.append(f'<url><loc>{STOPS_BASE}/{country_slug}/{state_sl}/{city_sl}</loc></url>')
+    xml.append('</urlset>')
+    return Response('\n'.join(xml), mimetype='application/xml')
+
+
+@stops_public_bp.route('/sitemap-blog.xml')
+@site_required('stops')
+def sitemap_blog():
+    from ..blog import _posts
+    from ..blog.renderer import get_all_posts
+    blog_posts = get_all_posts(_posts or [], 'stops')
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    xml.append('<url><loc>https://stops.truckerpro.net/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+    for bp in blog_posts:
+        xml.append(f"<url><loc>https://stops.truckerpro.net/blog/{bp['slug']}</loc><lastmod>{bp['date']}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>")
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')

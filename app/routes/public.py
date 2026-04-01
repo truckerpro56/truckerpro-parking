@@ -150,6 +150,14 @@ def sitemap():
     except Exception as e:
         logger.warning("Sitemap: failed to load locations: %s", str(e)[:200])
 
+    # Blog posts
+    from ..blog import _posts
+    from ..blog.renderer import get_all_posts
+    blog_posts = get_all_posts(_posts or [], 'parking')
+    urls.append({'loc': 'https://parking.truckerpro.ca/blog', 'lastmod': blog_posts[0]['date'] if blog_posts else '2026-04-01', 'changefreq': 'weekly', 'priority': '0.8'})
+    for bp in blog_posts:
+        urls.append({'loc': f"https://parking.truckerpro.ca/blog/{bp['slug']}", 'lastmod': bp['date'], 'changefreq': 'monthly', 'priority': '0.7'})
+
     xml = render_template('seo/sitemap.xml', urls=urls)
     resp = make_response(xml)
     resp.headers['Content-Type'] = 'application/xml'
