@@ -492,4 +492,29 @@ def create_app(config_class=None):
         from .tasks.fuel_digest_task import send_weekly_fuel_digests
         send_weekly_fuel_digests()
 
+    @app.cli.command('submit-indexnow')
+    @click.option('--domain', default='all', help='Domain to submit: stops, parking, or all')
+    def submit_indexnow_command(domain):
+        """Submit all URLs to IndexNow for instant search engine indexing."""
+        from .services.indexnow import submit_stops_urls, submit_parking_urls
+        if domain in ('stops', 'all'):
+            print("Submitting stops.truckerpro.net URLs...")
+            result = submit_stops_urls()
+            print(f"  Total URLs: {result.get('total_urls', 0)}")
+            for r in result.get('results', []):
+                if 'error' in r:
+                    print(f"  Error: {r['error']}")
+                else:
+                    print(f"  Submitted: {r['urls_submitted']} (HTTP {r['status']})")
+        if domain in ('parking', 'all'):
+            print("Submitting parking.truckerpro.ca URLs...")
+            result = submit_parking_urls()
+            print(f"  Total URLs: {result.get('total_urls', 0)}")
+            for r in result.get('results', []):
+                if 'error' in r:
+                    print(f"  Error: {r['error']}")
+                else:
+                    print(f"  Submitted: {r['urls_submitted']} (HTTP {r['status']})")
+        print("Done!")
+
     return app

@@ -187,6 +187,15 @@ def robots():
     return Response(txt, mimetype='text/plain')
 
 
+@pages_bp.route('/<key>.txt')
+def indexnow_verify(key):
+    """IndexNow key verification file."""
+    indexnow_key = current_app.config.get('INDEXNOW_KEY', '')
+    if key == indexnow_key and indexnow_key:
+        return Response(key, mimetype='text/plain')
+    abort(404)
+
+
 # ── Landing ──────────────────────────────────────────────────
 
 @pages_bp.route('/')

@@ -484,6 +484,16 @@ def sitemap_blog():
     return Response('\n'.join(xml), mimetype='application/xml')
 
 
+@stops_public_bp.route('/<key>.txt')
+@site_required('stops')
+def stops_indexnow_verify(key):
+    """IndexNow key verification file for stops domain."""
+    indexnow_key = current_app.config.get('INDEXNOW_KEY', '')
+    if key == indexnow_key and indexnow_key:
+        return Response(key, mimetype='text/plain')
+    abort(404)
+
+
 @stops_public_bp.route('/sw.js')
 @site_required('stops')
 def service_worker():

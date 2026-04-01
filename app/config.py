@@ -26,6 +26,7 @@ class Config:
     RATELIMIT_STORAGE_URI = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
     STOPS_DOMAIN = os.environ.get('STOPS_DOMAIN', 'stops.truckerpro.net')
     PARKING_DOMAIN = os.environ.get('PARKING_DOMAIN', 'parking.truckerpro.ca')
+    INDEXNOW_KEY = os.environ.get('INDEXNOW_KEY', '')
 
 
 class TestConfig(Config):
