@@ -1,0 +1,135 @@
+{% extends "stops/base.html" %}
+{% block title %}{{ area.name }} — {{ area.state_province }}{% endblock %}
+{% block meta_description %}{{ area.name }} on {{ area.highway or 'highway' }} in {{ area.state_province }}. Parking, restrooms, and amenities for truck drivers.{% endblock %}
+
+{% block head %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CivicStructure",
+    "name": {{ area.name | tojson }},
+    "address": {"@type": "PostalAddress", "addressRegion": {{ area.state_province | tojson }}, "addressCountry": "US"}
+    {% if area.latitude and area.longitude %}
+    ,"geo": {"@type": "GeoCoordinates", "latitude": {{ area.latitude }}, "longitude": {{ area.longitude }}}
+    {% endif %}
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-nav">
+    <a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span>
+    <a href="/rest-areas">Rest Areas</a> <span class="sep">/</span>
+    <a href="/rest-areas/{{ state_slug }}">{{ area.state_province }}</a> <span class="sep">/</span>
+    <span class="current">{{ area.name }}</span>
+</nav>
+
+<div class="page-hero rounded-3 mb-4" style="padding:2rem">
+    <div class="d-flex align-items-start gap-3 flex-wrap">
+        <div class="flex-grow-1">
+            {% if area.is_welcome_center %}
+            <span class="badge mb-2" style="background:rgba(255,255,255,.18);color:#fff;font-size:.72rem;border-radius:999px;padding:.3rem .8rem"><i class="fa-solid fa-circle-info me-1"></i> Welcome Center</span>
+            {% else %}
+            <span class="badge mb-2" style="background:rgba(255,255,255,.18);color:#fff;font-size:.72rem;border-radius:999px;padding:.3rem .8rem"><i class="fa-solid fa-tree-city me-1"></i> Rest Area</span>
+            {% endif %}
+            <h1 style="color:#fff;margin-bottom:8px">{{ area.name }}</h1>
+            {% if area.highway %}
+            <div style="color:rgba(255,255,255,.8);font-size:.9rem"><i class="fa-solid fa-road" style="color:#60a5fa;width:16px"></i> {{ area.highway }}{% if area.mile_post %} — Mile Post {{ area.mile_post }}{% endif %}{% if area.direction %} ({{ area.direction }}){% endif %}</div>
+            {% endif %}
+            {% if area.city %}
+            <div style="color:rgba(255,255,255,.8);font-size:.9rem"><i class="fa-solid fa-location-dot" style="color:#60a5fa;width:16px"></i> {{ area.city }}, {{ area.state_province }}</div>
+            {% endif %}
+        </div>
+        {% if area.latitude and area.longitude %}
+        <a href="https://maps.google.com/?q={{ area.latitude }},{{ area.longitude }}" target="_blank" rel="noopener"
+           class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none">
+            <i class="fa-solid fa-diamond-turn-right me-1"></i> Get Directions
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="info-card">
+            <h2><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Amenities</h2>
+            <div class="row g-3">
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-restroom" style="font-size:1.3rem;color:{% if area.has_restrooms %}var(--accent){% else %}var(--border){% endif %};margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.82rem;font-weight:600;color:{% if area.has_restrooms %}var(--text){% else %}var(--text-sec){% endif %}">Restrooms</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-truck" style="font-size:1.3rem;color:{% if area.truck_parking %}var(--accent){% else %}var(--border){% endif %};margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.82rem;font-weight:600;color:{% if area.truck_parking %}var(--text){% else %}var(--text-sec){% endif %}">Truck Parking</div>
+                    </div>
+                </div>
+                {% if area.parking_spaces %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-square-parking" style="font-size:1.3rem;color:var(--accent);margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.82rem;font-weight:600">{{ area.parking_spaces }} Spaces</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-utensils" style="font-size:1.3rem;color:{% if area.has_picnic %}var(--accent){% else %}var(--border){% endif %};margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.82rem;font-weight:600;color:{% if area.has_picnic %}var(--text){% else %}var(--text-sec){% endif %}">Picnic Area</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-bottle-water" style="font-size:1.3rem;color:{% if area.has_water %}var(--accent){% else %}var(--border){% endif %};margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.82rem;font-weight:600;color:{% if area.has_water %}var(--text){% else %}var(--text-sec){% endif %}">Water</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:10px">
+                        <i class="fa-solid fa-dog" style="font-size:1.3rem;color:{% if area.has_pet_area %}var(--accent){% else %}var(--border){% endif %};margin-bottom:6px;display:block"></i>
+                        <div style="font-size:0.82rem;font-weight:600;color:{% if area.has_pet_area %}var(--text){% else %}var(--text-sec){% endif %}">Pet Area</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        {% if area.latitude and area.longitude and google_maps_key %}
+        <div class="info-card">
+            <h2><i class="fa-solid fa-map" style="color:var(--accent)"></i> Map</h2>
+            <div style="border-radius:8px;overflow:hidden;height:250px">
+                <iframe width="100%" height="250" frameborder="0" style="border:0"
+                        src="https://www.google.com/maps/embed/v1/place?key={{ google_maps_key }}&q={{ area.latitude }},{{ area.longitude }}&zoom=14&maptype=satellite"
+                        allowfullscreen loading="lazy"></iframe>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if nearby %}
+<h2 style="font-size:1.2rem;font-weight:700;margin:32px 0 16px"><i class="fa-solid fa-map-pin" style="color:var(--accent)"></i> Nearby Rest Areas</h2>
+<div class="row g-3">
+    {% for ra in nearby %}
+    <div class="col-md-6 col-lg-4">
+        <div class="stop-card">
+            <div class="stop-card-header">
+                <h3><a href="/rest-areas/{{ state_slug }}/{{ ra.slug }}">{{ ra.name }}</a></h3>
+                <div class="stop-location"><i class="fa-solid fa-location-dot"></i> {{ ra.city or ra.state_province }}</div>
+            </div>
+            <div class="stop-card-body">
+                {% if ra.highway %}<div class="stop-highway"><i class="fa-solid fa-road"></i> {{ ra.highway }}</div>{% endif %}
+                <div class="amenity-tags">
+                    {% if ra.has_restrooms %}<span class="amenity-tag"><i class="fa-solid fa-restroom"></i> Restrooms</span>{% endif %}
+                    {% if ra.truck_parking %}<span class="amenity-tag"><i class="fa-solid fa-truck"></i> Truck</span>{% endif %}
+                    {% if ra.parking_spaces %}<span class="amenity-tag"><i class="fa-solid fa-square-parking"></i> {{ ra.parking_spaces }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

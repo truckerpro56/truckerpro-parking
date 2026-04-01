@@ -1,0 +1,36 @@
+{% extends "stops/base.html" %}
+{% block title %}Rest Areas in {{ state_name }}{% endblock %}
+{% block meta_description %}{{ total }} rest areas and welcome centers in {{ state_name }}. Find parking, restrooms, and amenities along major highways.{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-nav"><a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span> <a href="/rest-areas">Rest Areas</a> <span class="sep">/</span> <span class="current">{{ state_name }}</span></nav>
+
+<h1 style="font-size:1.5rem;font-weight:800;margin-bottom:4px">Rest Areas in {{ state_name }}</h1>
+<p style="color:var(--text-sec);margin-bottom:24px">{{ total }} rest areas and welcome centers</p>
+
+<div class="row g-3">
+    {% for area in areas %}
+    <div class="col-md-6 col-lg-4">
+        <div class="stop-card">
+            <div class="stop-card-header">
+                <h3><a href="/rest-areas/{{ state_slug }}/{{ area.slug }}">{{ area.name }}</a></h3>
+                <div class="stop-location"><i class="fa-solid fa-location-dot"></i> {{ area.city or area.county or state_name }}</div>
+            </div>
+            <div class="stop-card-body">
+                {% if area.highway %}
+                <div class="stop-highway"><i class="fa-solid fa-road"></i> {{ area.highway }}{% if area.mile_post %} — MP {{ area.mile_post }}{% endif %}</div>
+                {% endif %}
+                <div class="amenity-tags">
+                    {% if area.has_restrooms %}<span class="amenity-tag"><i class="fa-solid fa-restroom"></i> Restrooms</span>{% endif %}
+                    {% if area.truck_parking %}<span class="amenity-tag"><i class="fa-solid fa-truck"></i> Truck Parking</span>{% endif %}
+                    {% if area.is_welcome_center %}<span class="amenity-tag"><i class="fa-solid fa-circle-info"></i> Welcome Center</span>{% endif %}
+                    {% if area.parking_spaces %}<span class="amenity-tag"><i class="fa-solid fa-square-parking"></i> {{ area.parking_spaces }} spots</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% include "stops/partials/pagination.html" %}
+{% endblock %}

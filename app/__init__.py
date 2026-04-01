@@ -220,6 +220,7 @@ def create_app(config_class=None):
     with app.app_context():
         from .models.favorite_stop import FavoriteStop  # noqa: F401
         from .models.stop_photo import StopPhoto  # noqa: F401
+        from .models.rest_area import RestArea  # noqa: F401
         import sqlalchemy
         for attempt in range(5):
             try:
@@ -417,6 +418,36 @@ def create_app(config_class=None):
 
         total = TruckStop.query.filter_by(is_active=True).count()
         print(f"\nTotal active truck stops: {total}")
+
+    @app.cli.command('import-rest-areas')
+    def import_rest_areas_command():
+        """Import rest areas from USDOT ArcGIS dataset."""
+        from .import_stops.rest_areas_usdot import fetch_rest_areas, parse_usdot_feature
+        from .models.rest_area import RestArea
+        print("Fetching USDOT rest areas...")
+        features = fetch_rest_areas()
+        print(f"Got {len(features)} features. Importing...")
+        count = 0
+        for feature in features:
+            data = parse_usdot_feature(feature)
+            if not data.get('latitude') or not data.get('longitude'):
+                continue
+            if not data.get('state_province'):
+                continue
+            # Upsert by slug
+            existing = RestArea.query.filter_by(slug=data['slug']).first()
+            if existing:
+                for key, val in data.items():
+                    if key != 'id' and val is not None:
+                        setattr(existing, key, val)
+            else:
+                ra = RestArea(**data)
+                db.session.add(ra)
+            count += 1
+        db.session.commit()
+        print(f"Imported {count} rest areas.")
+        total = RestArea.query.filter_by(is_active=True).count()
+        print(f"Total active rest areas: {total}")
 
     @app.cli.command('compute-border-distances')
     def compute_border_distances_command():
