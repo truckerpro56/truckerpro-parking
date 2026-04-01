@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from . import stops_public_bp
 from ..extensions import db
 from ..middleware import site_required
+from ..models.user import User
 from ..models.favorite_stop import FavoriteStop
 from ..models.truck_stop import TruckStop
 from ..models.fuel_price import FuelPrice
@@ -81,3 +82,39 @@ def remove_favorite(stop_id):
         db.session.delete(fav)
         db.session.commit()
     return jsonify({'success': True, 'favorited': False})
+
+
+@stops_public_bp.route('/profile/subscribe-fuel', methods=['POST'])
+@site_required('stops')
+@login_required
+def subscribe_fuel_email():
+    """Subscribe (or unsubscribe) from weekly fuel price digest."""
+    if 'unsubscribe' in request.form:
+        current_user.fuel_email_subscribed = False
+        db.session.commit()
+        flash('Unsubscribed from weekly fuel price emails.', 'success')
+    else:
+        current_user.fuel_email_subscribed = True
+        # Optionally set preferred states from form
+        states = request.form.getlist('states')
+        if states:
+            current_user.fuel_email_states = [s.strip().upper() for s in states if s.strip()]
+        db.session.commit()
+        flash('Subscribed to weekly fuel price emails!', 'success')
+    return redirect(url_for('stops.driver_profile'))
+
+
+@stops_public_bp.route('/profile/unsubscribe-fuel')
+@site_required('stops')
+def unsubscribe_fuel_email():
+    """Unsubscribe from fuel price digest (works without login via email param)."""
+    email = request.args.get('email', '').strip().lower()
+    if email:
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.fuel_email_subscribed = False
+            db.session.commit()
+    elif current_user.is_authenticated:
+        current_user.fuel_email_subscribed = False
+        db.session.commit()
+    return render_template('stops/unsubscribed.html')

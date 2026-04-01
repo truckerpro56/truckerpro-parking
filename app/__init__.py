@@ -486,4 +486,10 @@ def create_app(config_class=None):
         db.session.commit()
         print(f"Updated border distances for {len(stops)} stops.")
 
+    @app.cli.command('send-fuel-digest')
+    def send_fuel_digest_command():
+        """Send weekly fuel price digest to all subscribers."""
+        from .tasks.fuel_digest_task import send_weekly_fuel_digests
+        send_weekly_fuel_digests()
+
     return app

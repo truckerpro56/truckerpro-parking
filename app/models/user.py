@@ -22,6 +22,8 @@ class User(UserMixin, db.Model):
     home_state = db.Column(db.String(50))   # driver's home state/province
     truck_type = db.Column(db.String(50))   # e.g., "18-wheeler", "bobtail"
     contribution_points = db.Column(db.Integer, default=0)
+    fuel_email_subscribed = db.Column(db.Boolean, default=False)
+    fuel_email_states = db.Column(db.JSON, default=list)  # preferred states, empty = all
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))

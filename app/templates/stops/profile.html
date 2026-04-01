@@ -93,6 +93,28 @@
             </form>
         </div>
 
+        <!-- Fuel Email Subscription -->
+        <div class="info-card mt-4">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:12px"><i class="fa-solid fa-envelope" style="color:var(--accent)"></i> Weekly Fuel Prices</h2>
+            <p style="font-size:0.85rem;color:var(--text-sec);margin-bottom:12px">Get the cheapest diesel prices by state delivered to your inbox every Monday.</p>
+            {% if current_user.fuel_email_subscribed %}
+            <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px;font-size:0.85rem;color:#059669;margin-bottom:12px">
+                <i class="fa-solid fa-check-circle"></i> You're subscribed!
+            </div>
+            <form method="POST" action="/profile/subscribe-fuel">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" name="unsubscribe" style="background:none;border:none;color:var(--text-sec);font-size:0.8rem;cursor:pointer;text-decoration:underline;font-family:inherit">Unsubscribe</button>
+            </form>
+            {% else %}
+            <form method="POST" action="/profile/subscribe-fuel">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" style="width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit">
+                    <i class="fa-solid fa-bell"></i> Subscribe to Weekly Fuel Prices
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
         <!-- Points info -->
         <div class="info-card mt-4">
             <h2 style="font-size:1rem;font-weight:700;margin-bottom:12px"><i class="fa-solid fa-trophy" style="color:var(--accent)"></i> How Points Work</h2>
