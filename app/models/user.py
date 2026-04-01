@@ -18,6 +18,10 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default='driver')  # driver, owner, admin
     stripe_customer_id = db.Column(db.String(255))
     is_active = db.Column(db.Boolean, default=True)
+    display_name = db.Column(db.String(100))
+    home_state = db.Column(db.String(50))   # driver's home state/province
+    truck_type = db.Column(db.String(50))   # e.g., "18-wheeler", "bobtail"
+    contribution_points = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))

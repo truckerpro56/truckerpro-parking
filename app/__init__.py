@@ -218,6 +218,7 @@ def create_app(config_class=None):
     app.register_blueprint(blog_bp)
 
     with app.app_context():
+        from .models.favorite_stop import FavoriteStop  # noqa: F401
         import sqlalchemy
         for attempt in range(5):
             try:

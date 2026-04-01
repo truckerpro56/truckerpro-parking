@@ -59,6 +59,9 @@ def submit_fuel_price(stop_id):
     )
     db.session.add(fp)
     db.session.commit()
+    # Award points for fuel price contribution
+    current_user.contribution_points = (current_user.contribution_points or 0) + 5
+    db.session.commit()
     return jsonify({'id': fp.id, 'is_verified': fp.is_verified}), 201
 
 
@@ -93,6 +96,9 @@ def submit_review(stop_id):
         photos=photos,
     )
     db.session.add(review)
+    db.session.commit()
+    # Award points for review contribution
+    current_user.contribution_points = (current_user.contribution_points or 0) + 10
     db.session.commit()
     return jsonify({'id': review.id, 'is_approved': review.is_approved}), 201
 

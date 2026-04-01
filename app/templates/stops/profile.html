@@ -1,0 +1,127 @@
+{% extends "stops/base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block meta_description %}Your driver profile, favorite stops, and contributions on Truck Stops Directory.{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+    <a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span>
+    <span class="current">My Profile</span>
+</nav>
+
+<div class="row g-4">
+    <!-- Left: Profile + Stats -->
+    <div class="col-lg-4">
+        <div class="info-card">
+            <div class="text-center mb-3">
+                <div style="width:72px;height:72px;background:linear-gradient(135deg,#1e3a5f,#0f2440);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+                    <i class="fa-solid fa-user" style="color:#60a5fa;font-size:1.8rem"></i>
+                </div>
+                <h1 style="font-size:1.3rem;font-weight:800;margin-bottom:2px">{{ current_user.display_name or current_user.email.split('@')[0] }}</h1>
+                <p style="color:var(--text-sec);font-size:0.85rem">{{ current_user.email }}</p>
+            </div>
+
+            <div class="d-flex justify-content-around text-center py-3" style="border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+                <div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--accent)">{{ current_user.contribution_points or 0 }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px">Points</div>
+                </div>
+                <div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--accent)">{{ price_count }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px">Prices</div>
+                </div>
+                <div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--accent)">{{ review_count }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px">Reviews</div>
+                </div>
+                <div>
+                    <div style="font-size:1.3rem;font-weight:800;color:var(--accent)">{{ favorites|length }}</div>
+                    <div style="font-size:0.7rem;color:var(--text-sec);text-transform:uppercase;letter-spacing:0.5px">Favorites</div>
+                </div>
+            </div>
+
+            <!-- Points rank -->
+            <div class="text-center py-3">
+                {% set pts = current_user.contribution_points or 0 %}
+                {% if pts >= 500 %}
+                <span style="font-size:0.8rem;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:4px 14px;border-radius:50px;font-weight:700"><i class="fa-solid fa-crown"></i> Gold Contributor</span>
+                {% elif pts >= 100 %}
+                <span style="font-size:0.8rem;background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;padding:4px 14px;border-radius:50px;font-weight:700"><i class="fa-solid fa-medal"></i> Silver Contributor</span>
+                {% elif pts >= 10 %}
+                <span style="font-size:0.8rem;background:linear-gradient(135deg,#92400e,#78350f);color:#fff;padding:4px 14px;border-radius:50px;font-weight:700"><i class="fa-solid fa-award"></i> Bronze Contributor</span>
+                {% else %}
+                <span style="font-size:0.8rem;background:var(--bg);color:var(--text-sec);padding:4px 14px;border-radius:50px;font-weight:600"><i class="fa-solid fa-seedling"></i> New Driver</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="info-card mt-4">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px"><i class="fa-solid fa-gear" style="color:var(--accent)"></i> Settings</h2>
+            <form method="POST" action="/profile/settings">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label style="font-size:0.8rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Display Name</label>
+                    <input type="text" name="display_name" value="{{ current_user.display_name or '' }}" maxlength="100"
+                           style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit">
+                </div>
+                <div class="mb-3">
+                    <label style="font-size:0.8rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Home State/Province</label>
+                    <input type="text" name="home_state" value="{{ current_user.home_state or '' }}" maxlength="50" placeholder="e.g. TX, ON"
+                           style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit">
+                </div>
+                <div class="mb-3">
+                    <label style="font-size:0.8rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Truck Type</label>
+                    <select name="truck_type" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;background:var(--card)">
+                        <option value="">Select...</option>
+                        <option value="18-wheeler" {% if current_user.truck_type == '18-wheeler' %}selected{% endif %}>18-Wheeler</option>
+                        <option value="bobtail" {% if current_user.truck_type == 'bobtail' %}selected{% endif %}>Bobtail</option>
+                        <option value="straight-truck" {% if current_user.truck_type == 'straight-truck' %}selected{% endif %}>Straight Truck</option>
+                        <option value="tanker" {% if current_user.truck_type == 'tanker' %}selected{% endif %}>Tanker</option>
+                        <option value="flatbed" {% if current_user.truck_type == 'flatbed' %}selected{% endif %}>Flatbed</option>
+                        <option value="reefer" {% if current_user.truck_type == 'reefer' %}selected{% endif %}>Reefer</option>
+                        <option value="car-hauler" {% if current_user.truck_type == 'car-hauler' %}selected{% endif %}>Car Hauler</option>
+                        <option value="other" {% if current_user.truck_type == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <button type="submit" style="width:100%;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:inherit">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+
+        <!-- Points info -->
+        <div class="info-card mt-4">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:12px"><i class="fa-solid fa-trophy" style="color:var(--accent)"></i> How Points Work</h2>
+            <div style="font-size:0.82rem;color:var(--text-sec);line-height:1.7">
+                <div><strong>+5 pts</strong> — Submit a fuel price</div>
+                <div><strong>+10 pts</strong> — Write a review</div>
+                <div><strong>+1 pt</strong> — Save a favorite</div>
+                <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+                    <strong>Ranks:</strong> New Driver (0) &rarr; Bronze (10) &rarr; Silver (100) &rarr; Gold (500)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Favorites -->
+    <div class="col-lg-8">
+        <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:20px"><i class="fa-solid fa-heart" style="color:#ef4444"></i> My Favorite Stops</h2>
+
+        {% if favorites %}
+        <div class="row g-3">
+            {% for stop in favorites %}
+            <div class="col-md-6">
+                {% include "stops/partials/stop_card.html" %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="info-card text-center py-5">
+            <i class="fa-regular fa-heart" style="font-size:2.5rem;color:var(--border);margin-bottom:12px;display:block"></i>
+            <p style="color:var(--text-sec);font-size:0.95rem;margin-bottom:4px">No favorites yet</p>
+            <p style="color:var(--text-sec);font-size:0.85rem">Click the heart icon on any truck stop to save it here</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

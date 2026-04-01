@@ -647,6 +647,13 @@
             <i class="fa-solid fa-arrow-up-right-from-square"></i>Visit Website
         </a>
         {% endif %}
+        {% if current_user.is_authenticated %}
+        <button id="fav-btn" data-action="toggle-favorite" data-stop-id="{{ stop.id }}"
+                style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:0.45rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit">
+            <i class="{% if is_favorited %}fa-solid{% else %}fa-regular{% endif %} fa-heart" style="color:#ef4444"></i>
+            <span>{% if is_favorited %}Saved{% else %}Save{% endif %}</span>
+        </button>
+        {% endif %}
     </div>
 </div>
 
@@ -1067,5 +1074,33 @@
         });
     }
 })();
+</script>
+
+<script>
+// Favorite toggle
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action="toggle-favorite"]');
+    if (!btn) return;
+    var stopId = btn.getAttribute('data-stop-id');
+    var icon = btn.querySelector('i');
+    var label = btn.querySelector('span');
+    var isFav = icon.classList.contains('fa-solid');
+    var url = isFav ? '/favorites/remove/' + stopId : '/favorites/add/' + stopId;
+    fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (data.favorited) {
+                icon.className = 'fa-solid fa-heart';
+                icon.style.color = '#ef4444';
+                label.textContent = 'Saved';
+            } else {
+                icon.className = 'fa-regular fa-heart';
+                icon.style.color = '#ef4444';
+                label.textContent = 'Save';
+            }
+        }
+    });
+});
 </script>
 {% endblock %}

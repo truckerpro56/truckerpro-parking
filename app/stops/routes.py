@@ -1,6 +1,7 @@
 """Public page routes for stops.truckerpro.net."""
 import logging
 from flask import render_template, abort, request, Response, current_app
+from flask_login import current_user
 from sqlalchemy import func
 
 from . import stops_public_bp
@@ -173,11 +174,19 @@ def stop_detail(state_slug, city_slug, slug):
                 'is_verified': fp.is_verified,
             })
 
+    is_favorited = False
+    if current_user.is_authenticated:
+        from ..models.favorite_stop import FavoriteStop
+        is_favorited = FavoriteStop.query.filter_by(
+            user_id=current_user.id, truck_stop_id=stop.id
+        ).first() is not None
+
     return render_template('stops/stop_detail.html',
                            stop=stop, banners=banners, photos=photos,
                            nearby=[stop_to_card(s) for s in nearby],
                            state_slug=state_slug, city_slug=city_slug,
                            fuel_prices=fuel_prices,
+                           is_favorited=is_favorited,
                            google_maps_key=current_app.config.get('GOOGLE_MAPS_API_KEY', ''))
 
 
