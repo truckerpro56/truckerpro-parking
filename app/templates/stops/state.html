@@ -171,6 +171,11 @@
   }
   .empty-state i { font-size: 2.5rem; color: #e2e8f0; margin-bottom: 12px; display: block; }
 </style>
+<meta property="og:title" content="Truck Stops in {{ state_name }}">
+<meta property="og:description" content="Find {{ total }} truck stops in {{ state_name }}. Diesel, showers, scales, parking, and more. Browse by city or view all locations.">
+<meta property="og:url" content="https://stops.truckerpro.net/{{ 'us' if country == 'US' else 'canada' }}/{{ state_slug }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
 {% endblock %}
 
 {% block content %}

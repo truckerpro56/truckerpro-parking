@@ -364,7 +364,7 @@ def sitemap_stops():
         state_sl = state_code_to_slug(s.state_province)
         city_sl = _slugify(s.city)
         loc = f'{STOPS_BASE}/{country_slug}/{state_sl}/{city_sl}/{s.slug}'
-        xml.append(f'<url><loc>{loc}</loc></url>')
+        xml.append(f'<url><loc>{loc}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -377,10 +377,19 @@ def sitemap_states():
     ).filter(TruckStop.is_active == True).distinct().all()
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    # Core pages
+    xml.append(f'<url><loc>{STOPS_BASE}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/us</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/canada</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/brands</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/highways</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/rest-areas</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/weigh-stations</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
+    xml.append(f'<url><loc>{STOPS_BASE}/route-planner</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>')
     for code, country in states:
         country_slug = 'us' if country == 'US' else 'canada'
         state_sl = state_code_to_slug(code)
-        xml.append(f'<url><loc>{STOPS_BASE}/{country_slug}/{state_sl}</loc></url>')
+        xml.append(f'<url><loc>{STOPS_BASE}/{country_slug}/{state_sl}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -394,7 +403,7 @@ def sitemap_brands():
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for (brand_key,) in brands:
-        xml.append(f'<url><loc>{STOPS_BASE}/brands/{brand_key_to_slug(brand_key)}</loc></url>')
+        xml.append(f'<url><loc>{STOPS_BASE}/brands/{brand_key_to_slug(brand_key)}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -408,7 +417,7 @@ def sitemap_highways():
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for (hwy,) in hwys:
-        xml.append(f'<url><loc>{STOPS_BASE}/highways/{_slugify(hwy)}</loc></url>')
+        xml.append(f'<url><loc>{STOPS_BASE}/highways/{_slugify(hwy)}</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -425,7 +434,7 @@ def sitemap_cities():
         country_slug = 'us' if country == 'US' else 'canada'
         state_sl = state_code_to_slug(code)
         city_sl = _slugify(city)
-        xml.append(f'<url><loc>{STOPS_BASE}/{country_slug}/{state_sl}/{city_sl}</loc></url>')
+        xml.append(f'<url><loc>{STOPS_BASE}/{country_slug}/{state_sl}/{city_sl}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -440,7 +449,7 @@ def sitemap_rest_areas():
     xml.append(f'<url><loc>{STOPS_BASE}/rest-areas</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
     for a in areas:
         state_sl = state_code_to_slug(a.state_province)
-        xml.append(f'<url><loc>{STOPS_BASE}/rest-areas/{state_sl}/{a.slug}</loc></url>')
+        xml.append(f'<url><loc>{STOPS_BASE}/rest-areas/{state_sl}/{a.slug}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 
@@ -455,7 +464,7 @@ def sitemap_weigh_stations():
     xml.append(f'<url><loc>{STOPS_BASE}/weigh-stations</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>')
     for ws in stations:
         state_sl = state_code_to_slug(ws.state_province)
-        xml.append(f'<url><loc>{STOPS_BASE}/weigh-stations/{state_sl}/{ws.slug}</loc></url>')
+        xml.append(f'<url><loc>{STOPS_BASE}/weigh-stations/{state_sl}/{ws.slug}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>')
     xml.append('</urlset>')
     return Response('\n'.join(xml), mimetype='application/xml')
 

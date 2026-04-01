@@ -1,6 +1,15 @@
 {% extends "stops/base.html" %}
 {% block title %}Rest Areas in {{ state_name }}{% endblock %}
 {% block meta_description %}{{ total }} rest areas and welcome centers in {{ state_name }}. Find parking, restrooms, and amenities along major highways.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/rest-areas/{{ state_slug }}{% endblock %}
+
+{% block head %}
+<meta property="og:title" content="Rest Areas in {{ state_name }}">
+<meta property="og:description" content="{{ total }} rest areas and welcome centers in {{ state_name }}. Find parking, restrooms, and amenities along major highways.">
+<meta property="og:url" content="https://stops.truckerpro.net/rest-areas/{{ state_slug }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
+{% endblock %}
 
 {% block content %}
 <nav class="breadcrumb-nav"><a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span> <a href="/rest-areas">Rest Areas</a> <span class="sep">/</span> <span class="current">{{ state_name }}</span></nav>

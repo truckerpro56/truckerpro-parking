@@ -1,6 +1,15 @@
 {% extends "stops/base.html" %}
 {% block title %}Weigh Stations Directory — US{% endblock %}
 {% block meta_description %}Browse {{ total }} highway weigh stations and truck inspection stations across the United States. BTS/FHWA data.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/weigh-stations{% endblock %}
+
+{% block head %}
+<meta property="og:title" content="Weigh Stations Directory — US">
+<meta property="og:description" content="Browse highway weigh stations and truck inspection stations across the United States. BTS/FHWA data.">
+<meta property="og:url" content="https://stops.truckerpro.net/weigh-stations">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
+{% endblock %}
 
 {% block content %}
 <nav class="breadcrumb-nav"><a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span> <span class="current">Weigh Stations</span></nav>

@@ -1,6 +1,15 @@
 {% extends "stops/base.html" %}
 {% block title %}Rest Areas Directory — US{% endblock %}
 {% block meta_description %}Browse {{ total }} highway rest areas and welcome centers across the United States. Find parking, restrooms, and amenities.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/rest-areas{% endblock %}
+
+{% block head %}
+<meta property="og:title" content="Rest Areas Directory — US">
+<meta property="og:description" content="Browse highway rest areas and welcome centers across the United States. Find parking, restrooms, and amenities.">
+<meta property="og:url" content="https://stops.truckerpro.net/rest-areas">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
+{% endblock %}
 
 {% block content %}
 <nav class="breadcrumb-nav"><a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span> <span class="current">Rest Areas</span></nav>

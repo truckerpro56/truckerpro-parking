@@ -115,6 +115,11 @@
   }
   .btn-cta-secondary:hover { background: rgba(255,255,255,0.18); color: #fff; text-decoration: none; }
 </style>
+<meta property="og:title" content="Truck Stops in {{ city_name }}, {{ state_name }}">
+<meta property="og:description" content="{{ stops|length }} truck stops in {{ city_name }}, {{ state_name }}. Find diesel, showers, parking, scales, and amenities for truck drivers.">
+<meta property="og:url" content="https://stops.truckerpro.net/{{ _c_slug }}/{{ state_slug }}/{{ city_slug }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
 {% endblock %}
 
 {% block content %}

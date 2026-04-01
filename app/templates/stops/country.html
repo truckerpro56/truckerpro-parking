@@ -137,6 +137,11 @@
   }
   .btn-cta-secondary:hover { background: rgba(255,255,255,0.18); color: #fff; text-decoration: none; }
 </style>
+<meta property="og:title" content="{{ country_name }} Truck Stops">
+<meta property="og:description" content="Find truck stops in {{ country_name }}. Browse by state or province for diesel, parking, showers, and more.">
+<meta property="og:url" content="https://stops.truckerpro.net/{{ 'us' if country == 'US' else 'canada' }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
 {% endblock %}
 
 {% block content %}

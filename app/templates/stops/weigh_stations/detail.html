@@ -1,6 +1,7 @@
 {% extends "stops/base.html" %}
 {% block title %}{{ ws.name }} — {{ ws.state_province }}{% endblock %}
 {% block meta_description %}{{ ws.name }} weigh station in {{ ws.state_province }}{% if ws.highway %} on {{ ws.highway }}{% endif %}. Annual truck count, days active, and location details.{% endblock %}
+{% block canonical %}https://stops.truckerpro.net/weigh-stations/{{ state_slug }}/{{ ws.slug }}{% endblock %}
 
 {% block head %}
 <script type="application/ld+json">
@@ -14,6 +15,11 @@
     {% endif %}
 }
 </script>
+<meta property="og:title" content="{{ ws.name }} — {{ ws.state_province }}">
+<meta property="og:description" content="{{ ws.name }} weigh station in {{ ws.state_province }}{% if ws.highway %} on {{ ws.highway }}{% endif %}. Annual truck count, days active, and location details.">
+<meta property="og:url" content="https://stops.truckerpro.net/weigh-stations/{{ state_slug }}/{{ ws.slug }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Truck Stops Directory">
 {% endblock %}
 
 {% block content %}

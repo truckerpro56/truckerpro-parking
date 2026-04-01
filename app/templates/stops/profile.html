@@ -2,6 +2,10 @@
 {% block title %}My Profile{% endblock %}
 {% block meta_description %}Your driver profile, favorite stops, and contributions on Truck Stops Directory.{% endblock %}
 
+{% block head %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
 {% block content %}
 <nav class="breadcrumb-nav" aria-label="Breadcrumb">
     <a href="/"><i class="fa-solid fa-house fa-xs"></i> Home</a> <span class="sep">/</span>
