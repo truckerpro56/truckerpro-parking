@@ -1,11 +1,924 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><title>{{ post.title }} | Truck Stops Directory</title></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }} | Truck Stops Directory</title>
+    <meta name="description" content="{{ post.meta_description }}">
+    {% if post.meta_keywords %}<meta name="keywords" content="{{ post.meta_keywords }}">{% endif %}
+    <link rel="canonical" href="https://stops.truckerpro.net/blog/{{ post.slug }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ post.title }}">
+    <meta property="og:description" content="{{ post.meta_description }}">
+    <meta property="og:url" content="https://stops.truckerpro.net/blog/{{ post.slug }}">
+    <meta property="og:site_name" content="Truck Stops Directory">
+    {% if post.featured_image %}
+    <meta property="og:image" content="{{ post.featured_image }}">
+    {% endif %}
+    {% if post.date %}<meta property="article:published_time" content="{{ post.date }}">{% endif %}
+    {% if post.category %}<meta property="article:section" content="{{ post.category|title }}">{% endif %}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ post.title }}">
+    <meta name="twitter:description" content="{{ post.meta_description }}">
+    {% if post.featured_image %}<meta name="twitter:image" content="{{ post.featured_image }}">{% endif %}
+
+    <!-- GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RREBK9SZZJ');
+    </script>
+
+    <!-- Schema.org BlogPosting JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": "{{ post.title | replace('"', '\\"') }}",
+        "description": "{{ post.meta_description | replace('"', '\\"') }}",
+        "url": "https://stops.truckerpro.net/blog/{{ post.slug }}",
+        {% if post.date %}"datePublished": "{{ post.date }}",{% endif %}
+        {% if post.featured_image %}"image": "{{ post.featured_image }}",{% endif %}
+        "author": {
+            "@type": "Person",
+            "name": "{{ post.author if post.author else 'Truck Stops Directory' }}"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Truck Stops Directory",
+            "url": "https://stops.truckerpro.net"
+        },
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://stops.truckerpro.net/blog/{{ post.slug }}"
+        }
+    }
+    </script>
+
+    <!-- Bootstrap 5.3.3 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <!-- Font Awesome 6.7.2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Navbar ── */
+        .stops-nav {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .stops-nav .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .stops-nav .brand {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stops-nav .brand i {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .stops-nav .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .stops-nav .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .stops-nav .nav-links a:hover,
+        .stops-nav .nav-links a.active {
+            color: var(--accent);
+        }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb-bar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 0.625rem 1rem;
+        }
+
+        .breadcrumb-bar .inner {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb-bar ol {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb-bar li + li::before {
+            content: '/';
+            margin-right: 0.25rem;
+            opacity: 0.4;
+        }
+
+        .breadcrumb-bar a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .breadcrumb-bar a:hover { color: var(--accent); }
+
+        .breadcrumb-bar .current { color: var(--text-primary); font-weight: 500; }
+
+        /* ── Post Hero / Header CTA ── */
+        .post-hero-cta {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2440 100%);
+            color: #ffffff;
+            padding: 2.5rem 1rem;
+        }
+
+        .post-hero-cta .inner {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .post-hero-cta .meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .post-hero-cta .category-badge {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            background: rgba(255,255,255,0.2);
+            color: #ffffff;
+            padding: 0.25rem 0.625rem;
+            border-radius: 4px;
+        }
+
+        .post-hero-cta .date-badge {
+            font-size: 0.8125rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .post-hero-cta h1 {
+            font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+            font-weight: 700;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .post-hero-cta .hero-cta-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn-hero-primary {
+            background: var(--accent);
+            color: #ffffff;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s;
+            display: inline-block;
+        }
+
+        .btn-hero-primary:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255,255,255,0.15);
+            color: #ffffff;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            color: #ffffff;
+        }
+
+        /* ── Article Layout ── */
+        .article-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 2.5rem 1rem 4rem;
+        }
+
+        /* ── Article Typography ── */
+        .article-body {
+            color: var(--text-primary);
+        }
+
+        .article-body h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 2rem 0 0.875rem;
+            color: var(--text-primary);
+            letter-spacing: -0.015em;
+        }
+
+        .article-body h3 {
+            font-size: 1.1875rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.625rem;
+            color: var(--text-primary);
+        }
+
+        .article-body h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.25rem 0 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .article-body p {
+            margin-bottom: 1.125rem;
+            font-size: 1.0625rem;
+            line-height: 1.75;
+        }
+
+        .article-body ul, .article-body ol {
+            margin: 0 0 1.125rem 1.5rem;
+            padding: 0;
+        }
+
+        .article-body li {
+            margin-bottom: 0.375rem;
+            font-size: 1.0625rem;
+            line-height: 1.65;
+        }
+
+        .article-body a {
+            color: var(--accent);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .article-body a:hover { color: var(--accent-hover); }
+
+        .article-body blockquote {
+            border-left: 4px solid var(--accent);
+            margin: 1.5rem 0;
+            padding: 0.875rem 1.25rem;
+            background: #eff6ff;
+            border-radius: 0 8px 8px 0;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        .article-body code {
+            background: #f1f5f9;
+            color: #be185d;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.875em;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .article-body pre {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            margin: 1.25rem 0;
+        }
+
+        .article-body pre code {
+            background: none;
+            color: var(--text-primary);
+            padding: 0;
+            font-size: 0.875rem;
+        }
+
+        .article-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.25rem 0;
+            font-size: 0.9375rem;
+        }
+
+        .article-body table th {
+            background: #f1f5f9;
+            padding: 0.625rem 0.875rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .article-body table td {
+            padding: 0.5rem 0.875rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-body table tr:last-child td { border-bottom: none; }
+
+        .article-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        /* ── Mid-article CTA card ── */
+        .mid-cta-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 12px 12px 0;
+            padding: 1.5rem 1.75rem;
+            margin: 2.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .mid-cta-card .mid-cta-icon {
+            width: 44px;
+            height: 44px;
+            background: #eff6ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.125rem;
+            color: var(--accent);
+        }
+
+        .mid-cta-card .mid-cta-content { flex: 1; min-width: 180px; }
+
+        .mid-cta-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .mid-cta-card p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.875rem;
+        }
+
+        .mid-cta-card .cta-link {
+            background: var(--accent);
+            color: #ffffff;
+            padding: 0.5rem 1.125rem;
+            border-radius: 7px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.15s;
+        }
+
+        .mid-cta-card .cta-link:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        /* ── Author / Post Meta bar ── */
+        .post-meta-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .post-meta-bar .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        /* ── Related Articles ── */
+        .related-section {
+            border-top: 1px solid var(--border);
+            padding-top: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .related-section h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 767px) {
+            .related-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (min-width: 768px) and (max-width: 991px) {
+            .related-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .related-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.125rem;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .related-card:hover {
+            box-shadow: 0 4px 16px rgba(37,99,235,0.1);
+            border-color: rgba(37,99,235,0.25);
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .related-card .related-category {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            background: #eff6ff;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        .related-card h3 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 0.375rem;
+        }
+
+        .related-card .related-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* ── Sticky bottom bar ── */
+        .sticky-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-top: 1px solid var(--border);
+            padding: 0.875rem 1rem;
+            z-index: 200;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.07);
+            display: none;
+        }
+
+        .sticky-bar.visible { display: block; }
+
+        .sticky-bar .sticky-inner {
+            max-width: 820px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sticky-bar .sticky-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sticky-bar .sticky-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .sticky-bar .sticky-cta {
+            background: var(--accent);
+            color: #ffffff;
+            padding: 0.5rem 1rem;
+            border-radius: 7px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s;
+            display: inline-block;
+        }
+
+        .sticky-bar .sticky-cta:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        .sticky-bar .sticky-dismiss {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.375rem;
+            line-height: 1;
+            border-radius: 4px;
+            transition: color 0.15s;
+        }
+
+        .sticky-bar .sticky-dismiss:hover { color: var(--text-primary); }
+
+        /* ── Site Footer ── */
+        .site-footer {
+            background: var(--text-primary);
+            color: rgba(255,255,255,0.7);
+            padding: 2rem 1rem;
+        }
+
+        .site-footer .inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .site-footer a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.8125rem;
+            transition: color 0.15s;
+        }
+
+        .site-footer a:hover { color: #ffffff; }
+
+        .site-footer .footer-links {
+            display: flex;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .site-footer .footer-copy { font-size: 0.8125rem; }
+    </style>
+</head>
 <body>
-<article>
-  <h1>{{ post.title }}</h1>
-  {{ post.html_before_cta|safe }}
-  {{ post.html_after_cta|safe }}
-</article>
+
+<!-- Navbar -->
+<nav class="stops-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+        <a href="/" class="brand">
+            <i class="fa-solid fa-gas-pump"></i>
+            Truck Stops Directory
+        </a>
+        <ul class="nav-links">
+            <li><a href="/us">US</a></li>
+            <li><a href="/canada">Canada</a></li>
+            <li><a href="/brands">Brands</a></li>
+            <li><a href="/highways">Highways</a></li>
+            <li><a href="/blog" class="active">Blog</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-bar">
+    <div class="inner">
+        <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+                <meta itemprop="position" content="1">
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a href="/blog" itemprop="item"><span itemprop="name">Blog</span></a>
+                <meta itemprop="position" content="2">
+            </li>
+            {% if post.category %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <a href="/blog?category={{ post.category }}" itemprop="item"><span itemprop="name">{{ post.category|title }}</span></a>
+                <meta itemprop="position" content="3">
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <span class="current" itemprop="name">{{ post.title }}</span>
+                <meta itemprop="position" content="4">
+            </li>
+            {% else %}
+            <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                <span class="current" itemprop="name">{{ post.title }}</span>
+                <meta itemprop="position" content="3">
+            </li>
+            {% endif %}
+        </ol>
+    </div>
+</div>
+
+<!-- Post hero / header CTA -->
+<div class="post-hero-cta" id="post-hero">
+    <div class="inner">
+        <div class="meta">
+            {% if post.category %}
+            <span class="category-badge">{{ post.category|title }}</span>
+            {% endif %}
+            {% if post.date %}
+            <span class="date-badge">
+                <i class="fa-regular fa-calendar me-1"></i>{{ post.date }}
+            </span>
+            {% endif %}
+            {% if post.author %}
+            <span class="date-badge">
+                <i class="fa-solid fa-user me-1"></i>{{ post.author }}
+            </span>
+            {% endif %}
+        </div>
+
+        <h1>{{ post.title }}</h1>
+
+        {% set cta_p = post.cta_primary %}
+        {% set cta_s = post.cta_secondary %}
+        {% if cta_p or cta_s %}
+        <div class="hero-cta-row">
+            {% if cta_p and cta_p.url %}
+            <a href="{{ cta_p.url }}"
+               class="btn-hero-primary"
+               data-action="blog-cta-click"
+               data-position="hero"
+               data-target="{{ cta_p.url }}"
+               data-slug="{{ post.slug }}">
+                {{ cta_p.text if cta_p.text else 'Learn More' }}
+                <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+            {% endif %}
+            {% if cta_s and cta_s.url %}
+            <a href="{{ cta_s.url }}"
+               class="btn-hero-secondary"
+               data-action="blog-cta-click"
+               data-position="hero-secondary"
+               data-target="{{ cta_s.url }}"
+               data-slug="{{ post.slug }}">
+                {{ cta_s.text if cta_s.text else 'View More' }}
+            </a>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="hero-cta-row">
+            <a href="https://tms.truckerpro.ca"
+               class="btn-hero-primary"
+               data-action="blog-cta-click"
+               data-position="hero"
+               data-target="tms"
+               data-slug="{{ post.slug }}">
+                Try TruckerPro Free <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+            <a href="https://border.truckerpro.app"
+               class="btn-hero-secondary"
+               data-action="blog-cta-click"
+               data-position="hero-secondary"
+               data-target="border"
+               data-slug="{{ post.slug }}">
+                <i class="fa-solid fa-passport me-1"></i>eManifest Filing
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Article -->
+<div class="article-wrapper">
+    <article itemscope itemtype="https://schema.org/BlogPosting">
+        <meta itemprop="headline" content="{{ post.title }}">
+        {% if post.date %}<meta itemprop="datePublished" content="{{ post.date }}">{% endif %}
+
+        <!-- Before-CTA content -->
+        <div class="article-body" itemprop="articleBody">
+            {{ post.html_before_cta|safe }}
+        </div>
+
+        <!-- Mid-article CTA card -->
+        {% if post.html_after_cta %}
+        <div class="mid-cta-card" role="complementary" aria-label="Sponsored tool">
+            <div class="mid-cta-icon">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            <div class="mid-cta-content">
+                <h4>Manage Your Fleet Better</h4>
+                <p>TruckerPro gives dispatchers and owner-operators the tools to run lean, stay compliant, and get paid faster.</p>
+                <a href="https://tms.truckerpro.ca"
+                   class="cta-link"
+                   data-action="blog-cta-click"
+                   data-position="mid-article"
+                   data-target="tms"
+                   data-slug="{{ post.slug }}">
+                    Start Free Trial <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- After-CTA content -->
+        <div class="article-body">
+            {{ post.html_after_cta|safe }}
+        </div>
+        {% endif %}
+    </article>
+
+    <!-- Related articles -->
+    {% if related %}
+    <div class="related-section">
+        <h2>Related Articles</h2>
+        <div class="related-grid">
+            {% for rel in related %}
+            <a href="/blog/{{ rel.slug }}"
+               class="related-card"
+               data-action="blog-related-click"
+               data-slug="{{ rel.slug }}">
+                {% if rel.category %}
+                <span class="related-category">{{ rel.category|title }}</span>
+                {% endif %}
+                <h3>{{ rel.title }}</h3>
+                <div class="related-meta">
+                    {% if rel.date %}<i class="fa-regular fa-calendar me-1"></i>{{ rel.date }}{% endif %}
+                    {% if rel.author %} &middot; {{ rel.author }}{% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Back to blog -->
+    <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+        <a href="/blog" style="color: var(--accent); font-size: 0.9375rem; font-weight: 500; text-decoration: none;">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back to Blog
+        </a>
+    </div>
+</div>
+
+<!-- Site Footer -->
+<footer class="site-footer">
+    <div class="inner">
+        <span class="footer-copy">&copy; {{ 2026 }} Truck Stops Directory &mdash; stops.truckerpro.net</span>
+        <nav class="footer-links" aria-label="Footer navigation">
+            <a href="/">Home</a>
+            <a href="/us">United States</a>
+            <a href="/canada">Canada</a>
+            <a href="/brands">Brands</a>
+            <a href="/highways">Highways</a>
+            <a href="/blog">Blog</a>
+            <a href="https://tms.truckerpro.ca">TruckerPro TMS</a>
+            <a href="https://border.truckerpro.app">eManifest Filing</a>
+            <a href="https://parking.truckerpro.ca">Truck Parking</a>
+        </nav>
+    </div>
+</footer>
+
+<!-- Sticky bottom bar -->
+<div class="sticky-bar" id="sticky-bar" role="complementary" aria-label="Quick action bar">
+    <div class="sticky-inner">
+        <span class="sticky-text">
+            <i class="fa-solid fa-gas-pump me-2" style="color: var(--accent);"></i>
+            Find truck stops near your route — free with TruckerPro
+        </span>
+        <div class="sticky-actions">
+            <a href="https://tms.truckerpro.ca"
+               class="sticky-cta"
+               data-action="blog-cta-click"
+               data-position="sticky-bar"
+               data-target="tms"
+               data-slug="{{ post.slug }}">
+                Try Free <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+            <button class="sticky-dismiss"
+                    data-action="sticky-bar-dismiss"
+                    data-slug="{{ post.slug }}"
+                    aria-label="Dismiss">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='blog-analytics.js') }}"></script>
+
+<script>
+(function () {
+    'use strict';
+
+    var DISMISS_KEY = 'stops_sticky_dismissed';
+    var stickyBar = document.getElementById('sticky-bar');
+    var heroCta = document.getElementById('post-hero');
+
+    if (!stickyBar || !heroCta) return;
+
+    // Don't show if already dismissed this session
+    if (sessionStorage.getItem(DISMISS_KEY)) return;
+
+    function checkStickyVisibility() {
+        var heroBottom = heroCta.getBoundingClientRect().bottom;
+        if (heroBottom < 0) {
+            stickyBar.classList.add('visible');
+        } else {
+            stickyBar.classList.remove('visible');
+        }
+    }
+
+    window.addEventListener('scroll', checkStickyVisibility, { passive: true });
+
+    // Dismiss button handler (event delegation via blog-analytics.js handles the GA event)
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action="sticky-bar-dismiss"]');
+        if (btn) {
+            sessionStorage.setItem(DISMISS_KEY, '1');
+            stickyBar.classList.remove('visible');
+            window.removeEventListener('scroll', checkStickyVisibility);
+        }
+    });
+})();
+</script>
+
 </body>
 </html>
