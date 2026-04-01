@@ -1,5 +1,21 @@
 <div class="stop-card">
-<h3><a href="/{{ stop.country_slug }}/{{ stop.state_slug }}/{{ stop.city_slug }}/{{ stop.slug }}">{{ stop.name }}</a></h3>
-<p>{{ stop.city }}, {{ stop.state_province }}</p>
-{% if stop.highway %}<p>{{ stop.highway }}{% if stop.exit_number %} Exit {{ stop.exit_number }}{% endif %}</p>{% endif %}
+    <div class="stop-card-header">
+        <h3><a href="/{{ stop.country_slug }}/{{ stop.state_slug }}/{{ stop.city_slug }}/{{ stop.slug }}">{{ stop.name }}</a></h3>
+        <div class="stop-location"><i class="fa-solid fa-location-dot"></i> {{ stop.city }}, {{ stop.state_province }}</div>
+    </div>
+    <div class="stop-card-body">
+        {% if stop.highway %}
+        <div class="stop-highway"><i class="fa-solid fa-road"></i> {{ stop.highway }}{% if stop.exit_number %} Exit {{ stop.exit_number }}{% endif %}</div>
+        {% endif %}
+        <div class="amenity-tags">
+            {% if stop.has_diesel %}<span class="amenity-tag"><i class="fa-solid fa-gas-pump"></i> Diesel</span>{% endif %}
+            {% if stop.has_showers %}<span class="amenity-tag"><i class="fa-solid fa-shower"></i> Showers</span>{% endif %}
+            {% if stop.has_scale %}<span class="amenity-tag"><i class="fa-solid fa-weight-scale"></i> Scales</span>{% endif %}
+            {% if stop.has_repair %}<span class="amenity-tag"><i class="fa-solid fa-wrench"></i> Repair</span>{% endif %}
+            {% if stop.has_wifi %}<span class="amenity-tag"><i class="fa-solid fa-wifi"></i> WiFi</span>{% endif %}
+        </div>
+        {% if stop.total_parking_spots %}
+        <div class="stop-parking"><i class="fa-solid fa-square-parking"></i> {{ stop.total_parking_spots }} parking spots</div>
+        {% endif %}
+    </div>
 </div>

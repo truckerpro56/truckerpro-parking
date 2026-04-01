@@ -1,10 +1,13 @@
 {% if fuel_prices %}
-<div class="fuel-prices">
-{% for fp in fuel_prices %}
-<div class="fuel-price">
-<span class="fuel-type">{{ fp.fuel_type | title }}</span>
-<span class="price">${{ "%.3f" | format(fp.price_cents / 100) }}</span>
-</div>
-{% endfor %}
+<div class="fuel-prices-grid">
+    <h3><i class="fa-solid fa-gas-pump" style="color:var(--accent)"></i> Current Fuel Prices</h3>
+    <div class="fuel-price-cards">
+        {% for fp in fuel_prices %}
+        <div class="fuel-price-card">
+            <div class="fuel-type">{{ fp.fuel_type | title }}</div>
+            <div class="fuel-amount">${{ "%.3f" | format(fp.price_cents / 100) }}</div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}

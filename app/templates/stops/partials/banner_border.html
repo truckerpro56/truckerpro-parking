@@ -1,3 +1,10 @@
 <div class="banner banner-border" data-ga-event="banner_click" data-ga-target="border">
-<p>{{ banner.copy }}</p><a href="{{ banner.url }}">{{ banner.cta }}</a>
+    <div class="banner-content">
+        <div class="banner-icon"><i class="fa-solid fa-passport"></i></div>
+        <div class="banner-text">
+            <strong>Border Clearing</strong>
+            <span>{{ banner.copy }}</span>
+        </div>
+    </div>
+    <a href="{{ banner.url }}" class="banner-cta">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
 </div>
