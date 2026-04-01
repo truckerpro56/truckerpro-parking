@@ -1,0 +1,426 @@
+{% extends "stops/base.html" %}
+{% block title %}Route Planner — Find Stops Along Your Route{% endblock %}
+{% block meta_description %}Plan your trucking route and find truck stops, rest areas, and weigh stations along the way. Free route planning tool.{% endblock %}
+
+{% block head %}
+<style>
+    /* Override main container to allow full-width layout */
+    main.stops-main { min-height: 0; }
+    main.stops-main > .container { display: none; }
+
+    .route-page { display: flex; height: calc(100vh - 60px); overflow: hidden; }
+    .route-sidebar { width: 400px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+    .route-map-container { flex: 1; position: relative; }
+    #route-map { width: 100%; height: 100%; }
+
+    .route-form { padding: 20px 24px; border-bottom: 1px solid var(--border); }
+    .route-form h1 { font-size: 1.2rem; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .route-form h1 i { color: var(--accent); }
+    .route-input-wrap { position: relative; margin-bottom: 10px; }
+    .route-input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sec); font-size: 0.8rem; pointer-events: none; }
+    .route-input { width: 100%; padding: 10px 12px 10px 34px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; font-family: inherit; background: var(--bg); color: var(--text); transition: border-color .15s; }
+    .route-input:focus { outline: none; border-color: var(--accent); background: var(--card); }
+    .route-btn { width: 100%; padding: 11px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .15s; }
+    .route-btn:hover { background: var(--accent-hover); }
+    .route-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .route-error { color: #ef4444; font-size: 0.8rem; margin-top: 8px; display: none; }
+
+    .route-summary { padding: 14px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: none; }
+    .route-summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+    .route-stat { text-align: center; }
+    .route-stat-val { font-size: 1rem; font-weight: 800; color: var(--accent); line-height: 1.2; }
+    .route-stat-label { font-size: 0.68rem; color: var(--text-sec); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+    .route-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--card); flex-shrink: 0; }
+    .route-tab { flex: 1; padding: 10px 6px; text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); cursor: pointer; border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; transition: color .15s; }
+    .route-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .route-tab:hover:not(.active) { color: var(--text); background: var(--bg); }
+    .route-tab-count { background: #eff6ff; color: var(--accent); border-radius: 10px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; display: none; }
+    .route-tab.active .route-tab-count { display: inline; }
+    .route-tabs.loaded .route-tab-count { display: inline; }
+
+    .route-results { flex: 1; overflow-y: auto; }
+    .route-item { padding: 11px 20px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: background .12s; }
+    .route-item:hover { background: var(--bg); }
+    .route-item-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.75rem; color: #fff; margin-top: 1px; }
+    .route-item-icon.stop { background: #2563eb; }
+    .route-item-icon.rest { background: #10b981; }
+    .route-item-icon.weigh { background: #f59e0b; }
+    .route-item-text h4 { font-size: 0.84rem; font-weight: 700; margin: 0 0 2px; line-height: 1.3; }
+    .route-item-text h4 a { color: var(--text); text-decoration: none; }
+    .route-item-text h4 a:hover { color: var(--accent); }
+    .route-item-text p { font-size: 0.74rem; color: var(--text-sec); margin: 0; }
+
+    .route-empty { padding: 36px 24px; text-align: center; color: var(--text-sec); }
+    .route-empty i { font-size: 2rem; color: var(--border); display: block; margin-bottom: 12px; }
+    .route-empty p { font-size: 0.85rem; line-height: 1.6; margin: 0; }
+
+    .route-none { padding: 24px 20px; text-align: center; color: var(--text-sec); font-size: 0.83rem; }
+
+    @media (max-width: 768px) {
+        .route-page { flex-direction: column; height: auto; overflow: visible; }
+        .route-sidebar { width: 100%; max-height: 55vh; overflow-y: auto; }
+        .route-map-container { height: 45vh; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+{% block scripts %}
+<!-- Full-page layout rendered outside the container -->
+<div class="route-page">
+    <div class="route-sidebar">
+        <div class="route-form">
+            <h1><i class="fa-solid fa-route"></i> Plan My Route</h1>
+            <div class="route-input-wrap">
+                <i class="fa-solid fa-circle-dot route-input-icon" style="color:#10b981"></i>
+                <input type="text" id="route-origin" class="route-input" placeholder="Origin — city, state or address">
+            </div>
+            <div class="route-input-wrap">
+                <i class="fa-solid fa-location-dot route-input-icon" style="color:#ef4444"></i>
+                <input type="text" id="route-destination" class="route-input" placeholder="Destination — city, state or address">
+            </div>
+            <button id="plan-route-btn" class="route-btn" data-action="plan-route">
+                <i class="fa-solid fa-magnifying-glass-location"></i>
+                Find Stops Along Route
+            </button>
+            <div class="route-error" id="route-error"></div>
+        </div>
+
+        <div class="route-summary" id="route-summary">
+            <div class="route-summary-grid">
+                <div class="route-stat">
+                    <div class="route-stat-val" id="sum-distance">—</div>
+                    <div class="route-stat-label">Distance</div>
+                </div>
+                <div class="route-stat">
+                    <div class="route-stat-val" id="sum-duration">—</div>
+                    <div class="route-stat-label">Drive Time</div>
+                </div>
+                <div class="route-stat">
+                    <div class="route-stat-val" id="sum-stops">—</div>
+                    <div class="route-stat-label">Truck Stops</div>
+                </div>
+                <div class="route-stat">
+                    <div class="route-stat-val" id="sum-rest">—</div>
+                    <div class="route-stat-label">Rest Areas</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="route-tabs" id="route-tabs" style="display:none">
+            <button class="route-tab active" data-action="switch-tab" data-tab="stops">
+                <i class="fa-solid fa-gas-pump"></i> Stops
+                <span class="route-tab-count" id="tab-count-stops">0</span>
+            </button>
+            <button class="route-tab" data-action="switch-tab" data-tab="rest">
+                <i class="fa-solid fa-tree-city"></i> Rest
+                <span class="route-tab-count" id="tab-count-rest">0</span>
+            </button>
+            <button class="route-tab" data-action="switch-tab" data-tab="weigh">
+                <i class="fa-solid fa-weight-scale"></i> Weigh
+                <span class="route-tab-count" id="tab-count-weigh">0</span>
+            </button>
+        </div>
+
+        <div class="route-results" id="route-results">
+            <div class="route-empty" id="route-placeholder">
+                <i class="fa-solid fa-truck-fast"></i>
+                <p>Enter your origin and destination above to find truck stops, rest areas, and weigh stations along your route.</p>
+            </div>
+            <div id="results-stops" style="display:none"></div>
+            <div id="results-rest" style="display:none"></div>
+            <div id="results-weigh" style="display:none"></div>
+        </div>
+    </div>
+
+    <div class="route-map-container">
+        <div id="route-map"></div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    var map = null;
+    var routePolyline = null;
+    var markers = [];
+    var mapsLoaded = false;
+
+    function initMap() {
+        mapsLoaded = true;
+        map = new google.maps.Map(document.getElementById('route-map'), {
+            center: {lat: 39.8283, lng: -98.5795},
+            zoom: 4,
+            mapTypeId: 'roadmap',
+            styles: [
+                {featureType: 'poi', stylers: [{visibility: 'off'}]},
+                {featureType: 'transit', stylers: [{visibility: 'off'}]}
+            ],
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+        });
+    }
+
+    // Load Google Maps
+    var script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=geometry&callback=__routePlannerMapReady';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+    window.__routePlannerMapReady = initMap;
+
+    // Event delegation
+    document.addEventListener('click', function(e) {
+        var planBtn = e.target.closest('[data-action="plan-route"]');
+        if (planBtn) { handlePlanRoute(); return; }
+
+        var tabBtn = e.target.closest('[data-action="switch-tab"]');
+        if (tabBtn) { switchTab(tabBtn.getAttribute('data-tab')); return; }
+
+        var focusEl = e.target.closest('[data-action="focus-marker"]');
+        if (focusEl && map) {
+            var lat = parseFloat(focusEl.getAttribute('data-lat'));
+            var lng = parseFloat(focusEl.getAttribute('data-lng'));
+            map.panTo({lat: lat, lng: lng});
+            map.setZoom(13);
+        }
+    });
+
+    // Also trigger plan on Enter in inputs
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            var el = e.target;
+            if (el.id === 'route-origin' || el.id === 'route-destination') {
+                handlePlanRoute();
+            }
+        }
+    });
+
+    function handlePlanRoute() {
+        var origin = document.getElementById('route-origin').value.trim();
+        var destination = document.getElementById('route-destination').value.trim();
+        var errEl = document.getElementById('route-error');
+        var btn = document.getElementById('plan-route-btn');
+
+        errEl.style.display = 'none';
+        errEl.textContent = '';
+
+        if (!origin || !destination) {
+            showError('Enter both an origin and a destination.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Planning route...';
+
+        fetch('/api/v1/plan-route', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({origin: origin, destination: destination}),
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Find Stops Along Route';
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+            renderResults(data);
+        })
+        .catch(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Find Stops Along Route';
+            showError('Network error. Please try again.');
+        });
+    }
+
+    function showError(msg) {
+        var errEl = document.getElementById('route-error');
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+    }
+
+    function renderResults(data) {
+        if (!mapsLoaded || !map) {
+            // Wait briefly for map to load, then retry
+            setTimeout(function() { renderResults(data); }, 300);
+            return;
+        }
+
+        // Clear previous route and markers
+        if (routePolyline) {
+            routePolyline.setMap(null);
+            routePolyline = null;
+        }
+        markers.forEach(function(m) { m.setMap(null); });
+        markers = [];
+
+        // Draw route polyline
+        var decodedPath = google.maps.geometry.encoding.decodePath(data.route.polyline);
+        routePolyline = new google.maps.Polyline({
+            path: decodedPath,
+            map: map,
+            strokeColor: '#2563eb',
+            strokeWeight: 4,
+            strokeOpacity: 0.8,
+        });
+
+        // Fit map to route bounds
+        var bounds = new google.maps.LatLngBounds();
+
+        // Start marker
+        var startPos = {lat: data.route.start.lat, lng: data.route.start.lng};
+        var endPos = {lat: data.route.end.lat, lng: data.route.end.lng};
+
+        markers.push(new google.maps.Marker({
+            position: startPos, map: map,
+            icon: {url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'},
+            title: 'Start: ' + data.route.start_address, zIndex: 10,
+        }));
+        markers.push(new google.maps.Marker({
+            position: endPos, map: map,
+            icon: {url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'},
+            title: 'End: ' + data.route.end_address, zIndex: 10,
+        }));
+        bounds.extend(startPos);
+        bounds.extend(endPos);
+
+        // Add stop markers
+        data.truck_stops.forEach(function(s) {
+            var pos = {lat: s.lat, lng: s.lng};
+            var m = createCircleMarker(pos, '#2563eb', 7, s.name);
+            var info = new google.maps.InfoWindow({
+                content: buildInfoWindow(s.name, s.city + ', ' + s.state, s.url),
+            });
+            m.addListener('click', function() { info.open(map, m); });
+            markers.push(m);
+            bounds.extend(pos);
+        });
+
+        data.rest_areas.forEach(function(r) {
+            var pos = {lat: r.lat, lng: r.lng};
+            var m = createCircleMarker(pos, '#10b981', 6, r.name);
+            var info = new google.maps.InfoWindow({
+                content: buildInfoWindow(r.name, r.highway || r.state, r.url),
+            });
+            m.addListener('click', function() { info.open(map, m); });
+            markers.push(m);
+            bounds.extend(pos);
+        });
+
+        data.weigh_stations.forEach(function(w) {
+            var pos = {lat: w.lat, lng: w.lng};
+            var m = createCircleMarker(pos, '#f59e0b', 5, w.name);
+            var info = new google.maps.InfoWindow({
+                content: buildInfoWindow(w.name, w.state, w.url),
+            });
+            m.addListener('click', function() { info.open(map, m); });
+            markers.push(m);
+            bounds.extend(pos);
+        });
+
+        map.fitBounds(bounds, {top: 40, right: 40, bottom: 40, left: 40});
+
+        // Update summary bar
+        document.getElementById('route-summary').style.display = 'block';
+        document.getElementById('sum-distance').textContent = data.route.distance;
+        document.getElementById('sum-duration').textContent = data.route.duration;
+        document.getElementById('sum-stops').textContent = data.counts.truck_stops;
+        document.getElementById('sum-rest').textContent = data.counts.rest_areas;
+
+        // Update tabs
+        var tabsEl = document.getElementById('route-tabs');
+        tabsEl.style.display = 'flex';
+        tabsEl.classList.add('loaded');
+        document.getElementById('tab-count-stops').textContent = data.counts.truck_stops;
+        document.getElementById('tab-count-rest').textContent = data.counts.rest_areas;
+        document.getElementById('tab-count-weigh').textContent = data.counts.weigh_stations;
+
+        // Hide placeholder
+        document.getElementById('route-placeholder').style.display = 'none';
+
+        // Build result lists
+        buildList('results-stops', data.truck_stops, 'stop', 'fa-gas-pump', function(item) {
+            return item.highway ? item.highway + (item.exit ? ' Exit ' + item.exit : '') : item.city + ', ' + item.state;
+        });
+        buildList('results-rest', data.rest_areas, 'rest', 'fa-tree-city', function(item) {
+            return (item.highway || '') + (item.parking_spaces ? ' · ' + item.parking_spaces + ' spaces' : '');
+        });
+        buildList('results-weigh', data.weigh_stations, 'weigh', 'fa-weight-scale', function(item) {
+            return item.state || '';
+        });
+
+        switchTab('stops');
+    }
+
+    function createCircleMarker(pos, color, scale, title) {
+        return new google.maps.Marker({
+            position: pos, map: map, title: title,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: scale,
+                fillColor: color,
+                fillOpacity: 0.92,
+                strokeColor: '#ffffff',
+                strokeWeight: 1.5,
+            },
+        });
+    }
+
+    function buildInfoWindow(name, detail, url) {
+        return '<div style="font-family:Inter,sans-serif;font-size:13px;max-width:200px">'
+            + '<strong style="display:block;margin-bottom:2px">' + escHtml(name) + '</strong>'
+            + '<span style="color:#64748b;font-size:12px">' + escHtml(detail || '') + '</span>'
+            + (url ? '<br><a href="' + url + '" style="color:#2563eb;font-size:12px">View details &rarr;</a>' : '')
+            + '</div>';
+    }
+
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function buildList(containerId, items, type, iconClass, detailFn) {
+        var el = document.getElementById(containerId);
+        if (!items || !items.length) {
+            el.innerHTML = '<div class="route-none">None found along this route.</div>';
+            return;
+        }
+        var html = '';
+        items.forEach(function(item) {
+            var detail = detailFn(item);
+            html += '<div class="route-item" data-action="focus-marker" data-lat="' + item.lat + '" data-lng="' + item.lng + '">'
+                + '<div class="route-item-icon ' + type + '"><i class="fa-solid ' + iconClass + '"></i></div>'
+                + '<div class="route-item-text">'
+                + '<h4><a href="' + item.url + '" data-action="stop-propagation">' + escHtml(item.name) + '</a></h4>'
+                + '<p>' + escHtml(detail) + '</p>'
+                + '</div>'
+                + '</div>';
+        });
+        el.innerHTML = html;
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.route-tab').forEach(function(t) {
+            t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+        });
+        document.getElementById('results-stops').style.display = tab === 'stops' ? 'block' : 'none';
+        document.getElementById('results-rest').style.display = tab === 'rest' ? 'block' : 'none';
+        document.getElementById('results-weigh').style.display = tab === 'weigh' ? 'block' : 'none';
+    }
+
+    // Prevent item click from firing when clicking the detail link
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-action="stop-propagation"]')) {
+            e.stopPropagation();
+        }
+    }, true);
+
+})();
+</script>
+{% endblock %}
