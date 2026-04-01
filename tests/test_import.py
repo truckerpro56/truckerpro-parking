@@ -73,6 +73,189 @@ def test_parse_loves_row():
     assert data['truck_spots'] == 150
 
 
+class TestPilotParser:
+    def test_parse_pilot_feature(self):
+        from app.import_stops.pilot_api import parse_pilot_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-96.7970, 32.7767]},
+            'properties': {
+                'ref': '385',
+                'name': 'Pilot Travel Center',
+                'brand': 'Pilot',
+                'addr:street_address': '123 Main St',
+                'addr:city': 'Dallas',
+                'addr:state': 'TX',
+                'addr:postcode': '75201',
+                'addr:country': 'US',
+                'phone': '(214) 555-0100',
+            }
+        }
+        result = parse_pilot_feature(feature)
+        assert result['brand'] == 'pilot_flying_j'
+        assert result['store_number'] == '385'
+        assert result['city'] == 'Dallas'
+        assert result['state_province'] == 'TX'
+        assert result['latitude'] == 32.7767
+        assert result['longitude'] == -96.7970
+        assert result['has_diesel'] is True
+
+    def test_parse_pilot_flying_j_brand(self):
+        from app.import_stops.pilot_api import parse_pilot_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-80.0, 35.0]},
+            'properties': {
+                'ref': '100',
+                'name': 'Flying J Travel Center',
+                'brand': 'Flying J',
+                'addr:city': 'Charlotte',
+                'addr:state': 'NC',
+            }
+        }
+        result = parse_pilot_feature(feature)
+        assert result['brand_display_name'] == 'Flying J'
+
+    def test_parse_pilot_one9_brand(self):
+        from app.import_stops.pilot_api import parse_pilot_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-90.0, 40.0]},
+            'properties': {
+                'ref': '200',
+                'name': 'ONE9 Fuel Network',
+                'brand': 'ONE9',
+                'addr:city': 'Springfield',
+                'addr:state': 'IL',
+            }
+        }
+        result = parse_pilot_feature(feature)
+        assert result['brand_display_name'] == 'ONE9 by Pilot'
+
+    def test_parse_pilot_canadian_location(self):
+        from app.import_stops.pilot_api import parse_pilot_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-79.0, 43.0]},
+            'properties': {
+                'ref': '999',
+                'name': 'Pilot Travel Center',
+                'brand': 'Pilot',
+                'addr:city': 'Toronto',
+                'addr:state': 'ON',
+                'addr:country': 'CA',
+            }
+        }
+        result = parse_pilot_feature(feature)
+        assert result['country'] == 'CA'
+
+    def test_parse_pilot_no_name_uses_ref(self):
+        from app.import_stops.pilot_api import parse_pilot_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-95.0, 30.0]},
+            'properties': {
+                'ref': '777',
+                'brand': 'Pilot',
+                'addr:city': 'Houston',
+                'addr:state': 'TX',
+            }
+        }
+        result = parse_pilot_feature(feature)
+        assert '777' in result['name']
+
+
+class TestTaPetroParser:
+    def test_parse_ta_feature(self):
+        from app.import_stops.ta_petro_api import parse_ta_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-87.6298, 41.8781]},
+            'properties': {
+                'ref': '019',
+                'name': 'TA Chicago',
+                'brand': 'TA',
+                'addr:street_address': '456 Truck Rd',
+                'addr:city': 'Chicago',
+                'addr:state': 'IL',
+                'addr:postcode': '60601',
+                'fuel:diesel': 'yes',
+                'fuel:adblue_at_pump': 'yes',
+            }
+        }
+        result = parse_ta_feature(feature)
+        assert result['brand'] == 'ta_petro'
+        assert result['store_number'] == '019'
+        assert result['city'] == 'Chicago'
+        assert result['has_diesel'] is True
+        assert result['has_def'] is True
+
+    def test_parse_petro_brand(self):
+        from app.import_stops.ta_petro_api import parse_ta_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-104.9, 39.7]},
+            'properties': {
+                'ref': '050',
+                'name': 'Petro Denver',
+                'brand': 'Petro',
+                'addr:city': 'Denver',
+                'addr:state': 'CO',
+            }
+        }
+        result = parse_ta_feature(feature)
+        assert result['brand_display_name'] == 'Petro Stopping Centers'
+
+    def test_parse_ta_express_brand(self):
+        from app.import_stops.ta_petro_api import parse_ta_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-118.0, 34.0]},
+            'properties': {
+                'ref': '300',
+                'name': 'TA Express Los Angeles',
+                'brand': 'TA Express',
+                'addr:city': 'Los Angeles',
+                'addr:state': 'CA',
+            }
+        }
+        result = parse_ta_feature(feature)
+        assert result['brand_display_name'] == 'TA Express'
+
+    def test_parse_ta_no_def(self):
+        from app.import_stops.ta_petro_api import parse_ta_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-73.0, 40.7]},
+            'properties': {
+                'ref': '025',
+                'name': 'TA New York',
+                'brand': 'TA',
+                'addr:city': 'Newark',
+                'addr:state': 'NJ',
+                'fuel:diesel': 'yes',
+            }
+        }
+        result = parse_ta_feature(feature)
+        assert result['has_def'] is False
+
+    def test_parse_ta_coordinates(self):
+        from app.import_stops.ta_petro_api import parse_ta_feature
+        feature = {
+            'type': 'Feature',
+            'geometry': {'type': 'Point', 'coordinates': [-87.6298, 41.8781]},
+            'properties': {
+                'ref': '001',
+                'brand': 'TA',
+                'addr:city': 'Chicago',
+                'addr:state': 'IL',
+            }
+        }
+        result = parse_ta_feature(feature)
+        assert result['latitude'] == 41.8781
+        assert result['longitude'] == -87.6298
+
+
 def test_loves_csv_import_cli(app, db):
     tmpdir = tempfile.mkdtemp()
     csv_path = os.path.join(tmpdir, 'loves_test.csv')

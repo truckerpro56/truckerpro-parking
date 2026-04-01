@@ -273,8 +273,48 @@ def create_app(config_class=None):
                     count += 1
                 db.session.commit()
                 print(f"Imported {count} {brand} stops from API.")
+            elif brand == 'pilot':
+                from .import_stops.pilot_api import fetch_pilot_stores, parse_pilot_feature
+                print(f"Fetching Pilot Flying J stores from AllThePlaces...")
+                features = fetch_pilot_stores()
+                print(f"Got {len(features)} stores. Importing...")
+                count = 0
+                for feature in features:
+                    data = parse_pilot_feature(feature)
+                    if not data.get('latitude') or not data.get('longitude'):
+                        continue
+                    if not data.get('city') or not data.get('state_province'):
+                        continue
+                    data['slug'] = generate_stop_slug(
+                        data['brand'], data.get('store_number', ''),
+                        data['city'], data['state_province'],
+                    )
+                    upsert_truck_stop(data)
+                    count += 1
+                db.session.commit()
+                print(f"Imported {count} Pilot Flying J stops.")
+            elif brand == 'ta':
+                from .import_stops.ta_petro_api import fetch_ta_stores, parse_ta_feature
+                print(f"Fetching TA/Petro stores from AllThePlaces...")
+                features = fetch_ta_stores()
+                print(f"Got {len(features)} stores. Importing...")
+                count = 0
+                for feature in features:
+                    data = parse_ta_feature(feature)
+                    if not data.get('latitude') or not data.get('longitude'):
+                        continue
+                    if not data.get('city') or not data.get('state_province'):
+                        continue
+                    data['slug'] = generate_stop_slug(
+                        data['brand'], data.get('store_number', ''),
+                        data['city'], data['state_province'],
+                    )
+                    upsert_truck_stop(data)
+                    count += 1
+                db.session.commit()
+                print(f"Imported {count} TA/Petro stops.")
             else:
-                print(f"API import not available for brand: {brand}")
+                print(f"API import not available for brand: {brand}. Available: loves, pilot, ta")
             return
 
         if not file_path:
@@ -312,6 +352,69 @@ def create_app(config_class=None):
                 count += 1
             db.session.commit()
         print(f"Imported {count} {brand} stops.")
+
+    @app.cli.command('import-all-stops')
+    def import_all_stops_command():
+        """Import all truck stops from all available API sources."""
+        from .import_stops.base import upsert_truck_stop, generate_stop_slug
+        from .models.truck_stop import TruckStop
+
+        # Love's
+        from .import_stops.loves_api import fetch_loves_stores, parse_loves_api_store
+        print("Fetching Love's stores...")
+        stores = fetch_loves_stores()
+        count = 0
+        for store in stores:
+            data = parse_loves_api_store(store)
+            if not data.get('latitude') or not data.get('longitude'):
+                continue
+            data['slug'] = generate_stop_slug(
+                data['brand'], data.get('store_number', ''),
+                data['city'], data['state_province'],
+            )
+            upsert_truck_stop(data)
+            count += 1
+        db.session.commit()
+        print(f"Love's: {count} stops imported")
+
+        # Pilot Flying J
+        from .import_stops.pilot_api import fetch_pilot_stores, parse_pilot_feature
+        print("Fetching Pilot Flying J stores...")
+        features = fetch_pilot_stores()
+        count = 0
+        for feature in features:
+            data = parse_pilot_feature(feature)
+            if not data.get('latitude') or not data.get('longitude') or not data.get('city') or not data.get('state_province'):
+                continue
+            data['slug'] = generate_stop_slug(
+                data['brand'], data.get('store_number', ''),
+                data['city'], data['state_province'],
+            )
+            upsert_truck_stop(data)
+            count += 1
+        db.session.commit()
+        print(f"Pilot Flying J: {count} stops imported")
+
+        # TA/Petro
+        from .import_stops.ta_petro_api import fetch_ta_stores, parse_ta_feature
+        print("Fetching TA/Petro stores...")
+        features = fetch_ta_stores()
+        count = 0
+        for feature in features:
+            data = parse_ta_feature(feature)
+            if not data.get('latitude') or not data.get('longitude') or not data.get('city') or not data.get('state_province'):
+                continue
+            data['slug'] = generate_stop_slug(
+                data['brand'], data.get('store_number', ''),
+                data['city'], data['state_province'],
+            )
+            upsert_truck_stop(data)
+            count += 1
+        db.session.commit()
+        print(f"TA/Petro: {count} stops imported")
+
+        total = TruckStop.query.filter_by(is_active=True).count()
+        print(f"\nTotal active truck stops: {total}")
 
     @app.cli.command('compute-border-distances')
     def compute_border_distances_command():
