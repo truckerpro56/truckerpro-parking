@@ -36,7 +36,7 @@ def weigh_stations_state(state_slug):
     code = state_slug_to_code(state_slug)
     if not code:
         abort(404)
-    page = request.args.get('page', 1, type=int)
+    page = max(1, min(request.args.get('page', 1, type=int), 1000))
     query = WeighStation.query.filter_by(
         is_active=True, state_province=code
     ).order_by(WeighStation.highway, WeighStation.name)

@@ -3,11 +3,12 @@ import logging
 from datetime import datetime, timezone, timedelta
 from flask import jsonify, request
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func, update
 
 from . import stops_api_bp
 from ..extensions import db, limiter
 from ..middleware import site_required
+from ..models.user import User
 from ..models.truck_stop import TruckStop
 from ..models.fuel_price import FuelPrice
 from ..models.truck_stop_review import TruckStopReview
@@ -63,8 +64,12 @@ def submit_fuel_price(stop_id):
     )
     db.session.add(fp)
     db.session.commit()
-    # Award points for fuel price contribution
-    current_user.contribution_points = (current_user.contribution_points or 0) + 5
+    # Award points for fuel price contribution (atomic to prevent race conditions)
+    db.session.execute(
+        update(User).where(User.id == current_user.id).values(
+            contribution_points=db.func.coalesce(User.contribution_points, 0) + 5
+        )
+    )
     db.session.commit()
     return jsonify({'id': fp.id, 'is_verified': fp.is_verified}), 201
 
@@ -101,8 +106,12 @@ def submit_review(stop_id):
     )
     db.session.add(review)
     db.session.commit()
-    # Award points for review contribution
-    current_user.contribution_points = (current_user.contribution_points or 0) + 10
+    # Award points for review contribution (atomic to prevent race conditions)
+    db.session.execute(
+        update(User).where(User.id == current_user.id).values(
+            contribution_points=db.func.coalesce(User.contribution_points, 0) + 10
+        )
+    )
     db.session.commit()
     return jsonify({'id': review.id, 'is_approved': review.is_approved}), 201
 
@@ -151,9 +160,17 @@ def upload_photo(stop_id):
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         return jsonify({'error': 'Only JPEG, PNG, and WebP images allowed'}), 400
 
-    image_data = file.read()
-    if len(image_data) > MAX_IMAGE_SIZE:
-        return jsonify({'error': 'Image must be under 2MB'}), 400
+    chunks = []
+    total_size = 0
+    while True:
+        chunk = file.read(8192)
+        if not chunk:
+            break
+        total_size += len(chunk)
+        if total_size > MAX_IMAGE_SIZE:
+            return jsonify({'error': 'Image must be under 2MB'}), 400
+        chunks.append(chunk)
+    image_data = b''.join(chunks)
 
     # Check per-user limit
     existing_count = StopPhoto.query.filter_by(
@@ -174,8 +191,12 @@ def upload_photo(stop_id):
     )
     db.session.add(photo)
 
-    # Award points
-    current_user.contribution_points = (current_user.contribution_points or 0) + 15
+    # Award points (atomic to prevent race conditions)
+    db.session.execute(
+        update(User).where(User.id == current_user.id).values(
+            contribution_points=db.func.coalesce(User.contribution_points, 0) + 15
+        )
+    )
     db.session.commit()
 
     return jsonify({'id': photo.id, 'points_awarded': 15}), 201

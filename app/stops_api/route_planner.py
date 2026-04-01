@@ -2,6 +2,7 @@
 from flask import jsonify, request
 
 from . import stops_api_bp
+from ..extensions import limiter
 from ..middleware import site_required
 from ..services.route_planner import get_route, find_stops_along_route
 from ..stops.helpers import state_code_to_slug
@@ -10,6 +11,7 @@ from ..services.geo_service import slugify
 
 @stops_api_bp.route('/plan-route', methods=['POST'])
 @site_required('stops')
+@limiter.limit("10/hour")
 def plan_route_api():
     """API endpoint — accepts origin/destination, returns route + stops.
     Registered on stops_api_bp which is CSRF-exempt.

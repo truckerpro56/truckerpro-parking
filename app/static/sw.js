@@ -53,6 +53,11 @@ self.addEventListener('fetch', function(event) {
         return;
     }
 
+    // Skip caching user-specific pages to prevent data leakage on shared devices
+    var skipCache = ['/profile', '/my-bookings', '/login', '/verify', '/logout', '/favorites'];
+    var shouldSkip = skipCache.some(function(path) { return url.pathname.startsWith(path); });
+    if (shouldSkip) return;
+
     event.respondWith(
         fetch(event.request).then(function(response) {
             // Cache successful HTML and static asset responses

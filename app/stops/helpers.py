@@ -41,17 +41,6 @@ def highway_to_slug(highway):
     return slugify(highway)
 
 def stop_to_card(stop):
-    latest_diesel = None
-    try:
-        from ..models.fuel_price import FuelPrice
-        fp = FuelPrice.query.filter_by(
-            truck_stop_id=stop.id, fuel_type='diesel'
-        ).order_by(FuelPrice.created_at.desc()).first()
-        if fp:
-            latest_diesel = fp.price_cents
-    except Exception:
-        pass
-
     return {
         'id': stop.id, 'name': stop.name, 'slug': stop.slug,
         'brand': stop.brand, 'brand_display_name': stop.brand_display_name,
@@ -67,5 +56,5 @@ def stop_to_card(stop):
         'city_slug': slugify(stop.city),
         'brand_slug': brand_key_to_slug(stop.brand),
         'country_slug': 'us' if stop.country == 'US' else 'canada',
-        'latest_diesel_cents': latest_diesel,
+        'latest_diesel_cents': None,
     }

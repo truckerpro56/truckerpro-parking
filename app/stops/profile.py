@@ -1,6 +1,7 @@
 """Driver profile routes for stops.truckerpro.net."""
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
+from sqlalchemy import update
 
 from . import stops_public_bp
 from ..extensions import db
@@ -65,7 +66,12 @@ def add_favorite(stop_id):
     if not existing:
         fav = FavoriteStop(user_id=current_user.id, truck_stop_id=stop_id)
         db.session.add(fav)
-        current_user.contribution_points = (current_user.contribution_points or 0) + 1
+        # Atomic increment to prevent race conditions
+        db.session.execute(
+            update(User).where(User.id == current_user.id).values(
+                contribution_points=db.func.coalesce(User.contribution_points, 0) + 1
+            )
+        )
         db.session.commit()
     return jsonify({'success': True, 'favorited': True})
 
