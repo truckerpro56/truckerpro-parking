@@ -912,6 +912,55 @@
 </div>
 {% endif %}
 
+<!-- ═══════════════ Driver Photos ═══════════════ -->
+<div class="info-card mt-4" id="driver-photos">
+    <h2><i class="fa-solid fa-camera" style="color:var(--accent)"></i> Driver Photos ({{ driver_photos|length }})</h2>
+
+    {% if driver_photos %}
+    <div class="row g-2 mb-3">
+        {% for photo in driver_photos %}
+        <div class="col-4 col-md-3 col-lg-2">
+            <div style="position:relative;padding-top:100%;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+                <img src="/photos/{{ photo.id }}" alt="{{ photo.caption or stop.name }}" loading="lazy"
+                     style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover">
+            </div>
+            {% if photo.caption %}
+            <p style="font-size:0.7rem;color:var(--text-sec);margin-top:4px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">{{ photo.caption }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-sec);font-size:0.9rem;margin-bottom:12px">No driver photos yet. Be the first to share!</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+        <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:12px"><i class="fa-solid fa-upload" style="color:var(--accent)"></i> Upload a Photo (+15 pts)</h4>
+        <form id="photo-upload-form" enctype="multipart/form-data" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+            <div>
+                <label style="font-size:0.75rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Photo</label>
+                <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required
+                       style="font-size:0.82rem;font-family:inherit">
+            </div>
+            <div style="flex:1;min-width:150px">
+                <label style="font-size:0.75rem;font-weight:600;color:var(--text-sec);display:block;margin-bottom:4px">Caption (optional)</label>
+                <input type="text" name="caption" maxlength="200" placeholder="What's in this photo?"
+                       style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;font-family:inherit">
+            </div>
+            <button type="submit" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;font-family:inherit">
+                Upload <i class="fa-solid fa-cloud-arrow-up"></i>
+            </button>
+            <div id="photo-upload-msg" style="font-size:0.8rem;width:100%"></div>
+        </form>
+    </div>
+    {% else %}
+    <div style="border-top:1px solid var(--border);padding-top:12px">
+        <p style="color:var(--text-sec);font-size:0.85rem"><a href="/login?next={{ request.path }}" style="color:var(--accent);font-weight:600">Sign in</a> to upload photos (+15 pts each)</p>
+    </div>
+    {% endif %}
+</div>
+
 <!-- ═══════════════ Brand Cross-link ═══════════════ -->
 {% if stop.brand_display_name %}
 <div class="text-center mt-4">
@@ -1067,6 +1116,41 @@
                     stars.forEach(function(s) { s.className = 'fa-regular fa-star'; s.style.color = '#d1d5db'; });
                 } else {
                     msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Failed to submit') + '</span>';
+                }
+            }).catch(function() {
+                msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';
+            });
+        });
+    }
+
+    // ── Photo Upload ──
+    var photoForm = document.getElementById('photo-upload-form');
+    if (photoForm) {
+        photoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(photoForm);
+            var msg = document.getElementById('photo-upload-msg');
+            var fileInput = photoForm.querySelector('[name="photo"]');
+            if (!fileInput.files.length) {
+                msg.innerHTML = '<span style="color:#ef4444">Please select a photo</span>';
+                return;
+            }
+            if (fileInput.files[0].size > 2 * 1024 * 1024) {
+                msg.innerHTML = '<span style="color:#ef4444">Photo must be under 2MB</span>';
+                return;
+            }
+            msg.innerHTML = '<span style="color:var(--text-sec)"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</span>';
+            fetch('/api/v1/truck-stops/' + stopId + '/photos', {
+                method: 'POST',
+                body: formData
+            }).then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.id) {
+                    msg.innerHTML = '<span style="color:#10b981"><i class="fa-solid fa-check-circle"></i> Photo uploaded! +15 points</span>';
+                    photoForm.reset();
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Upload failed') + '</span>';
                 }
             }).catch(function() {
                 msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';

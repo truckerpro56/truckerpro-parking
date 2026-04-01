@@ -219,6 +219,7 @@ def create_app(config_class=None):
 
     with app.app_context():
         from .models.favorite_stop import FavoriteStop  # noqa: F401
+        from .models.stop_photo import StopPhoto  # noqa: F401
         import sqlalchemy
         for attempt in range(5):
             try:

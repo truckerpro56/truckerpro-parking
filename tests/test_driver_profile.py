@@ -1,14 +1,18 @@
 """Tests for driver profile — favorites, settings, contributions."""
+import uuid
 import pytest
 from app.models.user import User
 from app.models.favorite_stop import FavoriteStop
 from app.models.truck_stop import TruckStop
+from app.models.stop_photo import StopPhoto
 
 
-def _create_stop(db_session):
+def _create_stop(db_session, slug=None):
+    if slug is None:
+        slug = 'test-stop-' + uuid.uuid4().hex[:8]
     stop = TruckStop(
         brand='loves', brand_display_name="Love's", name="Test Stop",
-        slug='test-stop-profile', store_number='999',
+        slug=slug, store_number='999',
         address='123 Test St', city='Dallas', state_province='TX',
         postal_code='75201', country='US', latitude=32.78, longitude=-96.80,
         has_diesel=True, data_source='test', is_active=True,
@@ -58,3 +62,33 @@ class TestFavorites:
         with pytest.raises(Exception):  # IntegrityError
             db.session.commit()
         db.session.rollback()
+
+
+class TestStopPhotos:
+    def test_photo_model_creation(self, db):
+        user = _create_user(db, email='photo@test.com')
+        stop = _create_stop(db)
+        photo = StopPhoto(
+            truck_stop_id=stop.id, user_id=user.id,
+            filename='test.jpg', content_type='image/jpeg',
+            image_data=b'\xff\xd8\xff\xe0test',
+            caption='Test photo',
+        )
+        db.session.add(photo)
+        db.session.commit()
+        assert photo.id is not None
+        assert photo.is_approved is True
+
+    def test_photo_serves(self, stops_client, db):
+        user = _create_user(db, email='serve@test.com')
+        stop = _create_stop(db)
+        photo = StopPhoto(
+            truck_stop_id=stop.id, user_id=user.id,
+            filename='test.jpg', content_type='image/jpeg',
+            image_data=b'\xff\xd8\xff\xe0testimage',
+        )
+        db.session.add(photo)
+        db.session.commit()
+        resp = stops_client.get(f'/photos/{photo.id}')
+        assert resp.status_code == 200
+        assert resp.content_type == 'image/jpeg'

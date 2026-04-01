@@ -9,6 +9,7 @@ from ..models.favorite_stop import FavoriteStop
 from ..models.truck_stop import TruckStop
 from ..models.fuel_price import FuelPrice
 from ..models.truck_stop_review import TruckStopReview
+from ..models.stop_photo import StopPhoto
 from .helpers import stop_to_card
 
 
@@ -29,11 +30,13 @@ def driver_profile():
     # Contribution stats
     price_count = FuelPrice.query.filter_by(reported_by=current_user.id).count()
     review_count = TruckStopReview.query.filter_by(user_id=current_user.id).count()
+    photo_count = StopPhoto.query.filter_by(user_id=current_user.id).count()
 
     return render_template('stops/profile.html',
                            favorites=fav_stops,
                            price_count=price_count,
-                           review_count=review_count)
+                           review_count=review_count,
+                           photo_count=photo_count)
 
 
 @stops_public_bp.route('/profile/settings', methods=['POST'])

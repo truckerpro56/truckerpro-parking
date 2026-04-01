@@ -1,4 +1,4 @@
-"""Driver contribution endpoints — fuel prices, reviews, reports."""
+"""Driver contribution endpoints — fuel prices, reviews, reports, photos."""
 import logging
 from datetime import datetime, timezone, timedelta
 from flask import jsonify, request
@@ -12,12 +12,16 @@ from ..models.truck_stop import TruckStop
 from ..models.fuel_price import FuelPrice
 from ..models.truck_stop_review import TruckStopReview
 from ..models.truck_stop_report import TruckStopReport
+from ..models.stop_photo import StopPhoto
 
 logger = logging.getLogger(__name__)
 
 ALLOWED_FUEL_TYPES = ('diesel', 'gas', 'def', 'cng', 'lng', 'biodiesel')
 ALLOWED_REPORT_TYPES = ('parking_availability', 'fuel_price_correction', 'amenity_update',
                         'closure', 'hazard', 'hours_change', 'other')
+ALLOWED_IMAGE_TYPES = ('image/jpeg', 'image/png', 'image/webp')
+MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_PHOTOS_PER_USER_PER_STOP = 5
 
 
 def _should_auto_verify_price(truck_stop_id, fuel_type, price_cents):
@@ -127,3 +131,66 @@ def submit_report(stop_id):
     db.session.add(report)
     db.session.commit()
     return jsonify({'id': report.id}), 201
+
+
+@stops_api_bp.route('/truck-stops/<int:stop_id>/photos', methods=['POST'])
+@site_required('stops')
+@login_required
+@limiter.limit("10/minute")
+def upload_photo(stop_id):
+    """Upload a photo for a truck stop."""
+    stop = TruckStop.query.get_or_404(stop_id)
+
+    if 'photo' not in request.files:
+        return jsonify({'error': 'No photo file provided'}), 400
+
+    file = request.files['photo']
+    if not file.filename:
+        return jsonify({'error': 'No file selected'}), 400
+
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        return jsonify({'error': 'Only JPEG, PNG, and WebP images allowed'}), 400
+
+    image_data = file.read()
+    if len(image_data) > MAX_IMAGE_SIZE:
+        return jsonify({'error': 'Image must be under 2MB'}), 400
+
+    # Check per-user limit
+    existing_count = StopPhoto.query.filter_by(
+        truck_stop_id=stop_id, user_id=current_user.id
+    ).count()
+    if existing_count >= MAX_PHOTOS_PER_USER_PER_STOP:
+        return jsonify({'error': f'Maximum {MAX_PHOTOS_PER_USER_PER_STOP} photos per stop'}), 400
+
+    caption = request.form.get('caption', '').strip()[:200]
+
+    photo = StopPhoto(
+        truck_stop_id=stop_id,
+        user_id=current_user.id,
+        filename=file.filename[:255],
+        content_type=file.content_type,
+        image_data=image_data,
+        caption=caption,
+    )
+    db.session.add(photo)
+
+    # Award points
+    current_user.contribution_points = (current_user.contribution_points or 0) + 15
+    db.session.commit()
+
+    return jsonify({'id': photo.id, 'points_awarded': 15}), 201
+
+
+@stops_api_bp.route('/truck-stops/<int:stop_id>/photos', methods=['GET'])
+@site_required('stops')
+def get_stop_photos(stop_id):
+    """Get list of photo metadata for a truck stop (not the image data)."""
+    photos = StopPhoto.query.filter_by(
+        truck_stop_id=stop_id, is_approved=True
+    ).order_by(StopPhoto.created_at.desc()).all()
+    return jsonify([{
+        'id': p.id,
+        'caption': p.caption,
+        'user_id': p.user_id,
+        'created_at': p.created_at.isoformat() if p.created_at else None,
+    } for p in photos])
