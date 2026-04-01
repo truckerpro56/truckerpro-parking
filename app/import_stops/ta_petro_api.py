@@ -9,27 +9,17 @@ TA_GEOJSON_URL = 'https://data.alltheplaces.xyz/runs/latest/output/travelcenters
 
 def fetch_ta_stores():
     """Fetch all TA/Petro locations from AllThePlaces. Returns list of feature dicts."""
-    resp = requests.get(TA_GEOJSON_URL, timeout=60, stream=True)
+    resp = requests.get(TA_GEOJSON_URL, timeout=120)
     resp.raise_for_status()
-    import json
-    features = []
-    for line in resp.iter_lines(decode_unicode=True):
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            obj = json.loads(line)
-            if obj.get('type') == 'Feature':
-                features.append(obj)
-        except json.JSONDecodeError:
-            continue
-    return features
+    data = resp.json()
+    return data.get('features', [])
 
 
 def parse_ta_feature(feature):
     """Map an AllThePlaces GeoJSON feature to truck_stops field dict."""
     props = feature.get('properties', {})
-    coords = feature.get('geometry', {}).get('coordinates', [None, None])
+    geom = feature.get('geometry') or {}
+    coords = geom.get('coordinates', [None, None])
     lng, lat = coords[0], coords[1]
 
     ref = (props.get('ref') or '').strip()

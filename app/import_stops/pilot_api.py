@@ -9,21 +9,10 @@ PILOT_GEOJSON_URL = 'https://data.alltheplaces.xyz/runs/latest/output/pilot_flyi
 
 def fetch_pilot_stores():
     """Fetch all Pilot Flying J locations from AllThePlaces. Returns list of feature dicts."""
-    resp = requests.get(PILOT_GEOJSON_URL, timeout=60, stream=True)
+    resp = requests.get(PILOT_GEOJSON_URL, timeout=120)
     resp.raise_for_status()
-    import json
-    features = []
-    for line in resp.iter_lines(decode_unicode=True):
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            obj = json.loads(line)
-            if obj.get('type') == 'Feature':
-                features.append(obj)
-        except json.JSONDecodeError:
-            continue
-    return features
+    data = resp.json()
+    return data.get('features', [])
 
 
 def parse_pilot_feature(feature):
