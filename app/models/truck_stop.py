@@ -20,7 +20,7 @@ class TruckStop(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     highway = db.Column(db.String(50), index=True)
-    exit_number = db.Column(db.String(20))
+    exit_number = db.Column(db.String(100))
     direction = db.Column(db.String(2))
     total_parking_spots = db.Column(db.Integer)
     truck_spots = db.Column(db.Integer)

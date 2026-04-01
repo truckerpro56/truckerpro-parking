@@ -225,6 +225,15 @@ def create_app(config_class=None):
                 import time
                 time.sleep(2 ** attempt)
 
+        # Widen exit_number column (was VARCHAR(20), some stores have longer values)
+        try:
+            db.session.execute(sqlalchemy.text(
+                "ALTER TABLE truck_stops ALTER COLUMN exit_number TYPE VARCHAR(100)"
+            ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
     @app.cli.command('seed')
     def seed_command():
         """Seed the database with initial data."""
