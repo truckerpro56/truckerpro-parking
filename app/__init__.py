@@ -316,7 +316,12 @@ def create_app(config_class=None):
     @login_manager.user_loader
     def load_user(user_id):
         from .models.user import User
-        return User.query.get(int(user_id))
+        if user_id is None:
+            return None
+        try:
+            return User.query.get(int(user_id))
+        except (ValueError, TypeError):
+            return None
 
     from .api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')

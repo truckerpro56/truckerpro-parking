@@ -78,7 +78,9 @@ self.addEventListener('fetch', function(event) {
                     'background:#f8fafc;color:#0f172a}h1{color:#0f2440}p{color:#64748b}</style>' +
                     '</head><body><h1>You are offline</h1>' +
                     '<p>Please check your internet connection and try again.</p>' +
-                    '<button onclick="location.reload()">Retry</button></body></html>',
+                    '<button id="retry-btn">Retry</button>' +
+                    '<script>document.getElementById("retry-btn").addEventListener("click",function(){location.reload();});<\/script>' +
+                    '</body></html>',
                     {status: 503, headers: {'Content-Type': 'text/html'}}
                 );
             });

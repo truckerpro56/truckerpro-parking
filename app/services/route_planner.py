@@ -34,27 +34,30 @@ def get_route(origin, destination):
     if data.get('status') != 'OK' or not data.get('routes'):
         return None
 
-    route = data['routes'][0]
-    leg = route['legs'][0]
-
-    return {
-        'polyline': route['overview_polyline']['points'],
-        'distance_text': leg['distance']['text'],
-        'distance_meters': leg['distance']['value'],
-        'duration_text': leg['duration']['text'],
-        'duration_seconds': leg['duration']['value'],
-        'start_address': leg['start_address'],
-        'end_address': leg['end_address'],
-        'start_lat': leg['start_location']['lat'],
-        'start_lng': leg['start_location']['lng'],
-        'end_lat': leg['end_location']['lat'],
-        'end_lng': leg['end_location']['lng'],
-        'bounds': route['bounds'],
-        'steps': [
-            {'lat': s['end_location']['lat'], 'lng': s['end_location']['lng']}
-            for s in leg['steps']
-        ],
-    }
+    try:
+        route = data['routes'][0]
+        leg = route['legs'][0]
+        return {
+            'polyline': route['overview_polyline']['points'],
+            'distance_text': leg['distance']['text'],
+            'distance_meters': leg['distance']['value'],
+            'duration_text': leg['duration']['text'],
+            'duration_seconds': leg['duration']['value'],
+            'start_address': leg['start_address'],
+            'end_address': leg['end_address'],
+            'start_lat': leg['start_location']['lat'],
+            'start_lng': leg['start_location']['lng'],
+            'end_lat': leg['end_location']['lat'],
+            'end_lng': leg['end_location']['lng'],
+            'bounds': route['bounds'],
+            'steps': [
+                {'lat': s['end_location']['lat'], 'lng': s['end_location']['lng']}
+                for s in leg['steps']
+            ],
+        }
+    except (KeyError, IndexError):
+        logger.warning('Google Directions API returned unexpected structure: status=%s', data.get('status'))
+        return None
 
 
 def decode_polyline(encoded):
