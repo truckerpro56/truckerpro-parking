@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Truck Stops Directory{% endblock %} — stops.truckerpro.net</title>
     <meta name="description" content="{% block meta_description %}Find truck stops across the US and Canada{% endblock %}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='stops/css/stops.css') }}">
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-RREBK9SZZJ"></script>
@@ -27,7 +31,14 @@
         </nav>
     </header>
     <main>{% block content %}{% endblock %}</main>
-    <footer><p>Truck Stops Directory</p></footer>
+    <footer>
+        <p>&copy; 2026 Truck Stops Directory &mdash; A <a href="https://www.truckerpro.ca" rel="noopener" target="_blank">TruckerPro</a> Product</p>
+        <p>
+            <a href="https://parking.truckerpro.ca">Truck Parking</a> &middot;
+            <a href="https://border.truckerpro.ca">Border Clearing</a> &middot;
+            <a href="https://truckerpro.net">FMCSA Lookup</a>
+        </p>
+    </footer>
     <script>
       document.addEventListener('click', function(e) {
         var banner = e.target.closest('[data-ga-event]');

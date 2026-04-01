@@ -64,9 +64,12 @@ class TruckStop(db.Model):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
-    fuel_prices = db.relationship('FuelPrice', backref='truck_stop', lazy='dynamic')
-    reviews = db.relationship('TruckStopReview', backref='truck_stop', lazy='dynamic')
-    reports = db.relationship('TruckStopReport', backref='truck_stop', lazy='dynamic')
+    fuel_prices = db.relationship('FuelPrice', backref='truck_stop', lazy='dynamic',
+                                   cascade='all, delete-orphan')
+    reviews = db.relationship('TruckStopReview', backref='truck_stop', lazy='dynamic',
+                              cascade='all, delete-orphan')
+    reports = db.relationship('TruckStopReport', backref='truck_stop', lazy='dynamic',
+                              cascade='all, delete-orphan')
 
     __table_args__ = (
         db.Index('idx_truck_stops_coords', 'latitude', 'longitude'),

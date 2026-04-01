@@ -1,5 +1,6 @@
 {% extends "stops/base.html" %}
 {% block title %}{{ stop.name }}{% endblock %}
+{% block meta_description %}{{ stop.name }} in {{ stop.city }}, {{ stop.state_province }}. Amenities, fuel prices, parking, reviews, and directions.{% endblock %}
 {% block content %}
 {% for banner in banners %}
 {% if banner.type == 'tms' %}{% include "stops/partials/banner_tms.html" %}

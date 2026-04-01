@@ -13,10 +13,14 @@ def create_app(config_class=None):
         app.config.from_object(Config)
 
     db.init_app(app)
+    allowed_origins = [
+        f"https://{app.config.get('PARKING_DOMAIN', 'parking.truckerpro.ca')}",
+        f"https://{app.config.get('STOPS_DOMAIN', 'stops.truckerpro.net')}",
+    ]
     if app.config.get('TESTING'):
         socketio.init_app(app, cors_allowed_origins='*', async_mode='threading')
     else:
-        socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet',
+        socketio.init_app(app, cors_allowed_origins=allowed_origins, async_mode='eventlet',
                           message_queue=app.config.get('CELERY_BROKER_URL'))
     limiter.init_app(app)
     csrf.init_app(app)

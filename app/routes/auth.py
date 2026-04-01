@@ -1,3 +1,4 @@
+import re
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 import bcrypt
@@ -5,24 +6,26 @@ from . import pages_bp
 from ..extensions import db, limiter
 from ..models.user import User
 
+_EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
 
 @pages_bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("10/minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('pages.landing'))
+    next_page = request.args.get('next', '')
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         user = User.query.filter_by(email=email, is_active=True).first()
         if user and user.password_hash and bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
             login_user(user)
-            next_page = request.args.get('next', '')
             if next_page and next_page.startswith('/') and not next_page.startswith('//'):
                 return redirect(next_page)
             return redirect(url_for('pages.landing'))
         flash('Invalid email or password.', 'error')
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', next_page=next_page)
 
 
 @pages_bp.route('/signup', methods=['GET', 'POST'])
@@ -40,8 +43,14 @@ def signup():
         if not email or not password or not name:
             flash('All fields are required.', 'error')
             return render_template('auth/signup.html')
+        if not _EMAIL_RE.match(email):
+            flash('Please enter a valid email address.', 'error')
+            return render_template('auth/signup.html')
         if len(password) < 8:
             flash('Password must be at least 8 characters.', 'error')
+            return render_template('auth/signup.html')
+        if len(password) > 72:
+            flash('Password must be 72 characters or fewer.', 'error')
             return render_template('auth/signup.html')
         existing = User.query.filter_by(email=email).first()
         if existing:

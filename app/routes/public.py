@@ -264,7 +264,8 @@ def search():
     query = ParkingLocation.query.filter(ParkingLocation.is_active == True)  # noqa: E712
 
     if q:
-        like_q = f"%{q.lower()}%"
+        q_escaped = q.lower().replace('%', '\\%').replace('_', '\\_')
+        like_q = f"%{q_escaped}%"
         query = query.filter(
             db.or_(
                 func.lower(ParkingLocation.name).like(like_q),

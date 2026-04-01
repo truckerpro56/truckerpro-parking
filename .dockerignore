@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+__pycache__
+*.pyc
+tests/
+pytest.ini
+docker-compose.yml
+docs/
+.superpowers/
+*.md
+!requirements.txt

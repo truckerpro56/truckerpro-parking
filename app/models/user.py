@@ -19,6 +19,9 @@ class User(UserMixin, db.Model):
                            onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    locations = db.relationship('ParkingLocation', backref='owner', lazy='dynamic')
-    bookings = db.relationship('ParkingBooking', backref='driver', lazy='dynamic')
-    reviews = db.relationship('ParkingReview', backref='driver', lazy='dynamic')
+    locations = db.relationship('ParkingLocation', backref='owner', lazy='dynamic',
+                                cascade='all, delete-orphan')
+    bookings = db.relationship('ParkingBooking', backref='driver', lazy='dynamic',
+                               cascade='all, delete-orphan')
+    reviews = db.relationship('ParkingReview', backref='driver', lazy='dynamic',
+                              cascade='all, delete-orphan')

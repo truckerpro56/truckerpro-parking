@@ -6,7 +6,7 @@ class ParkingReview(db.Model):
     __tablename__ = 'parking_reviews'
 
     id = db.Column(db.Integer, primary_key=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey('parking_bookings.id'), nullable=False)
+    booking_id = db.Column(db.Integer, db.ForeignKey('parking_bookings.id'), nullable=False, unique=True, index=True)
     location_id = db.Column(db.Integer, db.ForeignKey('parking_locations.id'), nullable=False, index=True)
     driver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     rating = db.Column(db.Integer, nullable=False)  # 1-5

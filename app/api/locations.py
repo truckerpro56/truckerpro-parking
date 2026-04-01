@@ -125,7 +125,8 @@ def list_locations():
 
     # Text search
     if q:
-        q_pattern = f"%{q.lower()}%"
+        q_escaped = q.lower().replace('%', '\\%').replace('_', '\\_')
+        q_pattern = f"%{q_escaped}%"
         query = query.filter(
             db.or_(
                 func.lower(ParkingLocation.name).like(q_pattern),

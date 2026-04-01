@@ -230,7 +230,11 @@ def test_get_location_detail_includes_reviews(client, db):
     db.session.add(loc)
     db.session.flush()
 
-    booking = ParkingBooking(
+    user2 = User(email='driver2@test.com', password_hash='x', name='Driver2')
+    db.session.add(user2)
+    db.session.flush()
+
+    booking1 = ParkingBooking(
         booking_ref='TEST-001',
         location_id=loc.id, driver_id=user.id,
         start_datetime=datetime(2026, 1, 1, tzinfo=timezone.utc),
@@ -238,16 +242,25 @@ def test_get_location_detail_includes_reviews(client, db):
         booking_type='daily',
         status='completed', subtotal=2500, total_amount=2500,
     )
-    db.session.add(booking)
+    booking2 = ParkingBooking(
+        booking_ref='TEST-002',
+        location_id=loc.id, driver_id=user2.id,
+        start_datetime=datetime(2026, 1, 3, tzinfo=timezone.utc),
+        end_datetime=datetime(2026, 1, 4, tzinfo=timezone.utc),
+        booking_type='daily',
+        status='completed', subtotal=2500, total_amount=2500,
+    )
+    db.session.add(booking1)
+    db.session.add(booking2)
     db.session.flush()
 
     db.session.add(ParkingReview(
-        booking_id=booking.id, location_id=loc.id,
+        booking_id=booking1.id, location_id=loc.id,
         driver_id=user.id, rating=4,
     ))
     db.session.add(ParkingReview(
-        booking_id=booking.id, location_id=loc.id,
-        driver_id=user.id, rating=5,
+        booking_id=booking2.id, location_id=loc.id,
+        driver_id=user2.id, rating=5,
     ))
     db.session.commit()
 

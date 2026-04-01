@@ -17,10 +17,13 @@ def send_email(to, subject, html_body):
     try:
         import resend
         resend.api_key = api_key
+        # Sanitize to prevent header injection
+        clean_to = to.replace('\n', '').replace('\r', '').strip()
+        clean_subject = subject.replace('\n', '').replace('\r', '').strip()
         resend.Emails.send({
             'from': 'Truck Parking Club <noreply@truckerpro.ca>',
-            'to': [to],
-            'subject': subject,
+            'to': [clean_to],
+            'subject': clean_subject,
             'html': html_body,
         })
         return True

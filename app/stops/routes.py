@@ -112,14 +112,21 @@ def city_page(state_slug, city_slug):
     code = state_slug_to_code(state_slug)
     if not code:
         abort(404)
-    query = TruckStop.query.filter(
+    # Find the actual city name by checking distinct cities in this state
+    cities = db.session.query(TruckStop.city).filter(
         TruckStop.is_active == True, TruckStop.state_province == code,
-    ).order_by(TruckStop.name)
-    all_stops = query.all()
-    city_stops = [s for s in all_stops if _slugify(s.city) == city_slug]
-    if not city_stops:
+    ).distinct().all()
+    city_name = None
+    for (c,) in cities:
+        if _slugify(c) == city_slug:
+            city_name = c
+            break
+    if not city_name:
         abort(404)
-    city_name = city_stops[0].city
+    city_stops = TruckStop.query.filter(
+        TruckStop.is_active == True, TruckStop.state_province == code,
+        func.lower(TruckStop.city) == city_name.lower(),
+    ).order_by(TruckStop.name).all()
     return render_template('stops/city.html',
                            city_name=city_name, state_name=state_slug_to_name(state_slug),
                            state_slug=state_slug, state_code=code,
@@ -208,13 +215,20 @@ def highways_index():
 @stops_public_bp.route('/highways/<highway_slug>')
 @site_required('stops')
 def highway_detail(highway_slug):
-    all_stops = TruckStop.query.filter(
+    # Find the actual highway name from distinct values
+    highways = db.session.query(TruckStop.highway).filter(
         TruckStop.is_active == True, TruckStop.highway.isnot(None)
-    ).all()
-    matched = [s for s in all_stops if highway_to_slug(s.highway) == highway_slug]
-    if not matched:
+    ).distinct().all()
+    highway_name = None
+    for (h,) in highways:
+        if highway_to_slug(h) == highway_slug:
+            highway_name = h
+            break
+    if not highway_name:
         abort(404)
-    highway_name = matched[0].highway
+    matched = TruckStop.query.filter(
+        TruckStop.is_active == True, TruckStop.highway == highway_name,
+    ).order_by(TruckStop.name).all()
     return render_template('stops/highway_detail.html',
                            highway_name=highway_name,
                            highway_slug=highway_slug,

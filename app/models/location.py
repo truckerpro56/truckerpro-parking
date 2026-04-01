@@ -45,9 +45,12 @@ class ParkingLocation(db.Model):
                            onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    bookings = db.relationship('ParkingBooking', backref='location', lazy='dynamic')
-    reviews = db.relationship('ParkingReview', backref='location', lazy='dynamic')
-    availability = db.relationship('ParkingAvailability', backref='location', lazy='dynamic')
+    bookings = db.relationship('ParkingBooking', backref='location', lazy='dynamic',
+                               cascade='all, delete-orphan')
+    reviews = db.relationship('ParkingReview', backref='location', lazy='dynamic',
+                              cascade='all, delete-orphan')
+    availability = db.relationship('ParkingAvailability', backref='location', lazy='dynamic',
+                                   cascade='all, delete-orphan')
 
     __table_args__ = (
         db.Index('idx_parking_locations_coords', 'latitude', 'longitude'),

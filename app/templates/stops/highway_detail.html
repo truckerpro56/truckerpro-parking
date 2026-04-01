@@ -1,5 +1,6 @@
 {% extends "stops/base.html" %}
 {% block title %}Truck Stops on {{ highway_name }}{% endblock %}
+{% block meta_description %}Truck stops along {{ highway_name }}. Diesel, parking, showers, food, and rest areas for truck drivers.{% endblock %}
 {% block content %}
 <h1>Truck Stops on {{ highway_name }}</h1>
 {% for stop in stops %}{% include "stops/partials/stop_card.html" %}{% endfor %}
