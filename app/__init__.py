@@ -389,6 +389,46 @@ def create_app(config_class=None):
             db.session.rollback()
             logger.warning("exit_number ALTER TABLE skipped: %s", exc)
 
+        # Add missing columns to users table (added after initial db.create_all)
+        _user_columns = [
+            ("otp_code", "VARCHAR(128)"),
+            ("otp_expires_at", "TIMESTAMPTZ"),
+            ("otp_attempts", "INTEGER DEFAULT 0"),
+            ("display_name", "VARCHAR(100)"),
+            ("home_state", "VARCHAR(50)"),
+            ("truck_type", "VARCHAR(50)"),
+            ("contribution_points", "INTEGER DEFAULT 0"),
+            ("fuel_email_subscribed", "BOOLEAN DEFAULT FALSE"),
+            ("fuel_email_states", "JSONB DEFAULT '[]'::jsonb"),
+        ]
+        for col_name, col_type in _user_columns:
+            try:
+                db.session.execute(sqlalchemy.text(
+                    f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"
+                ))
+                db.session.commit()
+                logger.info("users: added column %s", col_name)
+            except Exception:
+                db.session.rollback()
+
+        # Allow NULL password_hash (OTP-only users have no password)
+        try:
+            db.session.execute(sqlalchemy.text(
+                "ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL"
+            ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        # Allow NULL name (default to empty string in model)
+        try:
+            db.session.execute(sqlalchemy.text(
+                "ALTER TABLE users ALTER COLUMN name DROP NOT NULL"
+            ))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
     @app.cli.command('seed')
     def seed_command():
         """Seed the database with initial data."""
