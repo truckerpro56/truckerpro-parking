@@ -1,8 +1,11 @@
+import logging
 import click
 from flask import Flask, request, g
 from .config import Config, TestConfig
 from .extensions import db, socketio, limiter, csrf, login_manager
 from .middleware import init_host_routing
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(config_class=None):
@@ -381,8 +384,10 @@ def create_app(config_class=None):
                 "ALTER TABLE truck_stops ALTER COLUMN exit_number TYPE VARCHAR(100)"
             ))
             db.session.commit()
-        except Exception:
+            logger.info("exit_number column widened to VARCHAR(100)")
+        except Exception as exc:
             db.session.rollback()
+            logger.warning("exit_number ALTER TABLE skipped: %s", exc)
 
     @app.cli.command('seed')
     def seed_command():
