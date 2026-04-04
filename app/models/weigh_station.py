@@ -28,6 +28,11 @@ class WeighStation(db.Model):
     is_active = db.Column(db.Boolean, default=True, index=True)
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
+    reviews = db.relationship('WeighStationReview', backref='weigh_station', lazy='dynamic',
+                               cascade='all, delete-orphan')
+    statuses = db.relationship('WeighStationStatus', backref='weigh_station', lazy='dynamic',
+                                cascade='all, delete-orphan')
+
     __table_args__ = (
         db.Index('idx_weigh_stations_coords', 'latitude', 'longitude'),
     )

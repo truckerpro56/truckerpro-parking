@@ -1,4 +1,5 @@
 """Weigh station routes for stops.truckerpro.net."""
+from datetime import datetime, timedelta, timezone
 from flask import render_template, abort, request
 from sqlalchemy import func
 
@@ -6,6 +7,8 @@ from . import stops_public_bp
 from ..extensions import db
 from ..middleware import site_required
 from ..models.weigh_station import WeighStation
+from ..models.weigh_station_review import WeighStationReview
+from ..models.weigh_station_status import WeighStationStatus
 from .helpers import state_code_to_slug, state_slug_to_code, state_slug_to_name
 
 
@@ -63,7 +66,36 @@ def weigh_station_detail(state_slug, slug):
     ).limit(6).all()
     from flask import current_app
     google_maps_key = current_app.config.get('GOOGLE_MAPS_API_KEY', '')
+
+    # Reviews
+    reviews = WeighStationReview.query.filter_by(
+        weigh_station_id=ws.id, is_approved=True
+    ).order_by(WeighStationReview.created_at.desc()).limit(20).all()
+    avg_rating = db.session.query(func.avg(WeighStationReview.rating)).filter_by(
+        weigh_station_id=ws.id, is_approved=True
+    ).scalar()
+    review_count = WeighStationReview.query.filter_by(
+        weigh_station_id=ws.id, is_approved=True
+    ).count()
+
+    # Live status (last 7 days)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    recent_statuses = WeighStationStatus.query.filter(
+        WeighStationStatus.weigh_station_id == ws.id,
+        WeighStationStatus.created_at >= seven_days_ago,
+    ).order_by(WeighStationStatus.created_at.desc()).limit(10).all()
+    latest_status = recent_statuses[0] if recent_statuses else None
+
     return render_template('stops/weigh_stations/detail.html',
                            ws=ws, nearby=nearby,
                            state_slug=state_slug,
-                           google_maps_key=google_maps_key)
+                           google_maps_key=google_maps_key,
+                           reviews=reviews,
+                           avg_rating=round(avg_rating, 1) if avg_rating else None,
+                           review_count=review_count,
+                           recent_statuses=recent_statuses,
+                           latest_status=latest_status,
+                           status_labels=WeighStationStatus.STATUS_LABELS,
+                           status_icons=WeighStationStatus.STATUS_ICONS,
+                           status_colors=WeighStationStatus.STATUS_COLORS,
+                           valid_statuses=WeighStationStatus.VALID_STATUSES)

@@ -7,3 +7,6 @@ from .truck_stop import TruckStop
 from .fuel_price import FuelPrice
 from .truck_stop_review import TruckStopReview
 from .truck_stop_report import TruckStopReport
+from .weigh_station import WeighStation
+from .weigh_station_review import WeighStationReview
+from .weigh_station_status import WeighStationStatus

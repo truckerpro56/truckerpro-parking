@@ -130,6 +130,130 @@
     </div>
 </div>
 
+<!-- ═══ LIVE STATUS ═══ -->
+<div class="info-card" style="margin-top:16px">
+    <h2><i class="fa-solid fa-signal" style="color:var(--accent)"></i> Live Status
+        {% if latest_status %}
+        <span style="display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:4px 12px;border-radius:999px;font-size:.78rem;font-weight:700;background:{{ status_colors.get(latest_status.status, '#6b7280') }}22;color:{{ status_colors.get(latest_status.status, '#6b7280') }}">
+            <i class="fa-solid {{ status_icons.get(latest_status.status, 'fa-circle') }}"></i>
+            {{ status_labels.get(latest_status.status, latest_status.status) }}
+        </span>
+        {% endif %}
+    </h2>
+
+    {% if recent_statuses %}
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+        {% for s in recent_statuses %}
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg);border-radius:10px;border-left:3px solid {{ status_colors.get(s.status, '#6b7280') }}">
+            <i class="fa-solid {{ status_icons.get(s.status, 'fa-circle') }}" style="color:{{ status_colors.get(s.status, '#6b7280') }};margin-top:2px;font-size:1.1rem"></i>
+            <div style="flex:1;min-width:0">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-weight:700;font-size:.9rem">{{ status_labels.get(s.status, s.status) }}</span>
+                    <span style="font-size:.72rem;color:var(--text-sec)">{{ s.created_at.strftime('%b %d, %I:%M %p') if s.created_at else '' }} · {{ s.user.display_name or s.user.name or 'Driver' if s.user else 'Driver' }}</span>
+                </div>
+                {% if s.wait_minutes is not none %}<div style="font-size:.82rem;color:var(--text-sec);margin-top:2px"><i class="fa-solid fa-clock fa-xs"></i> ~{{ s.wait_minutes }} min wait</div>{% endif %}
+                {% if s.note %}<div style="font-size:.85rem;margin-top:4px">{{ s.note }}</div>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="font-size:.88rem;color:var(--text-sec);margin-bottom:16px">No recent status reports. Be the first to report!</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <div style="background:var(--bg);border-radius:12px;padding:16px">
+        <div style="font-weight:700;font-size:.88rem;margin-bottom:10px"><i class="fa-solid fa-bullhorn" style="color:var(--accent);margin-right:6px"></i> Report Current Status</div>
+        <div id="wsStatusBtns" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            {% for val in valid_statuses %}
+            <button type="button" class="ws-status-btn" data-status="{{ val }}"
+                    style="padding:8px 14px;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--text-sec);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s">
+                <i class="fa-solid {{ status_icons.get(val, 'fa-circle') }}" style="margin-right:4px"></i>{{ status_labels.get(val, val) }}
+            </button>
+            {% endfor %}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="number" id="wsWaitMin" placeholder="Wait (min)" min="0" max="999" style="width:110px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--text);font-size:.85rem">
+            <input type="text" id="wsStatusNote" placeholder="Optional note..." maxlength="500" style="flex:1;min-width:160px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--text);font-size:.85rem">
+            <button type="button" id="wsStatusSubmit" disabled
+                    style="padding:8px 18px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;opacity:.5;transition:opacity .15s">
+                Submit
+            </button>
+        </div>
+        <div id="wsStatusMsg" style="font-size:.82rem;margin-top:8px;display:none"></div>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:12px">
+        <p style="font-size:.88rem;color:var(--text-sec);margin-bottom:8px">Sign in to report live status</p>
+        <a href="/login" style="color:var(--accent);font-weight:700;font-size:.85rem;text-decoration:none"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ═══ REVIEWS ═══ -->
+<div class="info-card" style="margin-top:16px">
+    <h2><i class="fa-solid fa-star" style="color:#f59e0b"></i> Driver Reviews
+        {% if review_count %}
+        <span style="font-size:.88rem;color:var(--text-sec);font-weight:400;margin-left:8px">{{ avg_rating }}/5 ({{ review_count }})</span>
+        {% endif %}
+    </h2>
+
+    {% if avg_rating %}
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px">
+        {% for i in range(1, 6) %}
+        <i class="fa-solid fa-star" style="color:{% if i <= (avg_rating|round(0,'floor')|int) %}#f59e0b{% else %}var(--border){% endif %};font-size:1.2rem"></i>
+        {% endfor %}
+        <span style="font-size:1.1rem;font-weight:700;margin-left:6px">{{ avg_rating }}</span>
+    </div>
+    {% endif %}
+
+    {% if reviews %}
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+        {% for r in reviews %}
+        <div style="padding:14px;background:var(--bg);border-radius:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <div style="display:flex;align-items:center;gap:6px">
+                    {% for i in range(1, 6) %}
+                    <i class="fa-solid fa-star" style="color:{% if i <= r.rating %}#f59e0b{% else %}var(--border){% endif %};font-size:.78rem"></i>
+                    {% endfor %}
+                    <span style="font-weight:700;font-size:.85rem;margin-left:6px">{{ r.user.display_name or r.user.name or 'Driver' if r.user else 'Driver' }}</span>
+                </div>
+                <span style="font-size:.72rem;color:var(--text-sec)">{{ r.created_at.strftime('%b %d, %Y') if r.created_at else '' }}</span>
+            </div>
+            {% if r.review_text %}<p style="margin:0;font-size:.88rem;color:var(--text);line-height:1.5">{{ r.review_text }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="font-size:.88rem;color:var(--text-sec);margin-bottom:16px">No reviews yet. Be the first to share your experience!</p>
+    {% endif %}
+
+    {% if current_user.is_authenticated %}
+    <div style="background:var(--bg);border-radius:12px;padding:16px">
+        <div style="font-weight:700;font-size:.88rem;margin-bottom:10px"><i class="fa-solid fa-pen" style="color:var(--accent);margin-right:6px"></i> Write a Review</div>
+        <div id="wsRatingStars" style="display:flex;gap:6px;margin-bottom:10px;cursor:pointer">
+            {% for i in range(1, 6) %}
+            <i class="fa-solid fa-star ws-star" data-val="{{ i }}" style="font-size:1.4rem;color:var(--border);transition:color .15s"></i>
+            {% endfor %}
+        </div>
+        <textarea id="wsReviewText" placeholder="How was your experience at this weigh station?" maxlength="2000"
+                  style="width:100%;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card-bg);color:var(--text);font-size:.88rem;resize:vertical;font-family:inherit"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button type="button" id="wsReviewSubmit" disabled
+                    style="padding:8px 18px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-size:.85rem;font-weight:700;cursor:pointer;opacity:.5;transition:opacity .15s">
+                Submit Review
+            </button>
+        </div>
+        <div id="wsReviewMsg" style="font-size:.82rem;margin-top:8px;display:none"></div>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:16px;background:var(--bg);border-radius:12px">
+        <p style="font-size:.88rem;color:var(--text-sec);margin-bottom:8px">Sign in to leave a review</p>
+        <a href="/login" style="color:var(--accent);font-weight:700;font-size:.85rem;text-decoration:none"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+    </div>
+    {% endif %}
+</div>
+
 {% if nearby %}
 <h2 style="font-size:1.2rem;font-weight:700;margin:32px 0 16px"><i class="fa-solid fa-map-pin" style="color:var(--accent)"></i> Nearby Weigh Stations</h2>
 <div class="row g-3">
@@ -151,5 +275,129 @@
     </div>
     {% endfor %}
 </div>
+{% endif %}
+
+{% if current_user.is_authenticated %}
+<script>
+(function() {
+    var wsId = {{ ws.id }};
+    var selectedStatus = null;
+    var selectedRating = 0;
+
+    // ── Status buttons ──
+    document.querySelectorAll('.ws-status-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.ws-status-btn').forEach(function(b) {
+                b.style.background = 'transparent';
+                b.style.color = 'var(--text-sec)';
+                b.style.borderColor = 'var(--border)';
+            });
+            selectedStatus = btn.dataset.status;
+            btn.style.background = 'var(--accent)';
+            btn.style.color = '#fff';
+            btn.style.borderColor = 'var(--accent)';
+            var sub = document.getElementById('wsStatusSubmit');
+            if (sub) { sub.disabled = false; sub.style.opacity = '1'; }
+        });
+    });
+
+    var statusSubmit = document.getElementById('wsStatusSubmit');
+    if (statusSubmit) {
+        statusSubmit.addEventListener('click', function() {
+            if (!selectedStatus) return;
+            statusSubmit.disabled = true;
+            statusSubmit.textContent = 'Submitting...';
+            var body = { status: selectedStatus };
+            var wait = document.getElementById('wsWaitMin');
+            if (wait && wait.value) body.wait_minutes = parseInt(wait.value, 10);
+            var note = document.getElementById('wsStatusNote');
+            if (note && note.value.trim()) body.note = note.value.trim();
+            fetch('/api/v1/weigh-stations/' + wsId + '/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+            .then(function(res) {
+                var msg = document.getElementById('wsStatusMsg');
+                if (res.ok) {
+                    msg.style.color = '#10b981';
+                    msg.textContent = 'Status reported! +' + (res.data.points_awarded || 5) + ' points';
+                    msg.style.display = 'block';
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    msg.style.color = '#ef4444';
+                    msg.textContent = res.data.error || 'Failed to submit';
+                    msg.style.display = 'block';
+                    statusSubmit.disabled = false;
+                    statusSubmit.textContent = 'Submit';
+                }
+            }).catch(function() {
+                statusSubmit.disabled = false;
+                statusSubmit.textContent = 'Submit';
+            });
+        });
+    }
+
+    // ── Star rating ──
+    var stars = document.querySelectorAll('.ws-star');
+    stars.forEach(function(star) {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(star.dataset.val, 10);
+            stars.forEach(function(s) {
+                s.style.color = parseInt(s.dataset.val, 10) <= selectedRating ? '#f59e0b' : 'var(--border)';
+            });
+            var sub = document.getElementById('wsReviewSubmit');
+            if (sub) { sub.disabled = false; sub.style.opacity = '1'; }
+        });
+        star.addEventListener('mouseenter', function() {
+            var val = parseInt(star.dataset.val, 10);
+            stars.forEach(function(s) {
+                s.style.color = parseInt(s.dataset.val, 10) <= val ? '#f59e0b' : 'var(--border)';
+            });
+        });
+    });
+    var ratingContainer = document.getElementById('wsRatingStars');
+    if (ratingContainer) {
+        ratingContainer.addEventListener('mouseleave', function() {
+            stars.forEach(function(s) {
+                s.style.color = parseInt(s.dataset.val, 10) <= selectedRating ? '#f59e0b' : 'var(--border)';
+            });
+        });
+    }
+
+    var reviewSubmit = document.getElementById('wsReviewSubmit');
+    if (reviewSubmit) {
+        reviewSubmit.addEventListener('click', function() {
+            if (selectedRating < 1) return;
+            reviewSubmit.disabled = true;
+            reviewSubmit.textContent = 'Submitting...';
+            var text = document.getElementById('wsReviewText');
+            fetch('/api/v1/weigh-stations/' + wsId + '/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rating: selectedRating, review_text: text ? text.value : '' })
+            }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+            .then(function(res) {
+                var msg = document.getElementById('wsReviewMsg');
+                if (res.ok) {
+                    msg.style.color = '#10b981';
+                    msg.textContent = 'Review submitted! +' + (res.data.points_awarded || 10) + ' points';
+                    msg.style.display = 'block';
+                    setTimeout(function() { location.reload(); }, 1200);
+                } else {
+                    msg.style.color = '#ef4444';
+                    msg.textContent = res.data.error || 'Failed to submit';
+                    msg.style.display = 'block';
+                    reviewSubmit.disabled = false;
+                    reviewSubmit.textContent = 'Submit Review';
+                }
+            }).catch(function() {
+                reviewSubmit.disabled = false;
+                reviewSubmit.textContent = 'Submit Review';
+            });
+        });
+    }
+})();
+</script>
 {% endif %}
 {% endblock %}
