@@ -194,15 +194,71 @@
     </div>
 </div>
 
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
 <script>
 (function() {
     'use strict';
 
+    // ── State ──────────────────────────────────────────────
     var map = null;
-    var routePolyline = null;
-    var markers = [];
     var mapsLoaded = false;
+    var clusterer = null;
+    var routePolyline = null;
+    var routeMarkers = [];
 
+    var pinMarkers = {
+        loves: [], pilot_flying_j: [], ta_petro: [], other: [],
+        rest_area: [], weigh_station: [],
+    };
+
+    var BRAND_TO_FILTER = {
+        loves: 'loves',
+        pilot_flying_j: 'pilot_flying_j',
+        flying_j: 'pilot_flying_j',
+        ta_petro: 'ta_petro',
+        petro: 'ta_petro',
+    };
+
+    // ── SVG Pin Icons (data URIs) ──────────────────────────
+    function svgPin(color, letter) {
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">'
+            + '<path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z" fill="' + color + '"/>'
+            + '<circle cx="14" cy="13" r="8" fill="#fff" opacity="0.9"/>'
+            + '<text x="14" y="17" text-anchor="middle" font-size="11" font-weight="700" font-family="Arial,sans-serif" fill="' + color + '">' + letter + '</text>'
+            + '</svg>';
+        return {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+            scaledSize: new google.maps.Size(28, 36),
+            anchor: new google.maps.Point(14, 36),
+        };
+    }
+
+    function categoryPin(color, icon) {
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">'
+            + '<circle cx="12" cy="12" r="11" fill="' + color + '" stroke="#fff" stroke-width="1.5"/>'
+            + '<text x="12" y="16" text-anchor="middle" font-size="11" fill="#fff">' + icon + '</text>'
+            + '</svg>';
+        return {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+            scaledSize: new google.maps.Size(24, 24),
+            anchor: new google.maps.Point(12, 12),
+        };
+    }
+
+    var PIN_ICONS = {};
+
+    function buildPinIcons() {
+        PIN_ICONS = {
+            loves:          svgPin('#e11d48', 'L'),
+            pilot_flying_j: svgPin('#f97316', 'P'),
+            ta_petro:       svgPin('#3b82f6', 'T'),
+            other:          svgPin('#8b5cf6', 'S'),
+            rest_area:      categoryPin('#10b981', 'R'),
+            weigh_station:  categoryPin('#f59e0b', 'W'),
+        };
+    }
+
+    // ── Map Init ───────────────────────────────────────────
     function initMap() {
         mapsLoaded = true;
         map = new google.maps.Map(document.getElementById('route-map'), {
@@ -217,17 +273,114 @@
             streetViewControl: false,
             fullscreenControl: true,
         });
+
+        buildPinIcons();
+        initAutocomplete();
+        loadAllPins();
     }
 
-    // Load Google Maps
+    // ── Google Places Autocomplete ────────────────────────
+    function initAutocomplete() {
+        var opts = {
+            types: ['geocode', 'establishment'],
+            componentRestrictions: {country: ['us', 'ca']},
+        };
+        new google.maps.places.Autocomplete(
+            document.getElementById('route-origin'), opts
+        );
+        new google.maps.places.Autocomplete(
+            document.getElementById('route-destination'), opts
+        );
+    }
+
+    // ── Load All Pins ─────────────────────────────────────
+    function loadAllPins() {
+        fetch('/api/v1/map-pins')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var allMarkers = [];
+
+            data.truck_stops.forEach(function(s) {
+                var filterKey = BRAND_TO_FILTER[s.brand] || 'other';
+                var m = new google.maps.Marker({
+                    position: {lat: s.lat, lng: s.lng},
+                    icon: PIN_ICONS[filterKey],
+                    title: s.name,
+                });
+                var info = new google.maps.InfoWindow({
+                    content: buildInfoWindow(s.name, s.city + ', ' + s.state, s.url),
+                });
+                m.addListener('click', function() { info.open(map, m); });
+                m._filterKey = filterKey;
+                pinMarkers[filterKey].push(m);
+                allMarkers.push(m);
+            });
+
+            data.rest_areas.forEach(function(r) {
+                var m = new google.maps.Marker({
+                    position: {lat: r.lat, lng: r.lng},
+                    icon: PIN_ICONS.rest_area,
+                    title: r.name,
+                });
+                var info = new google.maps.InfoWindow({
+                    content: buildInfoWindow(r.name, r.state, r.url),
+                });
+                m.addListener('click', function() { info.open(map, m); });
+                m._filterKey = 'rest_area';
+                pinMarkers.rest_area.push(m);
+                allMarkers.push(m);
+            });
+
+            data.weigh_stations.forEach(function(w) {
+                var m = new google.maps.Marker({
+                    position: {lat: w.lat, lng: w.lng},
+                    icon: PIN_ICONS.weigh_station,
+                    title: w.name,
+                });
+                var info = new google.maps.InfoWindow({
+                    content: buildInfoWindow(w.name, w.state, w.url),
+                });
+                m.addListener('click', function() { info.open(map, m); });
+                m._filterKey = 'weigh_station';
+                pinMarkers.weigh_station.push(m);
+                allMarkers.push(m);
+            });
+
+            clusterer = new markerClusterer.MarkerClusterer({
+                map: map,
+                markers: allMarkers,
+            });
+        })
+        .catch(function(err) {
+            console.warn('Failed to load map pins:', err);
+        });
+    }
+
+    // ── Filter Toggle ─────────────────────────────────────
+    function applyFilters() {
+        if (!clusterer) return;
+        var visible = [];
+        var checkboxes = document.querySelectorAll('#route-filters input[data-filter]');
+        checkboxes.forEach(function(cb) {
+            var key = cb.getAttribute('data-filter');
+            var markers = pinMarkers[key] || [];
+            if (cb.checked) {
+                visible = visible.concat(markers);
+            }
+        });
+        clusterer.clearMarkers();
+        clusterer.addMarkers(visible);
+    }
+
+    // ── Load Google Maps ──────────────────────────────────
     var script = document.createElement('script');
-    script.src = 'https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=geometry&callback=__routePlannerMapReady';
+    script.src = 'https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&libraries=geometry,places&callback=__routePlannerMapReady';
     script.async = true;
     script.defer = true;
     document.head.appendChild(script);
     window.__routePlannerMapReady = initMap;
 
-    // Event delegation
+    // ── Event Delegation ──────────────────────────────────
     document.addEventListener('click', function(e) {
         var planBtn = e.target.closest('[data-action="plan-route"]');
         if (planBtn) { handlePlanRoute(); return; }
@@ -242,9 +395,25 @@
             map.panTo({lat: lat, lng: lng});
             map.setZoom(13);
         }
+
+        if (e.target.closest('[data-action="filter-all"]')) {
+            document.querySelectorAll('#route-filters input[data-filter]').forEach(function(cb) { cb.checked = true; });
+            applyFilters();
+            return;
+        }
+        if (e.target.closest('[data-action="filter-none"]')) {
+            document.querySelectorAll('#route-filters input[data-filter]').forEach(function(cb) { cb.checked = false; });
+            applyFilters();
+            return;
+        }
     });
 
-    // Also trigger plan on Enter in inputs
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('#route-filters input[data-filter]')) {
+            applyFilters();
+        }
+    });
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             var el = e.target;
@@ -254,6 +423,7 @@
         }
     });
 
+    // ── Route Planning ────────────────────────────────────
     function handlePlanRoute() {
         var origin = document.getElementById('route-origin').value.trim();
         var destination = document.getElementById('route-destination').value.trim();
@@ -301,20 +471,17 @@
 
     function renderResults(data) {
         if (!mapsLoaded || !map) {
-            // Wait briefly for map to load, then retry
             setTimeout(function() { renderResults(data); }, 300);
             return;
         }
 
-        // Clear previous route and markers
         if (routePolyline) {
             routePolyline.setMap(null);
             routePolyline = null;
         }
-        markers.forEach(function(m) { m.setMap(null); });
-        markers = [];
+        routeMarkers.forEach(function(m) { m.setMap(null); });
+        routeMarkers = [];
 
-        // Draw route polyline
         var decodedPath = google.maps.geometry.encoding.decodePath(data.route.polyline);
         routePolyline = new google.maps.Polyline({
             path: decodedPath,
@@ -324,19 +491,16 @@
             strokeOpacity: 0.8,
         });
 
-        // Fit map to route bounds
         var bounds = new google.maps.LatLngBounds();
-
-        // Start marker
         var startPos = {lat: data.route.start.lat, lng: data.route.start.lng};
         var endPos = {lat: data.route.end.lat, lng: data.route.end.lng};
 
-        markers.push(new google.maps.Marker({
+        routeMarkers.push(new google.maps.Marker({
             position: startPos, map: map,
             icon: {url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'},
             title: 'Start: ' + data.route.start_address, zIndex: 10,
         }));
-        markers.push(new google.maps.Marker({
+        routeMarkers.push(new google.maps.Marker({
             position: endPos, map: map,
             icon: {url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'},
             title: 'End: ' + data.route.end_address, zIndex: 10,
@@ -344,50 +508,18 @@
         bounds.extend(startPos);
         bounds.extend(endPos);
 
-        // Add stop markers
-        data.truck_stops.forEach(function(s) {
-            var pos = {lat: s.lat, lng: s.lng};
-            var m = createCircleMarker(pos, '#2563eb', 7, s.name);
-            var info = new google.maps.InfoWindow({
-                content: buildInfoWindow(s.name, s.city + ', ' + s.state, s.url),
-            });
-            m.addListener('click', function() { info.open(map, m); });
-            markers.push(m);
-            bounds.extend(pos);
-        });
-
-        data.rest_areas.forEach(function(r) {
-            var pos = {lat: r.lat, lng: r.lng};
-            var m = createCircleMarker(pos, '#10b981', 6, r.name);
-            var info = new google.maps.InfoWindow({
-                content: buildInfoWindow(r.name, r.highway || r.state, r.url),
-            });
-            m.addListener('click', function() { info.open(map, m); });
-            markers.push(m);
-            bounds.extend(pos);
-        });
-
-        data.weigh_stations.forEach(function(w) {
-            var pos = {lat: w.lat, lng: w.lng};
-            var m = createCircleMarker(pos, '#f59e0b', 5, w.name);
-            var info = new google.maps.InfoWindow({
-                content: buildInfoWindow(w.name, w.state, w.url),
-            });
-            m.addListener('click', function() { info.open(map, m); });
-            markers.push(m);
-            bounds.extend(pos);
-        });
+        data.truck_stops.forEach(function(s) { bounds.extend({lat: s.lat, lng: s.lng}); });
+        data.rest_areas.forEach(function(r) { bounds.extend({lat: r.lat, lng: r.lng}); });
+        data.weigh_stations.forEach(function(w) { bounds.extend({lat: w.lat, lng: w.lng}); });
 
         map.fitBounds(bounds, {top: 40, right: 40, bottom: 40, left: 40});
 
-        // Update summary bar
         document.getElementById('route-summary').style.display = 'block';
         document.getElementById('sum-distance').textContent = data.route.distance;
         document.getElementById('sum-duration').textContent = data.route.duration;
         document.getElementById('sum-stops').textContent = data.counts.truck_stops;
         document.getElementById('sum-rest').textContent = data.counts.rest_areas;
 
-        // Update tabs
         var tabsEl = document.getElementById('route-tabs');
         tabsEl.style.display = 'flex';
         tabsEl.classList.add('loaded');
@@ -395,10 +527,8 @@
         document.getElementById('tab-count-rest').textContent = data.counts.rest_areas;
         document.getElementById('tab-count-weigh').textContent = data.counts.weigh_stations;
 
-        // Hide placeholder
         document.getElementById('route-placeholder').style.display = 'none';
 
-        // Build result lists
         buildList('results-stops', data.truck_stops, 'stop', 'fa-gas-pump', function(item) {
             return item.highway ? item.highway + (item.exit ? ' Exit ' + item.exit : '') : item.city + ', ' + item.state;
         });
@@ -412,20 +542,7 @@
         switchTab('stops');
     }
 
-    function createCircleMarker(pos, color, scale, title) {
-        return new google.maps.Marker({
-            position: pos, map: map, title: title,
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: scale,
-                fillColor: color,
-                fillOpacity: 0.92,
-                strokeColor: '#ffffff',
-                strokeWeight: 1.5,
-            },
-        });
-    }
-
+    // ── Shared Helpers ────────────────────────────────────
     function buildInfoWindow(name, detail, url) {
         return '<div style="font-family:Inter,sans-serif;font-size:13px;max-width:200px">'
             + '<strong style="display:block;margin-bottom:2px">' + escHtml(name) + '</strong>'
@@ -467,7 +584,6 @@
         document.getElementById('results-weigh').style.display = tab === 'weigh' ? 'block' : 'none';
     }
 
-    // Prevent item click from firing when clicking the detail link
     document.addEventListener('click', function(e) {
         if (e.target.closest('[data-action="stop-propagation"]')) {
             e.stopPropagation();
