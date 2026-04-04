@@ -710,19 +710,18 @@
       .promo-banner.visible:hover { transform:translateY(-4px); }
       .promo-banner::before { content:''; position:absolute; inset:0; z-index:0; background-size:300% 300%; animation:promoGradient 8s ease infinite; }
       .promo-banner > * { position:relative; z-index:1; }
-      .promo-banner::after { content:''; position:absolute; inset:-1px; border-radius:17px; z-index:-1; }
 
-      /* Product gradients */
-      .promo-tms::before { background:linear-gradient(-45deg, #0b1020, #1a0c00, #2d1200, #ff6b35, #0b1020); }
-      .promo-border::before { background:linear-gradient(-45deg, #051a14, #001a14, #002d24, #10b981, #051a14); }
-      .promo-parking::before { background:linear-gradient(-45deg, #1a0035, #0d001a, #2d0050, #8b5cf6, #1a0035); }
-      .promo-fmcsa::before { background:linear-gradient(-45deg, #111827, #0a0f1a, #1f2937, #4b5563, #111827); }
+      /* Product gradients (use background-image to preserve background-size) */
+      .promo-tms::before { background-image:linear-gradient(-45deg, #0b1020, #1a0c00, #2d1200, #ff6b35, #0b1020); }
+      .promo-border::before { background-image:linear-gradient(-45deg, #051a14, #001a14, #002d24, #10b981, #051a14); }
+      .promo-parking::before { background-image:linear-gradient(-45deg, #1a0035, #0d001a, #2d0050, #8b5cf6, #1a0035); }
+      .promo-fmcsa::before { background-image:linear-gradient(-45deg, #111827, #0a0f1a, #1f2937, #4b5563, #111827); }
 
-      /* Product glow pulses */
-      .promo-tms::after { animation:glowTms 3s ease-in-out infinite; }
-      .promo-border::after { animation:glowBorder 3s ease-in-out infinite; }
-      .promo-parking::after { animation:glowParking 3s ease-in-out infinite; }
-      .promo-fmcsa::after { animation:glowFmcsa 3s ease-in-out infinite; }
+      /* Product glow pulses (combined with entrance on .visible to avoid animation override) */
+      .promo-tms.visible { animation:promoEntrance 0.6s ease forwards, glowTms 3s ease-in-out 0.6s infinite; }
+      .promo-border.visible { animation:promoEntrance 0.6s ease forwards, glowBorder 3s ease-in-out 0.6s infinite; }
+      .promo-parking.visible { animation:promoEntrance 0.6s ease forwards, glowParking 3s ease-in-out 0.6s infinite; }
+      .promo-fmcsa.visible { animation:promoEntrance 0.6s ease forwards, glowFmcsa 3s ease-in-out 0.6s infinite; }
 
       @keyframes glowTms { 0%,100%{box-shadow:0 0 15px rgba(255,107,53,0), 0 0 30px rgba(255,107,53,0)} 50%{box-shadow:0 0 15px rgba(255,107,53,0.15), 0 0 40px rgba(255,107,53,0.05)} }
       @keyframes glowBorder { 0%,100%{box-shadow:0 0 15px rgba(16,185,129,0), 0 0 30px rgba(16,185,129,0)} 50%{box-shadow:0 0 15px rgba(16,185,129,0.15), 0 0 40px rgba(16,185,129,0.05)} }
