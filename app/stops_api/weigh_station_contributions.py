@@ -72,7 +72,7 @@ def get_ws_reviews(ws_id):
         'id': r.id,
         'rating': r.rating,
         'review_text': r.review_text,
-        'user_name': r.user.display_name or r.user.name or 'Driver' if r.user else 'Driver',
+        'user_name': (r.user.display_name or r.user.name or 'Driver') if r.user else 'Driver',
         'created_at': r.created_at.isoformat() if r.created_at else None,
     } for r in reviews])
 
