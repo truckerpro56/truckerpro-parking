@@ -25,6 +25,27 @@ class TestRoutePlannerPage:
         resp = client.get('/route-planner')
         assert resp.status_code == 404
 
+    def test_page_contains_filter_panel(self, stops_client):
+        resp = stops_client.get('/route-planner')
+        assert b'route-filters' in resp.data
+        assert b'data-filter="loves"' in resp.data
+        assert b'data-filter="pilot_flying_j"' in resp.data
+        assert b'data-filter="ta_petro"' in resp.data
+        assert b'data-filter="rest_area"' in resp.data
+        assert b'data-filter="weigh_station"' in resp.data
+
+    def test_page_loads_places_library(self, stops_client):
+        resp = stops_client.get('/route-planner')
+        assert b'libraries=geometry,places' in resp.data
+
+    def test_page_loads_markerclusterer(self, stops_client):
+        resp = stops_client.get('/route-planner')
+        assert b'markerclusterer' in resp.data
+
+    def test_page_fetches_map_pins(self, stops_client):
+        resp = stops_client.get('/route-planner')
+        assert b'/api/v1/map-pins' in resp.data
+
 
 class TestPlanRouteAPI:
     def test_missing_params_returns_400(self, stops_client):
