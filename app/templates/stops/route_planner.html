@@ -349,6 +349,7 @@
             clusterer = new markerClusterer.MarkerClusterer({
                 map: map,
                 markers: allMarkers,
+                algorithmOptions: { maxZoom: 14 },
             });
         })
         .catch(function(err) {
