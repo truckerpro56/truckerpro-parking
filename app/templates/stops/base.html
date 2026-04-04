@@ -703,61 +703,87 @@
         .stops-footer .footer-bottom { flex-direction: column; text-align: center; }
       }
 
-      /* ── Native Content Promos ─────────────────────── */
-      .native-promo { border-radius: 16px; overflow: hidden; margin: 20px 0; }
-      .native-promo-inner { display: flex; align-items: stretch; min-height: 200px; }
-      .native-promo-content { flex: 1; padding: 32px; display: flex; flex-direction: column; justify-content: center; }
-      .native-promo-visual { width: 340px; flex-shrink: 0; padding: 32px; display: flex; align-items: center; justify-content: center; }
+      /* ── Promo Banners (animated, variant-aware) ─────── */
+      .promo-banner { position:relative; overflow:hidden; border-radius:16px; padding:28px 24px; text-decoration:none; color:#fff; display:flex; flex-direction:column; justify-content:space-between; min-height:200px; transition:transform 0.3s ease, box-shadow 0.3s ease; margin:20px 0; opacity:0; transform:translateY(30px); }
+      .promo-banner.visible { animation:promoEntrance 0.6s ease forwards; }
+      .promo-banner:hover { transform:translateY(-4px); box-shadow:0 20px 60px rgba(0,0,0,0.5); color:#fff; }
+      .promo-banner.visible:hover { transform:translateY(-4px); }
+      .promo-banner::before { content:''; position:absolute; inset:0; z-index:0; background-size:300% 300%; animation:promoGradient 8s ease infinite; }
+      .promo-banner > * { position:relative; z-index:1; }
+      .promo-banner::after { content:''; position:absolute; inset:-1px; border-radius:17px; z-index:-1; }
 
-      .native-promo-tms { background: linear-gradient(135deg, #0f2440 0%, #1e3a5f 100%); color: #fff; }
-      .native-promo-border { background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); color: #fff; }
-      .native-promo-parking { background: linear-gradient(135deg, #3b0764 0%, #5b21b6 100%); color: #fff; }
-      .native-promo-fmcsa { background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: #fff; }
+      /* Product gradients */
+      .promo-tms::before { background:linear-gradient(-45deg, #0b1020, #1a0c00, #2d1200, #ff6b35, #0b1020); }
+      .promo-border::before { background:linear-gradient(-45deg, #051a14, #001a14, #002d24, #10b981, #051a14); }
+      .promo-parking::before { background:linear-gradient(-45deg, #1a0035, #0d001a, #2d0050, #8b5cf6, #1a0035); }
+      .promo-fmcsa::before { background:linear-gradient(-45deg, #111827, #0a0f1a, #1f2937, #4b5563, #111827); }
 
-      .native-promo-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); padding: 5px 14px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; width: fit-content; }
-      .native-promo h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 8px; line-height: 1.3; }
-      .native-promo-desc { color: rgba(255,255,255,0.7); font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px; }
+      /* Product glow pulses */
+      .promo-tms::after { animation:glowTms 3s ease-in-out infinite; }
+      .promo-border::after { animation:glowBorder 3s ease-in-out infinite; }
+      .promo-parking::after { animation:glowParking 3s ease-in-out infinite; }
+      .promo-fmcsa::after { animation:glowFmcsa 3s ease-in-out infinite; }
 
-      .native-promo-features { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 20px; }
-      .native-promo-feat { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: rgba(255,255,255,0.85); }
-      .native-promo-feat i { color: #34d399; font-size: 0.75rem; }
+      @keyframes glowTms { 0%,100%{box-shadow:0 0 15px rgba(255,107,53,0), 0 0 30px rgba(255,107,53,0)} 50%{box-shadow:0 0 15px rgba(255,107,53,0.15), 0 0 40px rgba(255,107,53,0.05)} }
+      @keyframes glowBorder { 0%,100%{box-shadow:0 0 15px rgba(16,185,129,0), 0 0 30px rgba(16,185,129,0)} 50%{box-shadow:0 0 15px rgba(16,185,129,0.15), 0 0 40px rgba(16,185,129,0.05)} }
+      @keyframes glowParking { 0%,100%{box-shadow:0 0 15px rgba(139,92,246,0), 0 0 30px rgba(139,92,246,0)} 50%{box-shadow:0 0 15px rgba(139,92,246,0.15), 0 0 40px rgba(139,92,246,0.05)} }
+      @keyframes glowFmcsa { 0%,100%{box-shadow:0 0 15px rgba(107,114,128,0), 0 0 30px rgba(107,114,128,0)} 50%{box-shadow:0 0 15px rgba(107,114,128,0.1), 0 0 40px rgba(107,114,128,0.03)} }
 
-      .native-promo-btn { display: inline-flex; align-items: center; gap: 8px; background: #2563eb; color: #fff; padding: 12px 28px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
-      .native-promo-btn:hover { background: #1d4ed8; color: #fff; transform: translateY(-1px); }
-      .native-promo-btn-border { background: #10b981; }
-      .native-promo-btn-border:hover { background: #059669; color: #fff; }
-      .native-promo-btn-parking { background: #8b5cf6; }
-      .native-promo-btn-parking:hover { background: #7c3aed; color: #fff; }
-      .native-promo-btn-fmcsa { background: #6b7280; }
-      .native-promo-btn-fmcsa:hover { background: #4b5563; color: #fff; }
+      @keyframes promoGradient { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+      @keyframes promoEntrance { from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:translateY(0)} }
 
-      /* Mockup widget */
-      .native-promo-mockup { background: rgba(255,255,255,0.08); border-radius: 10px; width: 100%; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
-      .mockup-bar { display: flex; gap: 5px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-      .mockup-bar span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
-      .mockup-body { padding: 10px; }
-      .mockup-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; font-size: 0.75rem; color: rgba(255,255,255,0.7); border-bottom: 1px solid rgba(255,255,255,0.05); }
-      .mockup-row:last-child { border-bottom: none; }
-      .mockup-row i { font-size: 0.85rem; }
-      .mockup-row span:first-of-type { flex: 1; }
-      .mockup-badge-green { background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
-      .mockup-badge-yellow { background: rgba(245,158,11,0.2); color: #fbbf24; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
-      .mockup-badge-blue { background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+      /* Eyebrow */
+      .promo-eyebrow { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+      .promo-dot { width:8px; height:8px; border-radius:50%; animation:promoDotPulse 2s ease-in-out infinite; }
+      .promo-tms .promo-dot { background:#ff6b35; }
+      .promo-border .promo-dot { background:#10b981; }
+      .promo-parking .promo-dot { background:#8b5cf6; }
+      .promo-fmcsa .promo-dot { background:#6b7280; }
+      .promo-eyebrow span:last-child { font-size:0.68rem; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,0.55); font-weight:600; }
+      @keyframes promoDotPulse { 0%,100%{opacity:1; transform:scale(1)} 50%{opacity:0.5; transform:scale(0.85)} }
 
-      /* Stat grid */
-      .native-promo-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
-      .native-promo-stat { text-align: center; background: rgba(255,255,255,0.08); border-radius: 10px; padding: 16px 12px; }
-      .native-promo-stat .stat-value { font-size: 1.5rem; font-weight: 800; margin-bottom: 2px; }
-      .native-promo-stat .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; }
+      /* Hook (style B) */
+      .promo-hook { font-size:1rem; font-weight:400; color:rgba(255,255,255,0.4); font-style:italic; margin-bottom:4px; }
 
-      /* Location list */
-      .native-promo-locations { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-      .loc-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.82rem; color: rgba(255,255,255,0.8); }
+      /* Headline */
+      .promo-headline { font-size:1.4rem; font-weight:900; line-height:1.15; letter-spacing:-0.5px; margin-bottom:5px; }
+      .promo-headline-lg { font-size:2rem; letter-spacing:-1px; }
+
+      /* Accent bar (style C) */
+      .promo-accent-bar { width:36px; height:3px; border-radius:2px; margin-bottom:10px; }
+      .promo-tms .promo-accent-bar { background:#ff6b35; }
+      .promo-border .promo-accent-bar { background:#10b981; }
+      .promo-parking .promo-accent-bar { background:#8b5cf6; }
+      .promo-fmcsa .promo-accent-bar { background:#6b7280; }
+
+      /* Description */
+      .promo-desc { font-size:0.78rem; color:rgba(255,255,255,0.45); line-height:1.5; margin-bottom:16px; }
+
+      /* Watermark (style C) */
+      .promo-watermark { position:absolute; right:-15px; top:-20px; font-size:7rem; font-weight:900; line-height:1; z-index:0; opacity:0.04; pointer-events:none; }
+      .promo-tms .promo-watermark { color:#ff6b35; }
+      .promo-border .promo-watermark { color:#10b981; }
+      .promo-parking .promo-watermark { color:#8b5cf6; }
+      .promo-fmcsa .promo-watermark { color:#6b7280; }
+
+      /* CTA */
+      .promo-cta-row { display:flex; align-items:center; gap:14px; }
+      .promo-btn { padding:10px 22px; border-radius:8px; font-size:0.8rem; font-weight:700; color:#fff; border:none; transition:all 0.2s; }
+      .promo-tms .promo-btn { background:#ff6b35; }
+      .promo-border .promo-btn { background:#10b981; }
+      .promo-parking .promo-btn { background:#8b5cf6; }
+      .promo-fmcsa .promo-btn { background:#6b7280; }
+      .promo-btn-outline { background:transparent !important; }
+      .promo-tms .promo-btn-outline { border:1.5px solid #ff6b35; color:#ff6b35; }
+      .promo-border .promo-btn-outline { border:1.5px solid #10b981; color:#10b981; }
+      .promo-parking .promo-btn-outline { border:1.5px solid #8b5cf6; color:#8b5cf6; }
+      .promo-fmcsa .promo-btn-outline { border:1.5px solid #6b7280; color:#9ca3af; }
+      .promo-sub-cta { font-size:0.72rem; color:rgba(255,255,255,0.35); }
 
       @media (max-width: 768px) {
-        .native-promo-inner { flex-direction: column; }
-        .native-promo-visual { width: 100%; padding: 0 24px 24px; }
-        .native-promo-stat-grid { grid-template-columns: 1fr 1fr; }
+        .promo-banner { min-height:180px; padding:24px 20px; }
+        .promo-headline-lg { font-size:1.6rem; }
+        .promo-watermark { font-size:5rem; }
       }
     </style>
     {% block head %}{% endblock %}
@@ -869,6 +895,20 @@
       });
     </script>
     {% block scripts %}{% endblock %}
+    <!-- Promo banner scroll entrance -->
+    <script>
+      (function(){
+        var obs = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              obs.unobserve(entry.target);
+            }
+          });
+        }, {threshold: 0.2});
+        document.querySelectorAll('.promo-banner').forEach(function(el) { obs.observe(el); });
+      })();
+    </script>
     <!-- PWA Service Worker registration -->
     <script>
       if ('serviceWorker' in navigator) {
