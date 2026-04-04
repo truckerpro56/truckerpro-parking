@@ -1,25 +1,18 @@
-<div class="native-promo native-promo-tms" data-ga-event="banner_click" data-ga-target="tms">
-    <div class="native-promo-inner">
-        <div class="native-promo-content">
-            <div class="native-promo-badge"><i class="fa-solid fa-bolt"></i> Fleet Management</div>
-            <h3>{{ banner['copy'] }}</h3>
-            <p class="native-promo-desc">All-in-one TMS with dispatch, ELD tracking, compliance, invoicing, and driver management for US &amp; Canadian carriers.</p>
-            <div class="native-promo-features">
-                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> Real-time GPS tracking</div>
-                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> ELD &amp; HOS compliance</div>
-                <div class="native-promo-feat"><i class="fa-solid fa-check-circle"></i> Automated invoicing</div>
-            </div>
-            <a href="{{ banner.url }}" class="native-promo-btn">{{ banner.cta }} <i class="fa-solid fa-arrow-right"></i></a>
-        </div>
-        <div class="native-promo-visual">
-            <div class="native-promo-mockup">
-                <div class="mockup-bar"><span></span><span></span><span></span></div>
-                <div class="mockup-body">
-                    <div class="mockup-row"><i class="fa-solid fa-truck" style="color:#3b82f6"></i> <span>Load #4521 — Toronto → Chicago</span> <span class="mockup-badge-green">In Transit</span></div>
-                    <div class="mockup-row"><i class="fa-solid fa-truck" style="color:#3b82f6"></i> <span>Load #4522 — Montreal → NYC</span> <span class="mockup-badge-yellow">Dispatched</span></div>
-                    <div class="mockup-row"><i class="fa-solid fa-truck" style="color:#3b82f6"></i> <span>Load #4523 — Calgary → Vancouver</span> <span class="mockup-badge-blue">Quoted</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<a href="{{ banner.url }}" class="promo-banner promo-tms" data-ga-event="banner_click" data-ga-target="tms">
+  {% if banner.variant == 'c' %}<div class="promo-watermark">{{ banner.watermark }}</div>{% endif %}
+  <div>
+    {% if banner.variant != 'c' %}
+    <div class="promo-eyebrow"><span class="promo-dot"></span><span>{{ banner.eyebrow }}</span></div>
+    {% endif %}
+    {% if banner.variant == 'b' and banner.hook %}
+    <div class="promo-hook">{{ banner.hook }}</div>
+    {% endif %}
+    <div class="promo-headline {% if banner.variant == 'c' %}promo-headline-lg{% endif %}">{{ banner.headline | replace('\n', '<br>') | safe }}</div>
+    {% if banner.variant == 'c' %}<div class="promo-accent-bar"></div>{% endif %}
+    {% if banner.desc %}<div class="promo-desc">{{ banner.desc | replace('\n', '<br>') | safe }}</div>{% endif %}
+  </div>
+  <div class="promo-cta-row">
+    <span class="promo-btn {% if banner.variant == 'c' %}promo-btn-outline{% endif %}">{{ banner.cta }}{% if banner.variant == 'c' %} &rarr;{% endif %}</span>
+    {% if banner.sub_cta %}<span class="promo-sub-cta">{{ banner.sub_cta }}</span>{% endif %}
+  </div>
+</a>
