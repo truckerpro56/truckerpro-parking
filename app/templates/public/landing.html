@@ -18,6 +18,9 @@
     <title>Truck Parking Across Canada | Find &amp; Book Truck Parking | TruckerPro</title>
     <meta name="description" content="Find and book secure truck parking across Canada. Browse {{ total_locations }}+ locations in {{ total_provinces }} provinces and territories. Daily, weekly, and monthly rates available.">
     <link rel="canonical" href="https://parking.truckerpro.ca">
+    {% if gsc_verification_token %}
+    <meta name="google-site-verification" content="{{ gsc_verification_token }}">
+    {% endif %}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">

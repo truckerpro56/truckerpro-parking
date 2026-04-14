@@ -40,6 +40,16 @@ def brand_slug_to_name(slug):
 def highway_to_slug(highway):
     return slugify(highway)
 
+STOPS_BASE_URL = 'https://stops.truckerpro.net'
+
+
+def stop_canonical_url(stop):
+    country_slug = 'us' if stop.country == 'US' else 'canada'
+    state_sl = state_code_to_slug(stop.state_province)
+    city_sl = slugify(stop.city)
+    return f'{STOPS_BASE_URL}/{country_slug}/{state_sl}/{city_sl}/{stop.slug}'
+
+
 def stop_to_card(stop):
     return {
         'id': stop.id, 'name': stop.name, 'slug': stop.slug,

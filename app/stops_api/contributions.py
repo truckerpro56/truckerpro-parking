@@ -14,6 +14,7 @@ from ..models.fuel_price import FuelPrice
 from ..models.truck_stop_review import TruckStopReview
 from ..models.truck_stop_report import TruckStopReport
 from ..models.stop_photo import StopPhoto
+from ..stops.helpers import stop_canonical_url
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,9 @@ def submit_fuel_price(stop_id):
         )
     )
     db.session.commit()
+    if is_verified:
+        from ..tasks.indexnow_task import enqueue_indexnow
+        enqueue_indexnow('stops.truckerpro.net', [stop_canonical_url(stop)])
     return jsonify({'id': fp.id, 'is_verified': fp.is_verified}), 201
 
 
@@ -113,6 +117,9 @@ def submit_review(stop_id):
         )
     )
     db.session.commit()
+    if review.is_approved:
+        from ..tasks.indexnow_task import enqueue_indexnow
+        enqueue_indexnow('stops.truckerpro.net', [stop_canonical_url(stop)])
     return jsonify({'id': review.id, 'is_approved': review.is_approved}), 201
 
 

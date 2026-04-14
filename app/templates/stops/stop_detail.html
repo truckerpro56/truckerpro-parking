@@ -27,6 +27,49 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Where is {{ stop.name | e }} located?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ stop.name | e }} is located at {{ stop.address | e }}, {{ stop.city | e }}, {{ stop.state_province | e }}{% if stop.postal_code %} {{ stop.postal_code | e }}{% endif %}{% if stop.highway %}, just off {{ stop.highway | e }}{% if stop.exit_number %} at Exit {{ stop.exit_number | e }}{% endif %}{% endif %}."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does {{ stop.name | e }} have truck parking?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{% if stop.total_parking_spots %}Yes — {{ stop.total_parking_spots }} truck parking spots are listed at this location.{% else %}Truck parking availability for this location is not listed. Check recent driver reports for current status.{% endif %}"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What amenities are available at {{ stop.name | e }}?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Amenities at this location include{% set a = [] %}{% if stop.has_diesel %}{% set _ = a.append('diesel') %}{% endif %}{% if stop.has_showers %}{% set _ = a.append('showers') %}{% endif %}{% if stop.has_scale %}{% set _ = a.append('a CAT scale') %}{% endif %}{% if stop.has_repair %}{% set _ = a.append('repair services') %}{% endif %}{% if stop.has_wifi %}{% set _ = a.append('Wi-Fi') %}{% endif %}{% if a %} {{ a | join(', ') }}{% else %} none listed — check driver reports for current amenities{% endif %}."
+      }
+    }
+    {% if stop.phone %},
+    {
+      "@type": "Question",
+      "name": "What is the phone number for {{ stop.name | e }}?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can reach {{ stop.name | e }} at {{ stop.phone | e }}."
+      }
+    }
+    {% endif %}
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "TruckStop",
   "name": "{{ stop.name | e }}",
   "address": {

@@ -3,6 +3,12 @@
 {% block meta_description %}Browse {{ total_stops }} truck stops across the US and Canada. Find diesel, showers, scales, parking, and more. Driver reviews and fuel prices.{% endblock %}
 {% block canonical %}https://stops.truckerpro.net/{% endblock %}
 
+{% block hreflang %}
+<link rel="alternate" hreflang="en-US" href="https://stops.truckerpro.net/us">
+<link rel="alternate" hreflang="en-CA" href="https://stops.truckerpro.net/canada">
+<link rel="alternate" hreflang="x-default" href="https://stops.truckerpro.net/">
+{% endblock %}
+
 {% block head %}
 <style>
   /* Hero */

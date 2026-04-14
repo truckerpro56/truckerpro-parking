@@ -27,6 +27,8 @@ class Config:
     STOPS_DOMAIN = os.environ.get('STOPS_DOMAIN', 'stops.truckerpro.net')
     PARKING_DOMAIN = os.environ.get('PARKING_DOMAIN', 'parking.truckerpro.ca')
     INDEXNOW_KEY = os.environ.get('INDEXNOW_KEY', '')
+    GSC_VERIFICATION_STOPS = os.environ.get('GSC_VERIFICATION_STOPS', '')
+    GSC_VERIFICATION_PARKING = os.environ.get('GSC_VERIFICATION_PARKING', '')
 
 
 class TestConfig(Config):

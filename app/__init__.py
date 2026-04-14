@@ -362,6 +362,15 @@ def create_app(config_class=None):
     get_blog_posts(app)
     app.register_blueprint(blog_bp)
 
+    @app.context_processor
+    def inject_seo_tokens():
+        site = getattr(g, 'site', 'parking')
+        if site == 'stops':
+            token = app.config.get('GSC_VERIFICATION_STOPS', '')
+        else:
+            token = app.config.get('GSC_VERIFICATION_PARKING', '')
+        return {'gsc_verification_token': token}
+
     with app.app_context():
         from .models.favorite_stop import FavoriteStop  # noqa: F401
         from .models.stop_photo import StopPhoto  # noqa: F401
