@@ -18,8 +18,11 @@ logger = logging.getLogger(__name__)
 @site_required('stops')
 def admin_create_truck_stops():
     auth = request.headers.get('X-Admin-Key', '')
-    admin_key = current_app.config.get('ADMIN_SECRET_KEY') or current_app.config.get('SECRET_KEY', '')
-    if not admin_key or not auth or not hmac.compare_digest(auth, admin_key):
+    admin_key = current_app.config.get('ADMIN_SECRET_KEY') or ''
+    if not admin_key:
+        logger.error('ADMIN_SECRET_KEY not configured — rejecting admin request')
+        return jsonify({'error': 'Admin endpoint not configured'}), 503
+    if not auth or not hmac.compare_digest(auth, admin_key):
         return jsonify({'error': 'Unauthorized'}), 403
     data = request.get_json()
     if not data:

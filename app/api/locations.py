@@ -294,17 +294,32 @@ def create_or_update_listing():
             'error': 'Could not determine coordinates. Please provide latitude and longitude.',
         }), 400
 
-    # Validate rates are non-negative
-    hourly_rate = data.get('hourly_rate')
-    daily_rate = data.get('daily_rate')
-    weekly_rate = data.get('weekly_rate')
-    monthly_rate = data.get('monthly_rate')
-    rate_values = [v for v in [hourly_rate, daily_rate, weekly_rate, monthly_rate] if v is not None]
-    try:
-        rate_values = [float(v) for v in rate_values]
-    except (ValueError, TypeError):
-        return jsonify({'success': False, 'error': 'Rate values must be numeric'}), 400
-    if any(v < 0 for v in rate_values):
+    # Rates are stored as integer cents (see CLAUDE.md). Reject non-integers to
+    # prevent silent truncation when SQLAlchemy casts float -> Integer column.
+    def _coerce_cents(value, field_name):
+        if value is None or value == '':
+            return None, None
+        if isinstance(value, bool):
+            return None, f'{field_name} must be an integer number of cents'
+        if isinstance(value, int):
+            return value, None
+        if isinstance(value, float):
+            return None, f'{field_name} must be an integer number of cents, not a decimal'
+        try:
+            return int(str(value), 10), None
+        except (ValueError, TypeError):
+            return None, f'{field_name} must be an integer number of cents'
+
+    hourly_rate, err = _coerce_cents(data.get('hourly_rate'), 'hourly_rate')
+    if err: return jsonify({'success': False, 'error': err}), 400
+    daily_rate, err = _coerce_cents(data.get('daily_rate'), 'daily_rate')
+    if err: return jsonify({'success': False, 'error': err}), 400
+    weekly_rate, err = _coerce_cents(data.get('weekly_rate'), 'weekly_rate')
+    if err: return jsonify({'success': False, 'error': err}), 400
+    monthly_rate, err = _coerce_cents(data.get('monthly_rate'), 'monthly_rate')
+    if err: return jsonify({'success': False, 'error': err}), 400
+
+    if any(v < 0 for v in (hourly_rate, daily_rate, weekly_rate, monthly_rate) if v is not None):
         return jsonify({'success': False, 'error': 'Rate values cannot be negative'}), 400
 
     try:
