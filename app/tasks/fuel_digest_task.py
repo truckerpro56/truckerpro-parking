@@ -11,7 +11,10 @@ def send_weekly_fuel_digests():
     app = get_flask_app()
     with app.app_context():
         from ..models.user import User
-        from ..services.fuel_digest import get_cheapest_diesel_by_state, build_digest_html, send_fuel_digest
+        from ..services.fuel_digest import (
+            get_cheapest_diesel_by_state, build_digest_html, send_fuel_digest,
+            make_unsubscribe_token,
+        )
 
         prices = get_cheapest_diesel_by_state(days=7)
         if not prices:
@@ -30,7 +33,10 @@ def send_weekly_fuel_digests():
             if not user_prices:
                 user_prices = prices  # Fallback to all if no matches
 
-            unsubscribe_url = f"https://stops.truckerpro.net/profile/unsubscribe-fuel?email={user.email}"
+            unsubscribe_url = (
+                f"https://stops.truckerpro.net/profile/unsubscribe-fuel"
+                f"?token={make_unsubscribe_token(user.id)}"
+            )
             html = build_digest_html(user_prices, unsubscribe_url)
             if send_fuel_digest(user, html):
                 sent += 1

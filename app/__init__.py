@@ -339,9 +339,15 @@ def create_app(config_class=None):
         if user_id is None:
             return None
         try:
-            return User.query.get(int(user_id))
+            user = db.session.get(User, int(user_id))
         except (ValueError, TypeError):
             return None
+        # Refuse to authenticate sessions for deactivated accounts. Without
+        # this, a cookie set before deactivation continues to authenticate
+        # until expiry, undermining `is_active=False` enforcement.
+        if user is None or not user.is_active:
+            return None
+        return user
 
     from .api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api/v1')

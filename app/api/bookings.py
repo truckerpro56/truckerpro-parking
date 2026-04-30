@@ -112,7 +112,8 @@ def create_booking():
             current_user.stripe_customer_id = customer_id
             db.session.add(current_user)
 
-        # Create Stripe payment
+        # Create Stripe payment. Idempotency key tied to booking_ref so a
+        # network retry on this exact attempt cannot produce two charges.
         payment_intent = create_payment_intent(
             amount_cents=total_amount,
             currency='cad',
@@ -124,6 +125,7 @@ def create_booking():
                 'location_id': str(location_id),
                 'driver_id': str(current_user.id),
             },
+            idempotency_key=f'pi-{booking_ref}',
         )
 
         payment_status = 'paid' if payment_intent.status == 'succeeded' else 'pending'

@@ -109,3 +109,39 @@ class TestLoginNextRedirect:
         resp = self._login(client, 'javascript:alert(1)')
         assert resp.status_code == 302
         assert 'javascript' not in resp.headers['Location'].lower()
+
+
+class TestUserLoaderInactiveUser:
+    """Regression: a session for a deactivated user must NOT authenticate."""
+
+    def test_inactive_user_session_does_not_authenticate(self, client, db):
+        from app.models.user import User
+        import bcrypt
+        pw = bcrypt.hashpw(b'Pass123!', bcrypt.gensalt()).decode()
+        user = User(email='inactive@test.com', password_hash=pw,
+                    name='X', role='driver')
+        db.session.add(user)
+        db.session.commit()
+        # Forge an authenticated session, then flip is_active=False
+        with client.session_transaction() as sess:
+            sess['_user_id'] = str(user.id)
+            sess['_fresh'] = True
+        user.is_active = False
+        db.session.commit()
+
+        # Hit a login_required route — must NOT authenticate
+        resp = client.get('/my-bookings', follow_redirects=False)
+        # Either 302 (redirect to login) or 401 — never 200 with content
+        assert resp.status_code in (302, 401)
+
+    def test_load_user_returns_none_for_inactive(self, app, db):
+        from app.models.user import User
+        user = User(email='loader@test.com', role='driver', is_active=False)
+        db.session.add(user)
+        db.session.commit()
+        with app.test_request_context():
+            from flask_login import login_manager
+            # Pull the user_loader registered on the live login_manager
+            loader = app.login_manager._user_callback
+            loaded = loader(str(user.id))
+            assert loaded is None

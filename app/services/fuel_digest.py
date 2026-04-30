@@ -2,6 +2,7 @@
 import logging
 from datetime import datetime, timezone, timedelta
 from flask import current_app
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func
 
 from ..extensions import db
@@ -10,6 +11,34 @@ from ..models.fuel_price import FuelPrice
 from ..models.truck_stop import TruckStop
 
 logger = logging.getLogger(__name__)
+
+# Salt for the unsubscribe-link signed token. Tokens carry user_id (not email),
+# so a leaked URL only unsubscribes that one user, never enumerates the table.
+UNSUBSCRIBE_SALT = 'fuel-digest-unsubscribe-v1'
+UNSUBSCRIBE_TOKEN_MAX_AGE_S = 60 * 60 * 24 * 90  # 90 days
+
+
+def _unsubscribe_serializer():
+    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt=UNSUBSCRIBE_SALT)
+
+
+def make_unsubscribe_token(user_id):
+    """Issue a signed token embedded in fuel-digest unsubscribe links."""
+    return _unsubscribe_serializer().dumps({'uid': int(user_id)})
+
+
+def parse_unsubscribe_token(token, max_age_seconds=UNSUBSCRIBE_TOKEN_MAX_AGE_S):
+    """Validate a token and return the embedded user_id, or None if invalid/expired."""
+    if not token:
+        return None
+    try:
+        data = _unsubscribe_serializer().loads(token, max_age=max_age_seconds)
+    except Exception:
+        return None
+    if not isinstance(data, dict):
+        return None
+    uid = data.get('uid')
+    return int(uid) if isinstance(uid, int) else None
 
 
 def get_cheapest_diesel_by_state(days=7, limit_per_state=3):

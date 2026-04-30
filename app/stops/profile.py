@@ -113,14 +113,27 @@ def subscribe_fuel_email():
 @stops_public_bp.route('/profile/unsubscribe-fuel')
 @site_required('stops')
 def unsubscribe_fuel_email():
-    """Unsubscribe from fuel price digest (works without login via email param)."""
-    email = request.args.get('email', '').strip().lower()
-    if email:
-        user = User.query.filter_by(email=email).first()
-        if user:
-            user.fuel_email_subscribed = False
-            db.session.commit()
+    """Unsubscribe from the fuel price digest.
+
+    Three accepted paths, in order of preference:
+      1. Signed `?token=` issued in the digest email (preferred — stateless,
+         survives logout, can't enumerate emails).
+      2. Authenticated user with no token — unsubscribe self.
+      3. Anything else: render the page but make no DB changes (anti-IDOR).
+
+    Notably absent: `?email=`. Accepting raw email lets anyone unsubscribe
+    anyone, which was the original bug.
+    """
+    from ..services.fuel_digest import parse_unsubscribe_token
+    token = request.args.get('token', '').strip()
+    target_user = None
+    if token:
+        uid = parse_unsubscribe_token(token)
+        if uid is not None:
+            target_user = User.query.get(uid)
     elif current_user.is_authenticated:
-        current_user.fuel_email_subscribed = False
+        target_user = current_user
+    if target_user is not None and target_user.fuel_email_subscribed:
+        target_user.fuel_email_subscribed = False
         db.session.commit()
     return render_template('stops/unsubscribed.html')

@@ -6,13 +6,24 @@ from flask import current_app
 logger = logging.getLogger(__name__)
 
 
-def create_payment_intent(amount_cents, currency, customer_id, payment_method_id, description, metadata):
-    """Create and confirm a Stripe PaymentIntent."""
+def create_payment_intent(amount_cents, currency, customer_id, payment_method_id,
+                          description, metadata, idempotency_key=None):
+    """Create and confirm a Stripe PaymentIntent.
+
+    `idempotency_key` should be tied to the booking attempt (the caller's
+    booking_ref is a good choice). With it set, network retries / double-
+    submits won't create duplicate charges — Stripe returns the original
+    PaymentIntent on a key collision.
+    """
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
+    extra = {}
+    if idempotency_key:
+        extra['idempotency_key'] = idempotency_key
     return stripe.PaymentIntent.create(
         amount=amount_cents, currency=currency, customer=customer_id,
         payment_method=payment_method_id, off_session=True, confirm=True,
         description=description, metadata=metadata,
+        **extra,
     )
 
 
@@ -25,10 +36,16 @@ def get_or_create_customer(email, name, stripe_customer_id=None):
     return customer.id
 
 
-def refund_payment(payment_intent_id):
-    """Issue a full refund for a PaymentIntent."""
+def refund_payment(payment_intent_id, idempotency_key=None):
+    """Issue a full refund for a PaymentIntent.
+
+    Idempotency key defaults to `refund-<payment_intent_id>` so retrying the
+    refund call (e.g., after a network blip during a failed booking insert)
+    does not produce a second refund — Stripe returns the original Refund.
+    """
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
-    return stripe.Refund.create(payment_intent=payment_intent_id)
+    key = idempotency_key or f'refund-{payment_intent_id}'
+    return stripe.Refund.create(payment_intent=payment_intent_id, idempotency_key=key)
 
 
 def verify_webhook_signature(payload, sig_header):
