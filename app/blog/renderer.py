@@ -1,8 +1,34 @@
 """Markdown blog renderer — parses .md files with YAML frontmatter, caches in memory."""
 import os
 import re
+from datetime import date, datetime
 import yaml
 import markdown
+
+
+def _is_published(post_date, today=None):
+    """Treat a post as published if its `date:` frontmatter is in the past
+    (or today). Future-dated posts are scheduled and must not appear in
+    public listings, RSS, or sitemaps until they go live.
+
+    Accepts strings (ISO format), datetime, and date objects. Anything we
+    can't parse is treated as published (legacy posts without a date).
+    """
+    if post_date is None or post_date == '':
+        return True
+    today = today or date.today()
+    if isinstance(post_date, datetime):
+        return post_date.date() <= today
+    if isinstance(post_date, date):
+        return post_date <= today
+    if isinstance(post_date, str):
+        s = post_date.strip()[:10]
+        try:
+            parsed = datetime.fromisoformat(s).date()
+        except ValueError:
+            return True
+        return parsed <= today
+    return True
 
 
 def load_posts(content_dir):
@@ -83,23 +109,37 @@ def _split_for_cta(html):
     return html, ''
 
 
-def get_post(posts, domain, slug):
-    """Get a single post by domain and slug. Returns dict or None."""
-    for post in posts:
-        if post['domain'] == domain and post['slug'] == slug:
-            return post
-    return None
+def get_all_posts(posts, domain, category=None, include_unpublished=False):
+    """Get all posts for a domain, optionally filtered by category.
 
-
-def get_all_posts(posts, domain, category=None):
-    """Get all posts for a domain, optionally filtered by category. Sorted by date descending."""
+    By default, future-dated posts are excluded — they're scheduled drafts
+    that must not leak into listings, sitemaps, or feeds before their date.
+    Pass include_unpublished=True only for admin/preview surfaces.
+    """
     result = [p for p in posts if p['domain'] == domain]
     if category:
         result = [p for p in result if p['category'] == category]
+    if not include_unpublished:
+        result = [p for p in result if _is_published(p.get('date'))]
     result.sort(key=lambda p: p['date'], reverse=True)
     return result
 
 
+def get_post(posts, domain, slug, include_unpublished=False):
+    """Get a single post by domain and slug. Future-dated posts are hidden
+    from public requests; admin/preview can pass include_unpublished=True."""
+    for post in posts:
+        if post['domain'] != domain or post['slug'] != slug:
+            continue
+        if not include_unpublished and not _is_published(post.get('date')):
+            return None
+        return post
+    return None
+
+
 def get_related_posts(posts, domain, slugs):
-    """Get posts matching a list of slugs within a domain."""
-    return [p for p in posts if p['domain'] == domain and p['slug'] in slugs]
+    """Get posts matching a list of slugs within a domain (published only)."""
+    return [
+        p for p in posts
+        if p['domain'] == domain and p['slug'] in slugs and _is_published(p.get('date'))
+    ]

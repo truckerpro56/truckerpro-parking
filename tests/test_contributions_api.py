@@ -143,6 +143,20 @@ def test_review_handler_catches_integrity_error():
     assert '409' in src, "IntegrityError handler must return 409"
 
 
+def test_review_handler_only_returns_409_for_duplicate_constraint():
+    """Round-3 #H: a non-duplicate IntegrityError (FK miss, CHECK violation)
+    must NOT surface as 'You already reviewed this stop' — that lies to the
+    user. The handler must inspect the constraint name and 400 otherwise."""
+    import inspect
+    from app.stops_api import contributions
+    src = inspect.getsource(contributions.submit_review)
+    # Must check the actual constraint name, not catch-all
+    assert 'uq_ts_review_user_stop' in src
+    # Must have a non-409 fallback
+    assert '400' in src
+    assert "'Could not save review'" in src or 'Could not save' in src
+
+
 # --- Image upload magic-byte verification --------------------------------
 
 def _real_jpeg_bytes():

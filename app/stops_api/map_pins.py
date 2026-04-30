@@ -1,6 +1,7 @@
 """Map pins API — returns all active locations for map rendering."""
 import json
 import logging
+import secrets
 import redis
 from flask import jsonify, make_response, current_app
 
@@ -102,6 +103,14 @@ def _make_resp(body):
     return resp
 
 
+_RELEASE_LOCK_LUA = """
+if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+end
+return 0
+"""
+
+
 @stops_api_bp.route('/map-pins', methods=['GET'])
 @site_required('stops')
 def map_pins():
@@ -116,15 +125,25 @@ def map_pins():
     if cached:
         return _make_resp(cached)
 
-    # Cache miss. Try to acquire the rebuild lock; if someone else holds it,
-    # poll the cache for a short window and use whatever they produced.
+    # Cache miss. Try to acquire the rebuild lock with a per-request token
+    # so we only release the lock if we actually still hold it. Without the
+    # token check, a worker that didn't acquire the lock could delete the
+    # holder's lock from its own `finally`, breaking single-flight.
+    lock_token = None
     if r is not None:
         import time
         try:
-            got_lock = r.set(LOCK_KEY, '1', nx=True, ex=LOCK_TTL)
+            candidate = secrets.token_hex(8)
+            if r.set(LOCK_KEY, candidate, nx=True, ex=LOCK_TTL):
+                lock_token = candidate
         except Exception:
-            got_lock = True  # treat Redis hiccup as "no lock" — degrade to direct rebuild
-        if not got_lock:
+            # Redis hiccup — fall through to a direct rebuild without a lock.
+            # Don't pretend we hold one; that just causes parallel rebuilds.
+            logger.warning('map_pins lock acquisition failed; rebuilding without single-flight')
+        if lock_token is None and r is not None:
+            # Another worker holds the lock. Poll the cache for a short window
+            # and use whatever they produced; if they take too long, give up
+            # waiting and rebuild ourselves (without holding the lock).
             waited = 0.0
             while waited < LOCK_WAIT_MAX_S:
                 time.sleep(LOCK_WAIT_POLL_S)
@@ -132,7 +151,6 @@ def map_pins():
                 cached = _read_cache(r)
                 if cached:
                     return _make_resp(cached)
-            # Lock-holder is taking too long; fall through and rebuild ourselves
             logger.warning('map_pins single-flight wait exceeded %ss; rebuilding', LOCK_WAIT_MAX_S)
 
     try:
@@ -144,8 +162,11 @@ def map_pins():
                 logger.warning('Failed to write map pins to Redis cache')
         return _make_resp(data_json)
     finally:
-        if r is not None:
+        # Only release if we hold the lock AND it's still our token. Lua
+        # script makes the get-then-del atomic so we don't race with TTL
+        # expiry and another worker re-acquiring it.
+        if r is not None and lock_token is not None:
             try:
-                r.delete(LOCK_KEY)
+                r.eval(_RELEASE_LOCK_LUA, 1, LOCK_KEY, lock_token)
             except Exception:
                 pass

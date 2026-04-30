@@ -1,4 +1,5 @@
 """Booking API endpoints — create parking bookings with Stripe payment."""
+import hashlib
 from datetime import datetime, timezone
 from flask import jsonify, request
 from flask_login import login_required, current_user
@@ -112,8 +113,16 @@ def create_booking():
             current_user.stripe_customer_id = customer_id
             db.session.add(current_user)
 
-        # Create Stripe payment. Idempotency key tied to booking_ref so a
-        # network retry on this exact attempt cannot produce two charges.
+        # Idempotency key derived from the request payload, NOT booking_ref.
+        # booking_ref is a fresh uuid each call, so keying on it lets a user's
+        # double-click create two PaymentIntents. Hashing the immutable inputs
+        # (user, location, dates, amount, payment method) makes a second click
+        # within the natural retry window collide and reuse the first PI.
+        idem_seed = (
+            f'{current_user.id}|{location_id}|{start_dt.isoformat()}|'
+            f'{end_dt.isoformat()}|{total_amount}|{payment_method_id}|{booking_type}'
+        )
+        idem_digest = hashlib.sha256(idem_seed.encode('utf-8')).hexdigest()[:32]
         payment_intent = create_payment_intent(
             amount_cents=total_amount,
             currency='cad',
@@ -125,7 +134,7 @@ def create_booking():
                 'location_id': str(location_id),
                 'driver_id': str(current_user.id),
             },
-            idempotency_key=f'pi-{booking_ref}',
+            idempotency_key=f'pi-{idem_digest}',
         )
 
         payment_status = 'paid' if payment_intent.status == 'succeeded' else 'pending'

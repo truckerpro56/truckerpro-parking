@@ -58,10 +58,47 @@ def test_refund_payment_explicit_idempotency_key_overrides_default(app):
             assert kwargs.get('idempotency_key') == 'custom-key'
 
 
-def test_bookings_route_passes_idempotency_key():
-    """Static check: the booking route must hand a per-booking key into Stripe."""
+def test_bookings_route_idempotency_key_is_request_hash_not_booking_ref():
+    """The idempotency key must be tied to immutable request inputs (so two
+    clicks within the retry window collide), NOT to the random booking_ref
+    (which is a fresh uuid each call and defeats dedupe)."""
     import inspect
     from app.api import bookings
     src = inspect.getsource(bookings.create_booking)
     assert 'idempotency_key' in src
-    assert "f'pi-{booking_ref}'" in src or 'pi-{booking_ref}' in src
+    # New shape: a sha256 digest of immutable payload inputs
+    assert 'hashlib' in src or 'sha256' in src
+    assert 'pi-{idem_digest}' in src or 'idem_digest' in src
+    # Old, broken shape must be gone
+    assert 'pi-{booking_ref}' not in src
+
+
+def test_two_identical_bookings_use_same_idempotency_key(app, db):
+    """Bookings with identical inputs must produce the same idempotency key
+    so a network retry / double-click reaches Stripe with the same key."""
+    import hashlib
+    from datetime import datetime, timezone, timedelta
+
+    user_id, location_id = 7, 99
+    start = datetime(2026, 5, 1, 12, 0, tzinfo=timezone.utc)
+    end = start + timedelta(days=1)
+    total = 2825
+    pm = 'pm_card_visa'
+    bt = 'daily'
+
+    def key_for():
+        seed = (
+            f'{user_id}|{location_id}|{start.isoformat()}|'
+            f'{end.isoformat()}|{total}|{pm}|{bt}'
+        )
+        return f'pi-{hashlib.sha256(seed.encode("utf-8")).hexdigest()[:32]}'
+
+    assert key_for() == key_for()
+    # Different start time → different key
+    later = start + timedelta(hours=1)
+    seed2 = (
+        f'{user_id}|{location_id}|{later.isoformat()}|'
+        f'{end.isoformat()}|{total}|{pm}|{bt}'
+    )
+    different = f'pi-{hashlib.sha256(seed2.encode("utf-8")).hexdigest()[:32]}'
+    assert key_for() != different

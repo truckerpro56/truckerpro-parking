@@ -1060,6 +1060,18 @@
 (function() {
     var stopId = {{ stop.id }};
 
+    // Render an error message safely. Treats `text` as plain text — never
+    // HTML — so a maliciously-crafted API response can't escape the toast
+    // and execute script. The .red wrapper supplies the styling that the
+    // old innerHTML-based path used.
+    function showError(el, text) {
+        el.textContent = '';
+        var span = document.createElement('span');
+        span.style.color = '#ef4444';
+        span.textContent = text;
+        el.appendChild(span);
+    }
+
     // ── Fuel Price Submission ──
     var fuelForm = document.getElementById('fuel-price-form');
     if (fuelForm) {
@@ -1084,7 +1096,7 @@
                     fuelForm.reset();
                     setTimeout(function() { location.reload(); }, 1500);
                 } else {
-                    msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Failed to submit') + '</span>';
+                    showError(msg, data.error || 'Failed to submit');
                 }
             }).catch(function() {
                 msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';
@@ -1158,7 +1170,7 @@
                     var stars = document.querySelectorAll('#star-rating i');
                     stars.forEach(function(s) { s.className = 'fa-regular fa-star'; s.style.color = '#d1d5db'; });
                 } else {
-                    msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Failed to submit') + '</span>';
+                    showError(msg, data.error || 'Failed to submit');
                 }
             }).catch(function() {
                 msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';
@@ -1193,7 +1205,7 @@
                     photoForm.reset();
                     setTimeout(function() { location.reload(); }, 1500);
                 } else {
-                    msg.innerHTML = '<span style="color:#ef4444">' + (data.error || 'Upload failed') + '</span>';
+                    showError(msg, data.error || 'Upload failed');
                 }
             }).catch(function() {
                 msg.innerHTML = '<span style="color:#ef4444">Network error. Please try again.</span>';

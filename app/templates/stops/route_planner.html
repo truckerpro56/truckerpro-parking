@@ -548,12 +548,24 @@
         return '<div style="font-family:Inter,sans-serif;font-size:13px;max-width:200px">'
             + '<strong style="display:block;margin-bottom:2px">' + escHtml(name) + '</strong>'
             + '<span style="color:#64748b;font-size:12px">' + escHtml(detail || '') + '</span>'
-            + (url ? '<br><a href="' + url + '" style="color:#2563eb;font-size:12px">View details &rarr;</a>' : '')
+            + (url ? '<br><a href="' + escUrl(url) + '" style="color:#2563eb;font-size:12px">View details &rarr;</a>' : '')
             + '</div>';
     }
 
     function escHtml(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Sanitize URLs heading into href attributes. Accepts only same-origin
+    // path-relative URLs (start with `/` and not `//` or `/\`); anything
+    // with a scheme like `javascript:` or a protocol-relative URL collapses
+    // to '#'. Returns the value HTML-escaped for attribute context.
+    function escUrl(str) {
+        var s = String(str || '').trim();
+        if (!s) return '#';
+        if (s.charAt(0) !== '/') return '#';
+        if (s.length > 1 && (s.charAt(1) === '/' || s.charAt(1) === '\\')) return '#';
+        return escHtml(s);
     }
 
     function buildList(containerId, items, type, iconClass, detailFn) {
@@ -568,7 +580,7 @@
             html += '<div class="route-item" data-action="focus-marker" data-lat="' + item.lat + '" data-lng="' + item.lng + '">'
                 + '<div class="route-item-icon ' + type + '"><i class="fa-solid ' + iconClass + '"></i></div>'
                 + '<div class="route-item-text">'
-                + '<h4><a href="' + item.url + '" data-action="stop-propagation">' + escHtml(item.name) + '</a></h4>'
+                + '<h4><a href="' + escUrl(item.url) + '" data-action="stop-propagation">' + escHtml(item.name) + '</a></h4>'
                 + '<p>' + escHtml(detail) + '</p>'
                 + '</div>'
                 + '</div>';

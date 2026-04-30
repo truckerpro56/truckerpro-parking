@@ -228,12 +228,17 @@ def submit_review(stop_id):
     db.session.add(review)
     try:
         db.session.commit()
-    except IntegrityError:
-        # Concurrent submission slipped past the existence check above; the
-        # uq_ts_review_user_stop unique constraint kicked in. Surface as 409,
-        # not 500.
+    except IntegrityError as exc:
         db.session.rollback()
-        return jsonify({'error': 'You already reviewed this stop'}), 409
+        # Only the unique-review constraint should surface as a 409 to the
+        # user. Any other constraint violation (FK to truck_stop, rating
+        # CHECK, etc.) is a different bug; return 400 with a generic message
+        # and log so we don't lie to the user about why the request failed.
+        msg = str(getattr(exc, 'orig', exc))
+        if 'uq_ts_review_user_stop' in msg or 'truck_stop_id, user_id' in msg:
+            return jsonify({'error': 'You already reviewed this stop'}), 409
+        logger.warning('Unexpected IntegrityError on submit_review: %s', msg[:200])
+        return jsonify({'error': 'Could not save review'}), 400
     # Award points for review contribution (atomic to prevent race conditions)
     db.session.execute(
         update(User).where(User.id == current_user.id).values(
