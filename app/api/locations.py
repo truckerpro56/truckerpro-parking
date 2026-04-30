@@ -140,15 +140,21 @@ def list_locations():
             )
         )
 
-    # Amenities filter — each requested amenity must be present in the JSON array
+    # Amenities filter — each requested amenity must be present in the JSON array.
+    # Escape LIKE metachars (`%`, `_`, `\\`) before composing the pattern so a
+    # caller can't pass `amenity=%` and turn the filter into a no-op (or use it
+    # for blind enumeration of any unforeseen text inside the JSON column).
     if amenities_param:
         for amenity in amenities_param.split(','):
             amenity = amenity.strip()
             if amenity:
-                # Cast amenities JSON to text and check for the amenity string
+                escaped = (amenity
+                           .replace('\\', '\\\\')
+                           .replace('%', '\\%')
+                           .replace('_', '\\_'))
                 query = query.filter(
                     func.cast(ParkingLocation.amenities, db.String).like(
-                        f'%"{amenity}"%'
+                        f'%"{escaped}"%', escape='\\'
                     )
                 )
 

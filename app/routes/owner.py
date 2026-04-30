@@ -29,21 +29,27 @@ def owner_dashboard():
     recent_bookings = []
 
     if location_ids:
-        # Total bookings
+        # Total bookings — only count actual bookings, not failed/cancelled
+        # attempts that never produced revenue.
         total_bookings = db.session.query(
             func.count(ParkingBooking.id),
         ).filter(
             ParkingBooking.location_id.in_(location_ids),
+            ParkingBooking.status.notin_(('cancelled', 'failed')),
         ).scalar() or 0
         stats['total_bookings'] = total_bookings
 
-        # Monthly revenue (current month only)
+        # Monthly revenue — sum only paid bookings; pending/failed/refunded
+        # rows must not inflate the dashboard. Without this filter the owner
+        # sees revenue from PaymentIntents that never charged or were refunded.
         month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         revenue_month = db.session.query(
             func.coalesce(func.sum(ParkingBooking.total_amount), 0),
         ).filter(
             ParkingBooking.location_id.in_(location_ids),
             ParkingBooking.created_at >= month_start,
+            ParkingBooking.payment_status == 'paid',
+            ParkingBooking.status.notin_(('cancelled', 'refunded', 'failed')),
         ).scalar() or 0
         stats['revenue_month'] = revenue_month
         stats['revenue_month_display'] = format_price(revenue_month)

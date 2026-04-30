@@ -99,7 +99,12 @@ def stops_verify():
             login_user(user, remember=True)
             session.pop('otp_email', None)
             next_url = session.pop('otp_next', '') or '/'
-            if next_url and next_url.startswith('/') and not next_url.startswith('//'):
+            # Reuse the parking-side same-origin check; the inline test we used
+            # to do (startswith('/') and not '//') let `/\\evil.com` through —
+            # browsers normalize backslashes to forward slashes, turning that
+            # into //evil.com and a working open-redirect.
+            from ..routes.auth import _is_safe_next
+            if _is_safe_next(next_url):
                 return redirect(next_url)
             return redirect('/')
         flash('Invalid or expired code. Please try again.', 'error')
