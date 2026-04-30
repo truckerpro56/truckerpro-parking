@@ -29,9 +29,14 @@ class User(UserMixin, db.Model):
                            onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    locations = db.relationship('ParkingLocation', backref='owner', lazy='dynamic',
-                                cascade='all, delete-orphan')
-    bookings = db.relationship('ParkingBooking', backref='driver', lazy='dynamic',
-                               cascade='all, delete-orphan')
-    reviews = db.relationship('ParkingReview', backref='driver', lazy='dynamic',
-                              cascade='all, delete-orphan')
+    #
+    # Account deletion is a privileged, audit-tracked operation and must
+    # explicitly handle financial cleanup (refunds, listing archival) before
+    # touching the user row. Quiet ORM cascades make that nearly impossible
+    # to enforce, so they're intentionally omitted here. The app uses
+    # `is_active=False` for soft-delete; if a hard-delete flow is ever
+    # added, it must run a refund/archive sweep first and then null/transfer
+    # FKs explicitly.
+    locations = db.relationship('ParkingLocation', backref='owner', lazy='dynamic')
+    bookings = db.relationship('ParkingBooking', backref='driver', lazy='dynamic')
+    reviews = db.relationship('ParkingReview', backref='driver', lazy='dynamic')

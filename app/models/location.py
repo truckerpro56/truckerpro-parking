@@ -45,10 +45,19 @@ class ParkingLocation(db.Model):
                            onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    bookings = db.relationship('ParkingBooking', backref='location', lazy='dynamic',
-                               cascade='all, delete-orphan')
-    reviews = db.relationship('ParkingReview', backref='location', lazy='dynamic',
-                              cascade='all, delete-orphan')
+    #
+    # Bookings and reviews are NOT cascade-deleted with the location. A
+    # ParkingBooking is a financial record (links to a Stripe PaymentIntent);
+    # wiping it on location deletion orphans the charge and loses the only
+    # client-side audit trail for the driver. Reviews are user-generated
+    # content with their own moderation lifecycle. Deletion of a location
+    # must go through an explicit flow (refund + archive) — not a quiet
+    # ORM cascade.
+    #
+    # Availability slots are tightly coupled to the location's lifecycle and
+    # have no off-DB side effects, so they keep the cascade.
+    bookings = db.relationship('ParkingBooking', backref='location', lazy='dynamic')
+    reviews = db.relationship('ParkingReview', backref='location', lazy='dynamic')
     availability = db.relationship('ParkingAvailability', backref='location', lazy='dynamic',
                                    cascade='all, delete-orphan')
 

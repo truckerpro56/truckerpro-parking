@@ -124,12 +124,14 @@ def test_submit_report(app, db):
     )
     db.session.add(report)
     db.session.commit()
-    # SQLite returns naive datetimes; compare without tzinfo
+    # SQLite returns naive datetimes; compare without tzinfo. Use
+    # `now(timezone.utc).replace(tzinfo=None)` instead of the deprecated
+    # utcnow() so this stays valid on Python 3.12+.
     expires = report.expires_at
     if expires.tzinfo is not None:
         now = datetime.now(timezone.utc)
     else:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
     assert expires > now
 
 
