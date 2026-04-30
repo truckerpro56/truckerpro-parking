@@ -1,4 +1,5 @@
 import re
+from urllib.parse import urlparse
 from flask import render_template, request, redirect, url_for, flash, g
 from flask_login import login_user, logout_user, login_required, current_user
 import bcrypt
@@ -7,6 +8,22 @@ from ..extensions import db, limiter
 from ..models.user import User
 
 _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
+
+def _is_safe_next(target):
+    """Return True only for same-origin relative paths.
+
+    Blocks protocol-relative (//evil.com), backslash-tricks (/\\evil.com),
+    absolute URLs, and anything with a scheme or netloc.
+    """
+    if not target:
+        return False
+    if not target.startswith('/'):
+        return False
+    if len(target) > 1 and target[1] in ('/', '\\'):
+        return False
+    parsed = urlparse(target)
+    return not parsed.scheme and not parsed.netloc
 
 
 @pages_bp.route('/login', methods=['GET', 'POST'])
@@ -25,7 +42,7 @@ def login():
         user = User.query.filter_by(email=email, is_active=True).first()
         if user and user.password_hash and bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
             login_user(user)
-            if next_page and next_page.startswith('/') and not next_page.startswith('//'):
+            if _is_safe_next(next_page):
                 return redirect(next_page)
             return redirect(url_for('pages.landing'))
         flash('Invalid email or password.', 'error')
@@ -35,6 +52,10 @@ def login():
 @pages_bp.route('/signup', methods=['GET', 'POST'])
 @limiter.limit("5/minute")
 def signup():
+    # Delegate to OTP signup flow for stops.truckerpro.net
+    if getattr(g, 'site', 'parking') == 'stops':
+        from ..stops.auth import stops_signup
+        return stops_signup()
     if current_user.is_authenticated:
         return redirect(url_for('pages.landing'))
     if request.method == 'POST':

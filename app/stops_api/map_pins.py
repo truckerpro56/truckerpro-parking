@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 
 CACHE_KEY = 'map_pins:all'
 CACHE_TTL = 3600  # 1 hour
+LOCK_KEY = 'map_pins:rebuild_lock'
+LOCK_TTL = 30  # seconds — long enough to rebuild, short enough to recover from crashes
+LOCK_WAIT_POLL_S = 0.1
+LOCK_WAIT_MAX_S = 5  # cap waiters; beyond this, fall through and rebuild
 
 
 def _get_redis():
@@ -82,37 +86,66 @@ def _build_pins_json():
     }
 
 
+def _read_cache(r):
+    if not r:
+        return None
+    try:
+        return r.get(CACHE_KEY)
+    except Exception:
+        return None
+
+
+def _make_resp(body):
+    resp = make_response(body)
+    resp.headers['Content-Type'] = 'application/json'
+    resp.headers['Cache-Control'] = 'public, max-age=300'
+    return resp
+
+
 @stops_api_bp.route('/map-pins', methods=['GET'])
 @site_required('stops')
 def map_pins():
     """Return all active locations as minimal JSON for map rendering.
-    Redis-cached for 1 hour. Browser-cached for 5 minutes.
+
+    Redis-cached for 1 hour with single-flight rebuild: when the cache is
+    cold, only one worker rebuilds; concurrent waiters poll the cache key
+    instead of re-running 3 full table scans in parallel.
     """
-    # Try Redis cache first
     r = _get_redis()
-    if r:
+    cached = _read_cache(r)
+    if cached:
+        return _make_resp(cached)
+
+    # Cache miss. Try to acquire the rebuild lock; if someone else holds it,
+    # poll the cache for a short window and use whatever they produced.
+    if r is not None:
+        import time
         try:
-            cached = r.get(CACHE_KEY)
-            if cached:
-                resp = make_response(cached)
-                resp.headers['Content-Type'] = 'application/json'
-                resp.headers['Cache-Control'] = 'public, max-age=300'
-                return resp
+            got_lock = r.set(LOCK_KEY, '1', nx=True, ex=LOCK_TTL)
         except Exception:
-            pass
+            got_lock = True  # treat Redis hiccup as "no lock" — degrade to direct rebuild
+        if not got_lock:
+            waited = 0.0
+            while waited < LOCK_WAIT_MAX_S:
+                time.sleep(LOCK_WAIT_POLL_S)
+                waited += LOCK_WAIT_POLL_S
+                cached = _read_cache(r)
+                if cached:
+                    return _make_resp(cached)
+            # Lock-holder is taking too long; fall through and rebuild ourselves
+            logger.warning('map_pins single-flight wait exceeded %ss; rebuilding', LOCK_WAIT_MAX_S)
 
-    # Cache miss or Redis unavailable — query DB
-    data = _build_pins_json()
-    data_json = json.dumps(data)
-
-    # Store in Redis
-    if r:
-        try:
-            r.setex(CACHE_KEY, CACHE_TTL, data_json)
-        except Exception:
-            logger.warning('Failed to write map pins to Redis cache')
-
-    resp = make_response(data_json)
-    resp.headers['Content-Type'] = 'application/json'
-    resp.headers['Cache-Control'] = 'public, max-age=300'
-    return resp
+    try:
+        data_json = json.dumps(_build_pins_json())
+        if r:
+            try:
+                r.setex(CACHE_KEY, CACHE_TTL, data_json)
+            except Exception:
+                logger.warning('Failed to write map pins to Redis cache')
+        return _make_resp(data_json)
+    finally:
+        if r is not None:
+            try:
+                r.delete(LOCK_KEY)
+            except Exception:
+                pass

@@ -27,6 +27,10 @@ class Config:
     STOPS_DOMAIN = os.environ.get('STOPS_DOMAIN', 'stops.truckerpro.net')
     PARKING_DOMAIN = os.environ.get('PARKING_DOMAIN', 'parking.truckerpro.ca')
     INDEXNOW_KEY = os.environ.get('INDEXNOW_KEY', '')
+    # Comma-separated host allowlist for review/contribution photo URLs.
+    # Empty (default) means "drop all external URLs"; drivers should use the
+    # in-app photo upload endpoint instead.
+    PHOTO_URL_ALLOWED_HOSTS = os.environ.get('PHOTO_URL_ALLOWED_HOSTS', '')
     GSC_VERIFICATION_STOPS = os.environ.get('GSC_VERIFICATION_STOPS', '')
     GSC_VERIFICATION_PARKING = os.environ.get('GSC_VERIFICATION_PARKING', '')
 

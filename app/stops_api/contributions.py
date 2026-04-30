@@ -1,9 +1,11 @@
 """Driver contribution endpoints — fuel prices, reviews, reports, photos."""
 import logging
 from datetime import datetime, timezone, timedelta
-from flask import jsonify, request
+from urllib.parse import urlparse
+from flask import jsonify, request, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import func, update
+from sqlalchemy.exc import IntegrityError
 
 from . import stops_api_bp
 from ..extensions import db, limiter
@@ -22,18 +24,130 @@ ALLOWED_FUEL_TYPES = ('diesel', 'gas', 'def', 'cng', 'lng', 'biodiesel')
 ALLOWED_REPORT_TYPES = ('parking_availability', 'fuel_price_correction', 'amenity_update',
                         'closure', 'hazard', 'hours_change', 'other')
 ALLOWED_IMAGE_TYPES = ('image/jpeg', 'image/png', 'image/webp')
+# Pillow's lowercase format names — used to verify magic bytes match content_type.
+_PIL_FORMAT_TO_MIME = {
+    'JPEG': 'image/jpeg',
+    'PNG': 'image/png',
+    'WEBP': 'image/webp',
+}
 MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2MB
 MAX_PHOTOS_PER_USER_PER_STOP = 5
 
 
-def _should_auto_verify_price(truck_stop_id, fuel_type, price_cents):
+def _verify_image_bytes(image_data, claimed_content_type):
+    """Verify that image_data is actually an image of an allowed type.
+
+    Returns the canonical MIME type derived from magic bytes. Raises ValueError
+    on any mismatch, unrecognized format, or Pillow failure. This blocks:
+      - non-image payloads with a forged Content-Type (e.g. HTML/SVG with
+        Content-Type: image/jpeg)
+      - SVG (not in the allow-list and prone to embedded JS)
+      - corrupt/truncated images Pillow can't decode
+    """
+    from io import BytesIO
+    try:
+        from PIL import Image, UnidentifiedImageError
+    except ImportError as exc:
+        raise ValueError('Image verification unavailable') from exc
+    try:
+        with Image.open(BytesIO(image_data)) as img:
+            img.verify()
+        # verify() consumes the file; reopen for format access
+        with Image.open(BytesIO(image_data)) as img:
+            fmt = (img.format or '').upper()
+    except (UnidentifiedImageError, Exception) as exc:
+        raise ValueError(f'Not a valid image: {exc}') from exc
+    real_mime = _PIL_FORMAT_TO_MIME.get(fmt)
+    if not real_mime:
+        raise ValueError(f'Unsupported image format: {fmt}')
+    if claimed_content_type and claimed_content_type != real_mime:
+        # Permit common JPEG content-type aliases
+        aliases = {'image/jpg': 'image/jpeg', 'image/pjpeg': 'image/jpeg'}
+        if aliases.get(claimed_content_type) != real_mime:
+            raise ValueError('Content-Type does not match image bytes')
+    return real_mime
+
+
+AUTO_VERIFY_DRIFT_PCT = 0.08  # 8% — typical day-to-day fuel-price move
+AUTO_VERIFY_USER_COOLDOWN_HOURS = 24
+
+# Reviews can reference photo URLs (legacy field). To prevent third-party
+# resource leaks (viewer IP fingerprinting, malicious payload hosting, link
+# rot), we require URLs to live on a configured allowlist of hosts. Configured
+# via PHOTO_URL_ALLOWED_HOSTS (comma-separated). Drivers should normally use
+# the /photos upload endpoint (DB-stored) instead.
+def _photo_url_allowed_hosts():
+    raw = (current_app.config.get('PHOTO_URL_ALLOWED_HOSTS') or '').strip()
+    if not raw:
+        return ()
+    return tuple(h.strip().lower() for h in raw.split(',') if h.strip())
+
+
+def _sanitize_photo_urls(urls):
+    """Filter incoming photo URL list to https + known-safe hosts only.
+
+    With no allowlist configured, drops all URLs — drivers must use the
+    DB-backed photo upload endpoint instead. Returns up to 20 entries,
+    each <= 500 chars.
+    """
+    allowed = _photo_url_allowed_hosts()
+    out = []
+    for raw in urls[:20]:
+        if not isinstance(raw, str):
+            continue
+        s = raw[:500]
+        try:
+            parsed = urlparse(s)
+        except ValueError:
+            continue
+        if parsed.scheme != 'https':
+            continue
+        host = (parsed.netloc or '').lower().split(':', 1)[0]
+        if not host:
+            continue
+        if not allowed:
+            continue  # no allowlist → reject all external URLs
+        # Match exact or subdomain
+        if not any(host == a or host.endswith('.' + a) for a in allowed):
+            continue
+        out.append(s)
+    return out
+
+
+def _should_auto_verify_price(truck_stop_id, fuel_type, price_cents,
+                              reporter_user_id=None):
+    """Decide whether a driver-submitted fuel price gets auto-verified.
+
+    Hardened against drift poisoning:
+      - Require an existing verified anchor.
+      - Tight 8% drift band (was 20% — 20% allows two-step ~44% walks).
+      - Anchor must come from a *different* user, so a single bad actor
+        cannot self-confirm by submitting twice.
+      - Same user cannot drive a verified price for the same (stop, fuel)
+        more than once per 24h window.
+    """
     last = FuelPrice.query.filter_by(
         truck_stop_id=truck_stop_id, fuel_type=fuel_type, is_verified=True
     ).order_by(FuelPrice.created_at.desc()).first()
     if not last:
         return False
-    threshold = last.price_cents * 0.2
-    return abs(price_cents - last.price_cents) <= threshold
+    if reporter_user_id is not None and last.reported_by == reporter_user_id:
+        return False  # same-user self-confirmation
+    threshold = last.price_cents * AUTO_VERIFY_DRIFT_PCT
+    if abs(price_cents - last.price_cents) > threshold:
+        return False
+    if reporter_user_id is not None:
+        cooldown_start = datetime.now(timezone.utc) - timedelta(hours=AUTO_VERIFY_USER_COOLDOWN_HOURS)
+        prior_by_user = FuelPrice.query.filter(
+            FuelPrice.truck_stop_id == truck_stop_id,
+            FuelPrice.fuel_type == fuel_type,
+            FuelPrice.reported_by == reporter_user_id,
+            FuelPrice.is_verified == True,  # noqa: E712
+            FuelPrice.created_at >= cooldown_start,
+        ).first()
+        if prior_by_user is not None:
+            return False
+    return True
 
 
 @stops_api_bp.route('/truck-stops/<int:stop_id>/fuel-prices', methods=['POST'])
@@ -56,7 +170,10 @@ def submit_fuel_price(stop_id):
         return jsonify({'error': 'price_cents must be a number'}), 400
     if price_cents < 1 or price_cents > 99999:
         return jsonify({'error': 'price_cents must be between 1 and 99999'}), 400
-    is_verified = _should_auto_verify_price(stop_id, fuel_type, price_cents)
+    is_verified = _should_auto_verify_price(
+        stop_id, fuel_type, price_cents,
+        reporter_user_id=current_user.id,
+    )
     fp = FuelPrice(
         truck_stop_id=stop_id, fuel_type=fuel_type,
         price_cents=price_cents, currency=currency,
@@ -102,14 +219,21 @@ def submit_review(stop_id):
     photos = data.get('photos', [])
     if not isinstance(photos, list):
         photos = []
-    photos = [str(p)[:500] for p in photos[:20] if isinstance(p, str) and p.startswith('http')]
+    photos = _sanitize_photo_urls(photos)
     review = TruckStopReview(
         truck_stop_id=stop_id, user_id=current_user.id,
         rating=rating, review_text=review_text,
         photos=photos,
     )
     db.session.add(review)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Concurrent submission slipped past the existence check above; the
+        # uq_ts_review_user_stop unique constraint kicked in. Surface as 409,
+        # not 500.
+        db.session.rollback()
+        return jsonify({'error': 'You already reviewed this stop'}), 409
     # Award points for review contribution (atomic to prevent race conditions)
     db.session.execute(
         update(User).where(User.id == current_user.id).values(
@@ -179,6 +303,13 @@ def upload_photo(stop_id):
         chunks.append(chunk)
     image_data = b''.join(chunks)
 
+    # Magic-byte verification: the client-supplied Content-Type is a hint, not
+    # a fact. Decode the bytes and confirm the format matches the allow-list.
+    try:
+        verified_mime = _verify_image_bytes(image_data, file.content_type)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+
     # Check per-user limit
     existing_count = StopPhoto.query.filter_by(
         truck_stop_id=stop_id, user_id=current_user.id
@@ -192,7 +323,7 @@ def upload_photo(stop_id):
         truck_stop_id=stop_id,
         user_id=current_user.id,
         filename=file.filename[:255],
-        content_type=file.content_type,
+        content_type=verified_mime,  # canonical MIME from magic bytes, not client claim
         image_data=image_data,
         caption=caption,
     )

@@ -10,3 +10,4 @@ from .truck_stop_report import TruckStopReport
 from .weigh_station import WeighStation
 from .weigh_station_review import WeighStationReview
 from .weigh_station_status import WeighStationStatus
+from .webhook_event import WebhookEvent

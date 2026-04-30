@@ -18,3 +18,4 @@ requests==2.31.0
 resend==0.7.2
 markdown==3.5.2
 pyyaml==6.0.1
+Pillow==11.3.0

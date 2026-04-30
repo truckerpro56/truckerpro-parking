@@ -89,6 +89,11 @@ def list_locations():
     lat = request.args.get('lat', type=float)
     lng = request.args.get('lng', type=float)
     radius = request.args.get('radius', 50, type=float)
+    # Bound radius to keep the bounding-box prefilter selective. 500km covers
+    # all reasonable trip-planning use cases; without this, a malicious caller
+    # can ask for the entire DB by passing radius=50000.
+    if radius is not None:
+        radius = max(1.0, min(radius, 500.0))
     q = request.args.get('q', '').strip()
     sort = request.args.get('sort', 'newest').strip()
     page = max(1, request.args.get('page', 1, type=int))

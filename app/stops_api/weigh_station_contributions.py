@@ -103,7 +103,10 @@ def submit_ws_status(ws_id):
         if not is_clean:
             return jsonify({'error': 'Note contains inappropriate language. Please revise.'}), 400
 
-    # Rate limit: one status per user per station per hour
+    # Rate limit: one status per user per station per hour.
+    # Lock the User row to serialize concurrent submissions from the same user
+    # (prevents two near-simultaneous requests both passing the recency check).
+    User.query.filter(User.id == current_user.id).with_for_update().first()
     one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     recent = WeighStationStatus.query.filter(
         WeighStationStatus.weigh_station_id == ws_id,

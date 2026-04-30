@@ -17,7 +17,12 @@ _EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 
 
 def stops_login():
-    """OTP login for stops.truckerpro.net. Called by pages.login when g.site == 'stops'."""
+    """OTP login for stops.truckerpro.net. Called by pages.login when g.site == 'stops'.
+
+    Sign-in only — does NOT create a new account from a login attempt. Account
+    creation goes through /signup. To prevent enumeration, the response is
+    identical regardless of whether the email is registered.
+    """
     if current_user.is_authenticated:
         return redirect('/')
     next_url = request.args.get('next', '')
@@ -26,9 +31,37 @@ def stops_login():
         if not email or not _EMAIL_RE.match(email):
             flash('Please enter a valid email address.', 'error')
             return render_template('stops/auth/login.html', next_url=next_url)
-        # Get or create user
+
         user = User.query.filter_by(email=email).first()
-        if not user:
+        # Only emit an OTP for known accounts. We always return the same UX
+        # (redirect to /verify with a generic flash) so a caller cannot
+        # enumerate registered emails.
+        if user is not None:
+            code = generate_otp(user)
+            send_otp_email(email, code)
+        session['otp_email'] = email
+        session['otp_next'] = next_url
+        flash('If an account exists for that email, a 6-digit login code is on its way.', 'info')
+        return redirect('/verify')
+    return render_template('stops/auth/login.html', next_url=next_url)
+
+
+def stops_signup():
+    """Explicit account creation for stops.truckerpro.net.
+
+    Splits user creation off the login form so a typo on /login no longer
+    silently spawns a User row.
+    """
+    if current_user.is_authenticated:
+        return redirect('/')
+    next_url = request.args.get('next', '')
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        if not email or not _EMAIL_RE.match(email):
+            flash('Please enter a valid email address.', 'error')
+            return render_template('stops/auth/signup.html', next_url=next_url)
+        existing = User.query.filter_by(email=email).first()
+        if existing is None:
             user = User(email=email, role='driver')
             db.session.add(user)
             try:
@@ -36,16 +69,16 @@ def stops_login():
             except Exception:
                 db.session.rollback()
                 user = User.query.filter_by(email=email).first()
-                if not user:
-                    flash('Something went wrong. Please try again.', 'error')
-                    return render_template('stops/auth/login.html', next_url=next_url)
-        code = generate_otp(user)
-        send_otp_email(email, code)
+        else:
+            user = existing
+        if user is not None:
+            code = generate_otp(user)
+            send_otp_email(email, code)
         session['otp_email'] = email
         session['otp_next'] = next_url
-        flash('Check your email for a 6-digit login code.', 'info')
+        flash('Check your email for a 6-digit code to finish signing up.', 'info')
         return redirect('/verify')
-    return render_template('stops/auth/login.html', next_url=next_url)
+    return render_template('stops/auth/signup.html', next_url=next_url)
 
 
 def stops_verify():

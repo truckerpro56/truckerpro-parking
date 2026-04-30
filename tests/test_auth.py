@@ -62,3 +62,50 @@ def test_logout(client, db):
     client.post('/login', data={'email': 'logout@example.com', 'password': 'Pass123!'})
     resp = client.get('/logout', follow_redirects=True)
     assert resp.status_code == 200
+
+
+class TestLoginNextRedirect:
+    """Regression tests for open-redirect via ?next= on /login."""
+
+    def _setup(self, client):
+        client.post('/signup', data={
+            'email': 'redir@example.com', 'password': 'Pass123!', 'name': 'R', 'role': 'driver',
+        })
+        client.get('/logout')
+
+    def _login(self, client, next_value):
+        return client.post(
+            f'/login?next={next_value}',
+            data={'email': 'redir@example.com', 'password': 'Pass123!'},
+            follow_redirects=False,
+        )
+
+    def test_safe_relative_path_is_followed(self, client, db):
+        self._setup(client)
+        resp = self._login(client, '/my-bookings')
+        assert resp.status_code == 302
+        assert resp.headers['Location'].endswith('/my-bookings')
+
+    def test_protocol_relative_blocked(self, client, db):
+        self._setup(client)
+        resp = self._login(client, '//evil.com/pwn')
+        assert resp.status_code == 302
+        assert 'evil.com' not in resp.headers['Location']
+
+    def test_backslash_protocol_relative_blocked(self, client, db):
+        self._setup(client)
+        resp = self._login(client, '/\\evil.com')
+        assert resp.status_code == 302
+        assert 'evil.com' not in resp.headers['Location']
+
+    def test_absolute_url_blocked(self, client, db):
+        self._setup(client)
+        resp = self._login(client, 'https://evil.com/pwn')
+        assert resp.status_code == 302
+        assert 'evil.com' not in resp.headers['Location']
+
+    def test_javascript_scheme_blocked(self, client, db):
+        self._setup(client)
+        resp = self._login(client, 'javascript:alert(1)')
+        assert resp.status_code == 302
+        assert 'javascript' not in resp.headers['Location'].lower()

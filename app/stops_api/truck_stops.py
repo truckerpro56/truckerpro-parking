@@ -133,6 +133,10 @@ def list_truck_stops():
     lat = request.args.get('lat', type=float)
     lng = request.args.get('lng', type=float)
     radius = request.args.get('radius', type=float, default=50)
+    # Bound radius — without a cap, a caller asking for radius=50000 forces a
+    # full table scan into Python memory before pagination.
+    if radius is not None:
+        radius = max(1.0, min(radius, 500.0))
 
     distances = {}
     if lat is not None and lng is not None:

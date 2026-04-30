@@ -152,6 +152,10 @@ def create_booking():
         db.session.add(booking)
         db.session.commit()
 
+        if booking.payment_status == 'paid':
+            from ..tasks.notifications import enqueue_booking_notifications
+            enqueue_booking_notifications(booking)
+
         return jsonify({
             'success': True,
             'booking_ref': booking_ref,

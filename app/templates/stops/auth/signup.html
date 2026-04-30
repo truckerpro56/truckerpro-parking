@@ -1,0 +1,50 @@
+{% extends "stops/base.html" %}
+{% block title %}Create Account{% endblock %}
+{% block meta_description %}Create a Truck Stops Directory account to save favorites, submit fuel prices, and write reviews.{% endblock %}
+
+{% block head %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+            <div style="width:64px;height:64px;background:linear-gradient(135deg,#1e3a5f,#0f2440);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
+                <i class="fa-solid fa-user-plus" style="color:#60a5fa;font-size:1.5rem"></i>
+            </div>
+            <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:4px">Create Account</h1>
+            <p style="color:var(--text-sec);font-size:0.9rem">We'll email a 6-digit code to verify your address</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }} py-2 px-3" style="font-size:0.85rem;border-radius:8px">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px">
+            <form method="POST" action="/signup{% if next_url %}?next={{ next_url }}{% endif %}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="email" style="font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:6px;display:block">Email Address</label>
+                    <input type="email" name="email" id="email" required autofocus
+                           placeholder="you@company.com"
+                           style="width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:inherit;outline:none;transition:border-color 0.2s">
+                </div>
+                <button type="submit" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit">
+                    Send Verification Code <i class="fa-solid fa-arrow-right ms-1"></i>
+                </button>
+            </form>
+        </div>
+
+        <p class="text-center mt-3" style="color:var(--text-sec);font-size:0.8rem">
+            Already have an account? <a href="/login">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
