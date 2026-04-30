@@ -118,15 +118,30 @@ class TestSubscription:
         resp = stops_client.get('/profile/unsubscribe-fuel')
         assert resp.status_code == 200
 
-    def test_unsubscribe_sets_flag(self, stops_client, db):
+    def test_unsubscribe_sets_flag_via_signed_token(self, stops_client, db, app):
+        """Unsubscribe must come from a signed token (Round-2 #A) — not raw email.
+        Round 2 closed the IDOR where any email could be silently unsubscribed."""
+        email = 'unsub-' + uuid.uuid4().hex[:8] + '@test.com'
+        user = User(email=email, role='driver', fuel_email_subscribed=True)
+        db.session.add(user)
+        db.session.commit()
+        with app.app_context():
+            from app.services.fuel_digest import make_unsubscribe_token
+            token = make_unsubscribe_token(user.id)
+        stops_client.get(f'/profile/unsubscribe-fuel?token={token}')
+        db.session.refresh(user)
+        assert user.fuel_email_subscribed is False
+
+    def test_unsubscribe_email_param_is_now_a_noop(self, stops_client, db):
+        """Regression for Round-2 #A: ?email= must NOT silently unsubscribe."""
         email = 'unsub-' + uuid.uuid4().hex[:8] + '@test.com'
         user = User(email=email, role='driver', fuel_email_subscribed=True)
         db.session.add(user)
         db.session.commit()
         stops_client.get(f'/profile/unsubscribe-fuel?email={email}')
         db.session.refresh(user)
-        assert user.fuel_email_subscribed is False
+        assert user.fuel_email_subscribed is True
 
-    def test_unsubscribe_unknown_email_does_not_crash(self, stops_client, db):
-        resp = stops_client.get('/profile/unsubscribe-fuel?email=nobody@unknown.example')
+    def test_unsubscribe_unknown_token_does_not_crash(self, stops_client, db):
+        resp = stops_client.get('/profile/unsubscribe-fuel?token=garbage')
         assert resp.status_code == 200

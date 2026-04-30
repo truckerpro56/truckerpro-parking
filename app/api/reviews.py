@@ -1,6 +1,7 @@
 """Review API endpoints — submit reviews for completed bookings."""
 from flask import jsonify, request
 from flask_login import login_required, current_user
+from sqlalchemy.exc import IntegrityError
 import logging
 
 from . import api_bp
@@ -47,19 +48,30 @@ def submit_review():
     if existing:
         return jsonify({'success': False, 'error': 'Already reviewed'}), 400
 
+    review = ParkingReview(
+        booking_id=booking_id,
+        location_id=booking.location_id,
+        driver_id=current_user.id,
+        rating=rating,
+        review_text=review_text[:2000] if review_text else '',
+        is_verified=True,
+    )
+    db.session.add(review)
     try:
-        review = ParkingReview(
-            booking_id=booking_id,
-            location_id=booking.location_id,
-            driver_id=current_user.id,
-            rating=rating,
-            review_text=review_text[:2000] if review_text else '',
-            is_verified=True,
-        )
-        db.session.add(review)
         db.session.commit()
-        return jsonify({'success': True})
+    except IntegrityError as exc:
+        # `booking_id` is UNIQUE on parking_reviews. A concurrent submission
+        # that slipped past the existence check above hits this constraint;
+        # surface it as 409 instead of a generic 500. Other constraint
+        # violations log + 400 so we don't lie to the user.
+        db.session.rollback()
+        msg = str(getattr(exc, 'orig', exc))
+        if 'parking_reviews' in msg and ('booking_id' in msg or 'UNIQUE' in msg.upper()):
+            return jsonify({'success': False, 'error': 'Already reviewed'}), 409
+        logger.warning('Unexpected IntegrityError on submit_review: %s', msg[:200])
+        return jsonify({'success': False, 'error': 'Could not save review'}), 400
     except Exception as e:
         db.session.rollback()
         logger.error("Review submission failed: %s", str(e)[:200], exc_info=True)
         return jsonify({'success': False, 'error': 'Failed to submit review'}), 500
+    return jsonify({'success': True})

@@ -85,10 +85,16 @@ class TestStopsVerify:
         assert resp.status_code == 302  # redirect to home
 
     def test_verify_with_wrong_code_shows_error(self, stops_client, db):
-        """Full flow: POST login, then submit wrong code — stay on verify page."""
-        # First log in to establish session
+        """Full flow: POST login for an EXISTING user, then submit wrong code.
+
+        Pre-creates the user — Round-2 #6 stopped /login from auto-registering
+        unknown emails (anti-enumeration), so a wrong-code test must seed the
+        account itself rather than relying on /login to create it.
+        """
+        existing = User(email='wrong@test.com', role='driver')
+        db.session.add(existing)
+        db.session.commit()
         stops_client.post('/login', data={'email': 'wrong@test.com'})
-        # Now submit a wrong code
         resp = stops_client.post('/verify', data={'code': '000000'})
         assert resp.status_code == 200  # stays on verify page
 

@@ -1,6 +1,8 @@
 import logging
+import os
 import click
 from flask import Flask, request, g
+from werkzeug.middleware.proxy_fix import ProxyFix
 from .config import Config, TestConfig
 from .extensions import db, socketio, limiter, csrf, login_manager
 from .middleware import init_host_routing
@@ -14,6 +16,18 @@ def create_app(config_class=None):
         app.config.from_object(config_class)
     else:
         app.config.from_object(Config)
+
+    # Honor X-Forwarded-* from one trusted proxy hop (Railway's edge). Without
+    # this, request.remote_addr is the proxy IP and flask-limiter ends up
+    # rate-limiting all clients behind that proxy as one — meaning a single
+    # noisy IP can exhaust the quota for everyone, and legitimate distributed
+    # traffic looks like one rate-limit-bypassing actor.
+    if not app.config.get('TESTING'):
+        proxy_hops = int(os.environ.get('TRUSTED_PROXY_HOPS', '1'))
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app, x_for=proxy_hops, x_proto=proxy_hops,
+            x_host=proxy_hops, x_port=proxy_hops, x_prefix=proxy_hops,
+        )
 
     db.init_app(app)
     allowed_origins = [

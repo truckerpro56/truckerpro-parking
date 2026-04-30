@@ -28,10 +28,26 @@ def create_payment_intent(amount_cents, currency, customer_id, payment_method_id
 
 
 def get_or_create_customer(email, name, stripe_customer_id=None):
-    """Get existing or create new Stripe customer. Returns customer ID."""
+    """Get existing or create new Stripe customer. Returns customer ID.
+
+    Resolves a duplicate-customer race: when two concurrent first-bookings
+    fire for the same user (no stripe_customer_id stored yet), both threads
+    used to call Customer.create and produce two separate Stripe customers
+    — only the last one was persisted, orphaning the first. Now we look up
+    by email first; concurrent callers converge on the same customer.
+    """
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
     if stripe_customer_id:
         return stripe_customer_id
+    if email:
+        try:
+            existing = stripe.Customer.list(email=email, limit=1)
+            if existing.data:
+                return existing.data[0].id
+        except Exception:
+            # If the lookup fails (network blip, Stripe outage), fall through
+            # to create — better to risk a duplicate than fail the booking.
+            pass
     customer = stripe.Customer.create(email=email, name=name)
     return customer.id
 

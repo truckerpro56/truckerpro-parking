@@ -23,6 +23,12 @@ def plan_route_api():
     if not origin or not destination:
         return jsonify({'error': 'Origin and destination required'}), 400
 
+    # Cap input length before forwarding to the Maps API. Without this, a
+    # caller can pass 10k-character strings to burn paid Google quota under
+    # the existing 10/hour rate limit.
+    if len(origin) > 500 or len(destination) > 500:
+        return jsonify({'error': 'Origin and destination must be 500 characters or fewer'}), 400
+
     route_data = get_route(origin, destination)
     if not route_data:
         return jsonify({'error': 'Could not find a route. Check your addresses.'}), 400

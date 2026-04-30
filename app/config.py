@@ -40,7 +40,13 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     SQLALCHEMY_ENGINE_OPTIONS = {}
     WTF_CSRF_ENABLED = False
-    SERVER_NAME = 'localhost'
+    # SERVER_NAME intentionally NOT set: with it set to 'localhost',
+    # Werkzeug's host-matching rejects any test request that sends
+    # `Host: stops.localhost` (used by stops_client) with a 404 before
+    # the URL map is even consulted. That broke ~89 tests across
+    # stops_auth/stops_routes/blog_routes/weigh_stations. Tests that
+    # need an external URL can use app.test_request_context with
+    # base_url='http://stops.localhost/' as needed.
     RATELIMIT_STORAGE_URI = 'memory://'
     RATELIMIT_ENABLED = False
     STOPS_DOMAIN = 'stops.localhost'
